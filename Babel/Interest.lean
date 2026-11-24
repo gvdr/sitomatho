@@ -29,13 +29,17 @@ structure InterestComponents where
   joins : Nat := 0
   /-- Expression nodes in the closed statement. -/
   statementSize : Nat := 0
+  /-- Retained steps whose lemma is defined under the specialist focus. -/
+  focusSteps : Nat := 0
 deriving Inhabited, Repr
 
-/-- A cheap proxy for how interesting a derivation is: it rewards passing through
-    distinct concepts and modules with a long derivation, and penalises a large statement.
+/-- A cheap proxy for how interesting a derivation is. It rewards passing through distinct
+    concepts with a long derivation that stays on its subject, and penalises a large
+    statement. Distinct modules count for little: weighting them rewarded derivations that
+    leave their subject after one step and continue with generic set lemmas.
     The weights are defaults to be compared with referee scores, not tuned values. -/
 def interestScore (c : InterestComponents) : Float :=
-  3.0 * c.concepts.toFloat + 2.0 * c.modules.toFloat + c.steps.toFloat
+  3.0 * c.concepts.toFloat + 2.0 * c.focusSteps.toFloat + 0.5 * c.modules.toFloat + c.steps.toFloat
     + (if c.joins > 0 then 2.0 else 0.0) - c.statementSize.toFloat / 40.0
 
 /-- The concept a fact is about: the head constant of its statement. -/

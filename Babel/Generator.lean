@@ -63,14 +63,14 @@ def isCleanMathlibName (n : Name) : Bool :=
     ]
     !badSubstr.any fun b => (s.splitOn b).length > 1
 
-/-- Modules whose declarations are logical or basic order vocabulary. -/
+/-- Modules whose declarations are logical, basic order, or basic set vocabulary. -/
 def isLogicModule (m : Name) : Bool :=
   let s := m.toString
   s.startsWith "Init" || s.startsWith "Mathlib.Logic" || s.startsWith "Mathlib.Order.Defs"
-    || s == "Mathlib.Order.Notation" || s == "Mathlib.Order.Basic"
+    || s == "Mathlib.Order.Notation" || s == "Mathlib.Order.Basic" || s == "Mathlib.Data.Set.Defs"
 
-/-- A lemma whose whole statement is in logical and basic order vocabulary, such as
-    `ne_of_eq_of_ne` or `not_or_intro`. Such a step adds length without mathematical content. -/
+/-- A lemma whose whole statement is in logical, basic order and basic set vocabulary, such
+    as `ne_of_eq_of_ne`, `not_or_intro` or `Set.mem_of_eq_of_mem`. Such a step adds length without mathematical content. -/
 def isGlueLemma (env : Environment) (lemmaName : Name) : Bool :=
   match env.find? lemmaName with
   | none => false
@@ -757,6 +757,10 @@ def closeDerivation
     steps := usedSteps.size
     joins := shape.joins
     statementSize := exprSize stmtClosed
+    focusSteps := match specialist with
+      | some search => usedSteps.countP fun st =>
+          (definingModule env st.lemmaName).any search.focus.isPrefixOf
+      | none => 0
   }
   return some {
     stmtClosed, proofClosed

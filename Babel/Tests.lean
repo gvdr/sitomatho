@@ -23,7 +23,10 @@ section Interest
 
 open Lean Meta Elab Term
 
-#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 1, statementSize := 80 } == 18.0
+#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 1, statementSize := 80 } == 15.0
+-- Staying on the subject is rewarded more than touching one more module.
+#guard interestScore { concepts := 3, modules := 2, steps := 5, focusSteps := 4 } >
+       interestScore { concepts := 3, modules := 5, steps := 5, focusSteps := 1 }
 #guard interestScore { concepts := 4, modules := 2, steps := 5, joins := 0, statementSize := 80 } >
        interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, statementSize := 80 }
 #guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, statementSize := 400 } <
@@ -167,8 +170,9 @@ def renderForallConclusion : Lean.Elab.Term.TermElabM Bool := do
 def glueLemmas : Lean.Meta.MetaM (List Bool) := do
   let env ← Lean.getEnv
   return [isGlueLemma env ``ne_of_eq_of_ne, isGlueLemma env ``mt, isGlueLemma env ``not_or_intro,
-    isGlueLemma env ``Set.Subset.trans, isGlueLemma env ``Filter.inter_mem]
+    isGlueLemma env ``Set.mem_of_eq_of_mem, isGlueLemma env ``Set.inter_subset_left,
+    isGlueLemma env ``Filter.inter_mem]
 
-/-- info: [true, true, true, false, false] -/
+/-- info: [true, true, true, true, true, false] -/
 #guard_msgs in
 #eval glueLemmas

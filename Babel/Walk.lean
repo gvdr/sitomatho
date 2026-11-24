@@ -124,6 +124,7 @@ def candidateToJson (c : WalkCandidate) : Json :=
       ("concepts", toJson c.components.concepts),
       ("modules", toJson c.components.modules),
       ("steps", toJson c.components.steps),
+      ("focus_steps", toJson c.components.focusSteps),
       ("joins", toJson c.components.joins),
       ("statement_size", toJson c.components.statementSize),
       ("conclusion_size", toJson c.conclusionSize)]),
