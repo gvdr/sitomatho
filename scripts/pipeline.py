@@ -5,9 +5,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import re
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -21,7 +19,8 @@ from editorial import (
     render_editorial,
     save_families,
 )
-from verify import find_lake, verify_lean_file
+from verify import verify_lean_file
+from walk_runner import WalkRun, run_walk
 from wander import TopicProfile, mutate_profiles, record_exploration
 
 LAUNCH_PROFILES = (
@@ -72,78 +71,6 @@ def rewrite_theorem_name(lean_src: str, new_name: str) -> str:
 
 def write_json(path: Path, data: dict[str, Any]) -> None:
     path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-
-
-def run_walk(
-    *,
-    seed: int,
-    count: int,
-    min_steps: int,
-    max_steps: int,
-    max_attempts: int,
-    interdisciplinary: float,
-    exact_heartbeats: int,
-    aesop_heartbeats: int,
-    convolute: int,
-    module: str | None = None,
-    focus: str | None = None,
-    min_proof_depth: int = 8,
-    trials_per_walk: int = 240,
-    timeout: int = 240,
-) -> list[dict[str, Any]]:
-    lake = find_lake()
-    out_file = ROOT / ".tmp" / f"walk_seed_{seed}.json"
-    out_file.parent.mkdir(exist_ok=True)
-    if out_file.exists():
-        out_file.unlink()
-
-    env = os.environ.copy()
-    elan_bin = str(Path.home() / ".elan" / "bin")
-    env["PATH"] = f"{elan_bin}:{env.get('PATH', '')}"
-
-    cmd = [
-        lake,
-        "exe",
-        "walk",
-        "--seed",
-        str(seed),
-        "--count",
-        str(count),
-        "--min-steps",
-        str(min_steps),
-        "--max-steps",
-        str(max_steps),
-        "--max-attempts",
-        str(max_attempts),
-        "--interdisciplinary",
-        str(interdisciplinary),
-        "--exact-heartbeats",
-        str(exact_heartbeats),
-        "--aesop-heartbeats",
-        str(aesop_heartbeats),
-        "--convolute",
-        str(convolute),
-        "--out",
-        str(out_file),
-    ]
-    if module:
-        cmd.extend(["--module", module])
-    if focus:
-        cmd.extend([
-            "--focus", focus,
-            "--min-proof-depth", str(min_proof_depth),
-            "--trials-per-walk", str(trials_per_walk),
-        ])
-    print(f"[walk] Running: {' '.join(cmd)}")
-    try:
-        proc = subprocess.run(cmd, cwd=ROOT, env=env, timeout=timeout)
-    except subprocess.TimeoutExpired as exc:
-        raise RuntimeError(f"`lake exe walk` timed out after {timeout}s") from exc
-    if proc.returncode != 0:
-        raise RuntimeError(f"`lake exe walk` failed with exit code {proc.returncode}")
-    if not out_file.exists():
-        raise RuntimeError(f"Expected walk output at {out_file}")
-    return json.loads(out_file.read_text(encoding="utf-8"))
 
 
 def publish_next_issue() -> dict[str, Any] | None:
@@ -280,18 +207,18 @@ def _walk_mutated_profile(
     max_attempts: int,
     exact_heartbeats: int,
     aesop_heartbeats: int,
-) -> list[dict[str, Any]]:
+) -> WalkRun:
     """Run specialist search on a mutated Mathlib profile with graceful depth relaxation."""
     print(
         f"[wander] ({profile.mutation_kind}) {profile.domain}: {profile.module} "
         f"[focus={profile.focus}, min_depth={profile.min_proof_depth}, "
         f"max_steps={profile.max_steps}, convolute={profile.convolute}]"
     )
-    candidates: list[dict[str, Any]] = []
+    run = WalkRun()
     for depth in dict.fromkeys((profile.min_proof_depth, max(4, profile.min_proof_depth - 2))):
         max_steps = max(profile.max_steps, depth + 4)
         try:
-            candidates = run_walk(
+            run = run_walk(
                 seed=batch_seed,
                 count=count,
                 min_steps=3,
@@ -309,10 +236,10 @@ def _walk_mutated_profile(
             )
         except RuntimeError as exc:
             print(f"  [wander] Walk error on {profile.module} (depth={depth}): {exc}")
-            candidates = []
-        if candidates:
+            run = WalkRun()
+        if run.candidates:
             break
-    return candidates
+    return run
 
 
 def run_wander(
@@ -362,7 +289,7 @@ def run_wander(
             max_attempts=max_attempts,
             exact_heartbeats=exact_heartbeats,
             aesop_heartbeats=aesop_heartbeats,
-        )
+        ).candidates
         explored.append(profile)
         candidates.sort(
             key=lambda c: (
@@ -494,7 +421,7 @@ def run_launch(
                 max_attempts=max_attempts,
                 exact_heartbeats=150000,
                 aesop_heartbeats=150000,
-            )
+            ).candidates
         else:
             candidates = run_walk(
                 seed=batch_seed,
@@ -510,7 +437,7 @@ def run_launch(
                 focus=profile.focus,
                 min_proof_depth=profile.min_proof_depth,
                 trials_per_walk=profile.trials_per_walk,
-            )
+            ).candidates
         explored.append(profile)
         candidates.sort(
             key=lambda candidate: (
@@ -658,7 +585,7 @@ def main() -> int:
         focus=args.focus,
         min_proof_depth=args.min_proof_depth,
         trials_per_walk=args.trials_per_walk,
-    )
+    ).candidates
     print(f"[pipeline] Generator A emitted {len(candidates)} gated candidates.")
 
     seq = next_result_number(year)

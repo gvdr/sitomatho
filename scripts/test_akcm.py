@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -23,6 +24,7 @@ from editorial import (
 from msc2020 import section_prefix, section_title
 from pipeline import publish_next_issue, run_launch
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
+from walk_runner import WalkRun, read_walk_output, run_walk
 from wander import TopicProfile, derive_focus, mutate_profiles
 
 
@@ -139,7 +141,7 @@ def test_launch_replaces_issue_only_after_full_verification() -> None:
             patch("pipeline.verify_lean_file", return_value=(True, [], "")),
             patch("pipeline.process_editorial", return_value=editorial) as review,
         ):
-            with patch("pipeline.run_walk", side_effect=[[candidate], []]):
+            with patch("pipeline.run_walk", side_effect=[WalkRun(candidates=[candidate], complete=True), WalkRun(complete=True)]):
                 assert run_launch(count=2, seed=1, max_attempts=5, cfg=cfg, offline=True) == 1
             assert json.loads(issue_path.read_text()) == {"issues": [prior_issue]}
             assert list((root / "results").iterdir()) == [initial]
@@ -148,7 +150,10 @@ def test_launch_replaces_issue_only_after_full_verification() -> None:
 
             with patch(
                 "pipeline.run_walk",
-                side_effect=[[candidate], [candidate | {"statement_hash": "second"}]],
+                side_effect=[
+                    WalkRun(candidates=[candidate], complete=True),
+                    WalkRun(candidates=[candidate | {"statement_hash": "second"}], complete=True),
+                ],
             ):
                 assert run_launch(count=2, seed=1, max_attempts=5, cfg=cfg, offline=True) == 0
             prelaunch, launch = json.loads(issue_path.read_text())["issues"]
@@ -267,6 +272,43 @@ def test_gemini_decision_1_referee() -> None:
     assert verdict["decision_metrics"]["p_human_cares"] == 0.03
 
 
+def test_read_walk_output_partial_and_missing() -> None:
+    with TemporaryDirectory() as directory:
+        path = Path(directory) / "walk.json"
+        assert read_walk_output(path) == WalkRun()
+        path.write_text("{not json", encoding="utf-8")
+        assert read_walk_output(path) == WalkRun()
+        path.write_text(
+            json.dumps({"complete": False, "stats": {"attempts": 3}, "candidates": [{"statement_hash": "a"}]}),
+            encoding="utf-8",
+        )
+        run = read_walk_output(path)
+        assert run.candidates == [{"statement_hash": "a"}] and not run.complete
+        assert run.stats["attempts"] == 3
+
+
+def test_run_walk_timeout_keeps_partial_output() -> None:
+    def killed_after_one_candidate(cmd, **kwargs):
+        out_path = Path(cmd[cmd.index("--out") + 1])
+        out_path.write_text(
+            json.dumps({"complete": False, "stats": {}, "candidates": [{"statement_hash": "a"}]}),
+            encoding="utf-8",
+        )
+        raise subprocess.TimeoutExpired(cmd, kwargs.get("timeout", 1))
+
+    with TemporaryDirectory() as directory:
+        with (
+            patch("walk_runner.ROOT", Path(directory)),
+            patch("walk_runner.find_lake", return_value="lake"),
+            patch("walk_runner.subprocess.run", side_effect=killed_after_one_candidate),
+        ):
+            run = run_walk(
+                seed=7, count=2, min_steps=3, max_steps=8, max_attempts=5, interdisciplinary=2.0,
+                exact_heartbeats=1, aesop_heartbeats=1, convolute=0, timeout=1,
+            )
+    assert run.timed_out and not run.complete and len(run.candidates) == 1
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -278,4 +320,6 @@ if __name__ == "__main__":
     test_msc2020()
     test_wander_mutation_avoids_recent_domains_and_drifts()
     test_gemini_decision_1_referee()
+    test_read_walk_output_partial_and_missing()
+    test_run_walk_timeout_keeps_partial_output()
     print("All AKCM unit tests passed.")

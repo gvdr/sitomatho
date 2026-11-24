@@ -110,18 +110,45 @@ def candidateToJson (c : WalkCandidate) : Json :=
     ("novelty", novJson)
   ]
 
+/-- Write the output file atomically: `{"complete", "stats", "candidates"}`.
+    The file is valid after every call, so a killed run leaves usable output. -/
+def writeOutput (path : System.FilePath) (complete : Bool) (stats : WalkStats)
+    (cands : Array WalkCandidate) : IO Unit := do
+  if let some parent := path.parent then
+    IO.FS.createDirAll parent
+  let json := Json.mkObj [
+    ("complete", Json.bool complete),
+    ("stats", stats.toJson),
+    ("candidates", Json.arr (cands.map candidateToJson))
+  ]
+  let tmpPath := System.FilePath.mk (path.toString ++ ".tmp")
+  IO.FS.writeFile tmpPath (json.pretty ++ "\n")
+  IO.FS.rename tmpPath path
+
+def statsSummary (stats : WalkStats) : String :=
+  let phases := (stats.phaseMs.toList.mergeSort fun a b => a.1 < b.1).map fun (phase, ms) =>
+    phase ++ "=" ++ toString ms ++ "ms"
+  let dominant := match stats.dominantReject with
+    | some (key, count) => key ++ " (" ++ toString count ++ ")"
+    | none => "none"
+  "phases: " ++ String.intercalate ", " phases ++ "; dominant rejection: " ++ dominant
+
 unsafe def main (args : List String) : IO Unit := do
   let cfg := parseArgs args
   let specialist : Option SpecialistSearch := cfg.focus.map fun focus =>
     { focus, minProofDepth := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk }
   if specialist.isSome && (cfg.minProofDepth < 3 || cfg.maxSteps <= cfg.minProofDepth) then
     throw <| IO.userError "Specialist search requires 3 <= --min-proof-depth < --max-steps."
+  let outFile := System.FilePath.mk cfg.outPath
+  let stats : StatsRef ← IO.mkRef {}
+  writeOutput outFile false (← stats.get) #[]
   IO.eprintln s!"[Babel.walk] Loading {cfg.importModule}..."
   initSearchPath (← findSysroot)
   enableInitializersExecution
-  let env ← importModules #[{ module := cfg.importModule }] {} (loadExts := true)
+  let env ← timed stats "import" <|
+    importModules #[{ module := cfg.importModule }] {} (loadExts := true)
   IO.eprintln s!"[Babel.walk] Building Mathlib lemma index..."
-  let idx := buildLemmaIndex env cfg.focus
+  let idx ← timed stats "index" <| IO.lazyPure fun _ => buildLemmaIndex env cfg.focus
   IO.eprintln s!"[Babel.walk] Indexed {idx.totalIndexed} theorems, {idx.seeds.size} seeds, {idx.byHypHead.size} head symbols."
   if let some search := specialist then
     if idx.specialistSeeds.isEmpty then
@@ -140,14 +167,16 @@ unsafe def main (args : List String) : IO Unit := do
   let action : MetaM (Array WalkCandidate) := do
     let specialistContext ← specialist.mapM fun search => do
       IO.eprintln "[Babel.walk] Indexing normalized hypothesis patterns."
-      return (search, ← buildHypothesisTree idx, progress)
+      return (search, ← timed stats "hyp_tree" (buildHypothesisTree idx), progress)
     let mut rng := Rng.ofSeed cfg.seed
     let mut accepted : Array WalkCandidate := #[]
     let mut seenHashes : Std.HashSet String := {}
     let mut attempts := 0
+    let searchStart ← IO.monoMsNow
 
     while accepted.size < cfg.count && attempts < cfg.maxAttempts do
       attempts := attempts + 1
+      stats.modify fun s => { s with attempts := attempts }
       let walkSeed := cfg.seed + attempts * 1009
       let walk := runSingleWalk idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
         cfg.exactHeartbeats cfg.aesopHeartbeats cfg.convolute rng
@@ -161,16 +190,20 @@ unsafe def main (args : List String) : IO Unit := do
           seenHashes := seenHashes.insert cand.statementHash
           accepted := accepted.push cand
           IO.eprintln s!"[Babel.walk] #{accepted.size}/{cfg.count} (attempt {attempts}): steps={cand.stepsTaken}, depth={cand.proofDepth}, joins={cand.proofJoins}, L2_not_routine={cand.novelty.level2NotRoutine}, L3_ratio={cand.novelty.level3Ratio}, ns={cand.namespaces}"
+          -- "search" is the whole loop so far, gates included.
+          let now ← IO.monoMsNow
+          let soFar := (← stats.get).addMs "search" (now - searchStart)
+          writeOutput outFile false soFar accepted
+    let searchStop ← IO.monoMsNow
+    stats.modify (·.addMs "search" (searchStop - searchStart))
     IO.eprintln s!"[Babel.walk] Completed {attempts} attempts."
     if specialist.isSome then
-      let stats ← progress.get
-      IO.eprintln s!"[Babel.walk] Max depth: {stats.maxDepth}; max depth with a branch join: {stats.maxJoinedDepth}."
+      let progressStats ← progress.get
+      IO.eprintln s!"[Babel.walk] Max depth: {progressStats.maxDepth}; max depth with a branch join: {progressStats.maxJoinedDepth}."
     return accepted
 
   let (candidates, _) ← (action.run' {} {}).toIO coreCtx coreState
-  let jsonOut := Json.arr (candidates.map candidateToJson)
-  let outFile := System.FilePath.mk cfg.outPath
-  if let some parent := outFile.parent then
-    IO.FS.createDirAll parent
-  IO.FS.writeFile outFile (jsonOut.pretty ++ "\n")
+  let finalStats ← stats.get
+  writeOutput outFile true finalStats candidates
+  IO.eprintln s!"[Babel.walk] {statsSummary finalStats}"
   IO.eprintln s!"[Babel.walk] Wrote {candidates.size} gated candidates to {cfg.outPath}."
