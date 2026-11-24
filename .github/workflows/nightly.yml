@@ -2,14 +2,26 @@ name: Nightly Generation & Weekly Issue
 
 on:
   schedule:
-    # Nightly at 03:00 UTC: generate, gate, verify, and label new theorems
+    # Nightly at 03:00 UTC: generate, gate, convolute, verify, and label new theorems
     - cron: "0 3 * * *"
     # Weekly on Sundays at 06:00 UTC: publish accumulated results as next issue
     - cron: "0 6 * * 0"
   workflow_dispatch:
     inputs:
       count:
-        description: "Number of candidates to generate"
+        description: "Number of gated candidates to aim for"
+        required: false
+        default: "10"
+      min_steps:
+        description: "Minimum random walk length"
+        required: false
+        default: "4"
+      max_steps:
+        description: "Maximum random walk length"
+        required: false
+        default: "12"
+      convolute:
+        description: "Baroque proof convolution stages"
         required: false
         default: "6"
       publish_issue:
@@ -17,6 +29,10 @@ on:
         required: false
         type: boolean
         default: false
+      reeditorial_issue:
+        description: "Optional issue number to re-run live GitHub Models editorial on (e.g. 1)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -25,6 +41,7 @@ permissions:
 jobs:
   generate-or-publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
 
@@ -35,31 +52,53 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
+      - name: Re-run live GitHub Models editorial on an existing issue (optional)
+        if: ${{ inputs.reeditorial_issue != '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/reeditorial.py --issue "${{ inputs.reeditorial_issue }}" --reset-families
+
       - name: Install elan & Lean toolchain
+        if: ${{ inputs.reeditorial_issue == '' }}
         run: |
           curl https://elan.lean-lang.org/elan-init.sh -sSf | sh -s -- -y --default-toolchain none
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Restore Mathlib cache & build Generator A
+        if: ${{ inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}
         run: |
           lake exe cache get
           lake build Babel Corpus walk
 
-      - name: Run Generator A, Kernel Verifier & Editorial Desk
-        if: github.event.schedule != '0 6 * * 0'
+      - name: Run Generator A, Baroque Convoluter, Kernel Verifier & Editorial Desk
+        if: ${{ inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          SEED=$(date -u +%Y%m%d)
-          COUNT="${{ github.event.inputs.count || '6' }}"
+          SEED=$(( $(date -u +%s) + ${{ github.run_number }} ))
+          COUNT="${{ inputs.count || '10' }}"
+          MIN_STEPS="${{ inputs.min_steps || '4' }}"
+          MAX_STEPS="${{ inputs.max_steps || '12' }}"
+          CONVOLUTE="${{ inputs.convolute || '6' }}"
           EXTRA=""
-          if [ "${{ github.event.inputs.publish_issue }}" = "true" ]; then
+          if [ "${{ inputs.publish_issue }}" = "true" ]; then
             EXTRA="--publish-issue"
           fi
-          python3 scripts/pipeline.py --seed "$SEED" --count "$COUNT" $EXTRA
+          python3 scripts/pipeline.py \
+            --seed "$SEED" \
+            --count "$COUNT" \
+            --min-steps "$MIN_STEPS" \
+            --max-steps "$MAX_STEPS" \
+            --max-attempts 800 \
+            --interdisciplinary 3.5 \
+            --exact-heartbeats 300000 \
+            --aesop-heartbeats 300000 \
+            --convolute "$CONVOLUTE" \
+            $EXTRA
 
       - name: Publish Weekly Issue
-        if: github.event.schedule == '0 6 * * 0'
+        if: ${{ inputs.reeditorial_issue == '' && github.event.schedule == '0 6 * * 0' }}
         run: python3 scripts/pipeline.py --issue-only
 
       - name: Commit & push verified results

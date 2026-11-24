@@ -9,14 +9,11 @@ id_prefix = "AKCM"
 editor = "Giulio Valentino Dalla Riva"
 
 [site]
-# Hosted under gvdallariva.net.
-# - Subpath mode (default when gvdr.github.io is mapped to gvdallariva.net):
-#     base_url = "https://gvdallariva.net/sitomatho", base_path = "/sitomatho", custom_domain = ""
-# - Dedicated subdomain mode (e.g. sitomatho.gvdallariva.net):
-#     set custom_domain = "sitomatho.gvdallariva.net" (writes _site/CNAME & sets base_path = "")
-base_url = "https://gvdallariva.net/sitomatho"
-base_path = "/sitomatho"
-custom_domain = ""
+# Hosted on a subdomain of gvdallariva.net via GitHub Pages CNAME.
+# Setting custom_domain writes _site/CNAME, sets base_url = "https://<custom_domain>", and base_path = "".
+base_url = "https://sitomatho.gvdallariva.net"
+base_path = ""
+custom_domain = "sitomatho.gvdallariva.net"
 repo_url = "https://github.com/gvdr/sitomatho"
 
 [llm]

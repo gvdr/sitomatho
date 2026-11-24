@@ -61,6 +61,7 @@ def run_walk(
     count: int,
     min_steps: int,
     max_steps: int,
+    max_attempts: int,
     interdisciplinary: float,
     exact_heartbeats: int,
     aesop_heartbeats: int,
@@ -88,6 +89,8 @@ def run_walk(
         str(min_steps),
         "--max-steps",
         str(max_steps),
+        "--max-attempts",
+        str(max_attempts),
         "--interdisciplinary",
         str(interdisciplinary),
         "--exact-heartbeats",
@@ -160,6 +163,7 @@ def main() -> int:
     parser.add_argument("--count", type=int, default=12, help="Target number of gated candidates")
     parser.add_argument("--min-steps", type=int, default=3, help="Minimum walk length")
     parser.add_argument("--max-steps", type=int, default=8, help="Maximum walk length")
+    parser.add_argument("--max-attempts", type=int, default=400, help="Maximum walk attempts")
     parser.add_argument("--interdisciplinary", type=float, default=2.0, help="Cross-namespace weight")
     parser.add_argument("--exact-heartbeats", type=int, default=150000, help="Level 1 exact? budget")
     parser.add_argument("--aesop-heartbeats", type=int, default=150000, help="Level 2 routine budget")
@@ -183,6 +187,7 @@ def main() -> int:
         count=args.count,
         min_steps=args.min_steps,
         max_steps=args.max_steps,
+        max_attempts=args.max_attempts,
         interdisciplinary=args.interdisciplinary,
         exact_heartbeats=args.exact_heartbeats,
         aesop_heartbeats=args.aesop_heartbeats,

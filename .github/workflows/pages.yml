@@ -3,6 +3,10 @@ name: Deploy Journal to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_run:
+    workflows: ["Nightly Generation & Weekly Issue"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -17,9 +21,13 @@ concurrency:
 jobs:
   verify:
     name: Verify Lean Results & Axioms
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - name: Install elan & Lean toolchain
         run: |
@@ -41,6 +49,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
