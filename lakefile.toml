@@ -22,3 +22,7 @@ roots = ["Babel.Corpus"]
 name = "walk"
 root = "Babel.Walk"
 supportInterpreter = true
+
+[[lean_lib]]
+name = "BabelTest"
+roots = ["Babel.Tests"]
