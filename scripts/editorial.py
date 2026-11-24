@@ -289,7 +289,7 @@ def _run_decision_model_referee(
         "importance": {
             "type": "score",
             "instructions": "Rate the genuine mathematical importance of this Lean 4 theorem from 0 (trivial/artificial) to 10 (landmark).",
-            "levels": DECISION_IMPORTANCE_LEVELS,
+            "criteria": DECISION_IMPORTANCE_LEVELS,
         },
         "msc_section": {
             "type": "choice",

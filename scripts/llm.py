@@ -59,15 +59,17 @@ def chat_completion(
             "OPENAI_API_KEY / GROQ_API_KEY)."
         )
 
-    payload = {
+    payload: dict[str, Any] = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": user_prompt},
         ],
         "temperature": temperature,
-        "max_tokens": max_tokens,
+        "max_tokens": max(max_tokens, 2048) if model.startswith("gemini-") else max_tokens,
     }
+    if model.startswith("gemini-4-"):
+        payload["reasoning_effort"] = "low"
     body = json.dumps(payload).encode("utf-8")
 
     last_err: Exception | None = None
@@ -94,9 +96,14 @@ def chat_completion(
                 raise LLMError(
                     f"Non-JSON response (HTTP {status}, {ctype}) from {endpoint}: {raw[:200]!r}"
                 ) from exc
-            content = data["choices"][0]["message"]["content"]
+            choice = data["choices"][0]
+            msg = choice.get("message") or {}
+            content = msg.get("content")
             if not isinstance(content, str) or not content.strip():
-                raise LLMError(f"Empty response from model {model}")
+                finish = choice.get("finish_reason", "unknown")
+                raise LLMError(
+                    f"Empty content from model {model} (finish_reason={finish}, keys={sorted(msg.keys())})"
+                )
             return content.strip()
         except urllib.error.HTTPError as exc:
             err_body = exc.read().decode("utf-8", errors="replace")
