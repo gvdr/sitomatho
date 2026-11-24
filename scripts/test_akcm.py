@@ -29,6 +29,14 @@ from editorial import (
 from llm import LLMError
 from msc2020 import section_prefix, section_title
 from pipeline import publish_next_issue, run_launch
+from selection import (
+    PoolEntry,
+    append_candidate_log,
+    log_record,
+    publish_limit,
+    rank_pool,
+    select_and_verify,
+)
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
 from walk_runner import WalkRun, read_walk_output, run_walk
 from wander import TopicProfile, derive_focus, mutate_profiles
@@ -415,6 +423,49 @@ def test_precomputed_referee_a_is_reused() -> None:
     assert editorial["referees"][1]["model"] == "offline-heuristic-referee"
 
 
+def test_rank_select_and_log() -> None:
+    def entry(tag: str, module: str, score: float, tie: float = 0.0, source: str = "referee_a") -> PoolEntry:
+        profile = TopicProfile(module, "Mathlib.X", "X", 30)
+        return PoolEntry(
+            {"statement_hash": tag, "statement_pretty": tag},
+            profile,
+            1,
+            {"score": score, "tie_break": tie, "source": source, "verdict": None},
+        )
+
+    pool = [
+        entry("d", "M.B", 4.0),
+        entry("a", "M.A", 6.0),
+        entry("b", "M.A", 6.0, 0.4),
+        entry("c", "M.A", 5.0),
+        entry("e", "M.C", 5.5, source="interest_score"),
+    ]
+    ranked = rank_pool(pool)
+    assert [e.candidate["statement_hash"] for e in ranked] == ["b", "a", "e", "c", "d"]
+
+    def verify(e: PoolEntry) -> str | None:
+        return None if e.candidate["statement_hash"] == "a" else e.candidate["statement_hash"]
+
+    accepted, outcomes = select_and_verify(ranked, count=3, module_cap=1, verify=verify)
+    assert [result for _, result in accepted] == ["b", "e", "d"]
+    assert outcomes == {"b": "published", "a": "outranked", "e": "published", "c": "outranked", "d": "published"}
+
+    accepted, outcomes = select_and_verify(ranked, count=2, module_cap=2, verify=verify)
+    assert [result for _, result in accepted] == ["b", "e"]
+    assert outcomes["a"] == "failed_verification" and outcomes["c"] == "outranked"
+    assert select_and_verify([], count=3, verify=verify) == ([], {})
+    assert [publish_limit(6, n) for n in (0, 1, 2, 5, 24)] == [0, 1, 1, 3, 6]
+
+    with TemporaryDirectory() as directory:
+        path = Path(directory) / "candidates.jsonl"
+        records = [log_record(e, rank=i + 1, pool_size=5, outcome="outranked") for i, e in enumerate(ranked)]
+        assert records[2]["source"] == "interest_score" and records[0]["rank"] == 1
+        append_candidate_log(records, path=path, keep=4)
+        append_candidate_log(records[:2], path=path, keep=4)
+        lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+        assert [line["statement_hash"] for line in lines] == ["c", "d", "b", "a"]
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -431,4 +482,5 @@ if __name__ == "__main__":
     test_bench_invariants()
     test_screening_uses_referee_and_falls_back()
     test_precomputed_referee_a_is_reused()
+    test_rank_select_and_log()
     print("All AKCM unit tests passed.")
