@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Model Family Leaderboard · {{ journal.title }}{% endblock %}
+
+{% block content %}
+<section class="issue-banner">
+  <h2>Model Family Leaderboard</h2>
+  <div class="issue-meta">
+    <span>Ranked by cumulative referee importance</span>
+    <span>Families retire to <em>legacy</em> at {{ deprecate_after }} results</span>
+  </div>
+</section>
+
+{% if leaderboard %}
+<table class="journal-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Model Family</th>
+      <th>Current Version</th>
+      <th class="num">Results</th>
+      <th class="num">Mean Importance</th>
+      <th class="num">Total Importance</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in leaderboard %}
+    <tr>
+      <td>{{ loop.index }}</td>
+      <td><strong>{{ row.family }}</strong></td>
+      <td><code>v{{ row.version }}</code></td>
+      <td class="num">{{ row.count }}</td>
+      <td class="num">{{ "%.1f"|format(row.mean_importance) }}</td>
+      <td class="num">
+        <strong>{{ "%.1f"|format(row.total_importance) }}</strong>
+        <span class="bar-track" style="margin-left:0.45rem"><span class="bar-fill" style="width:{{ row.bar_pct }}%"></span></span>
+      </td>
+      <td>
+        {% if row.deprecated %}
+          <span class="badge badge-legacy">Legacy</span>
+        {% else %}
+          <span class="badge badge-ok">Active</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">No model families ranked yet.</div>
+{% endif %}
+{% endblock %}

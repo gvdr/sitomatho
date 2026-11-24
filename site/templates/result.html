@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}{{ r.editorial.eponym }} ({{ r.id }}) · {{ journal.title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+  <a href="{{ base_path }}/issues/{{ r.issue }}/">Volume 1, Issue {{ r.issue }}</a>
+  &nbsp;/&nbsp; {{ r.id }}
+</div>
+
+<article>
+  <header class="result-header">
+    <div class="result-kicker">
+      <span>{{ r.editorial.kind }}</span>
+      <span>·</span>
+      <span>{{ r.id }}</span>
+      <span>·</span>
+      <span>MSC {{ r.editorial.msc_code }} ({{ r.editorial.msc_section_name }})</span>
+      {% if r.is_legacy %}
+        <span class="badge badge-legacy">Legacy Family</span>
+      {% endif %}
+      {% if r.editorial.joint_eponym %}
+        <span class="badge badge-ok">Joint Eponym (Both Referees ≥ 8)</span>
+      {% endif %}
+    </div>
+    <h2 class="result-title">
+      <span>{{ r.editorial.title or r.editorial.eponym }}</span>
+      {% if r.editorial.proved_by %}
+        <span class="title-sep">|</span>
+        <span class="title-by">proved by {{ r.editorial.proved_by }}</span>
+      {% endif %}
+    </h2>
+    <div class="result-meta-grid">
+      <span><strong>Mean Importance:</strong> {{ "%.1f"|format(r.editorial.mean_importance) }} / 10</span>
+      <span><strong>Generator:</strong> {{ r.generator }} (seed {{ r.seed }}, {{ r.steps_taken }} steps)</span>
+      <span><strong>Interdisciplinarity:</strong> {{ r.interdisciplinarity }} namespace{% if r.interdisciplinarity != 1 %}s{% endif %} ({{ r.namespaces|join(", ") }})</span>
+      <span><strong>Identifier note:</strong> Internal AKCM record (not a DOI or arXiv number)</span>
+    </div>
+  </header>
+
+  <section class="press-box">
+    <div class="section-label">
+      <span>For Immediate Release · Communications Desk</span>
+      <span>
+        {% for f in r.editorial.families %}
+          {{ f.family }}-{{ f.version }}-{{ f.tier }}{% if not loop.last %} · {% endif %}
+        {% endfor %}
+      </span>
+    </div>
+    <p>{{ r.editorial.press_release }}</p>
+  </section>
+
+  <section class="section-card">
+    <div class="section-label">
+      <span>Novelty Certificate (Levels 0–5)</span>
+      <span>Gated at Level 1</span>
+    </div>
+    <div class="novelty-grid">
+      <div class="nov-cell pass">
+        <div class="nov-level">Level 0</div>
+        <div class="nov-title">Unseen ✓</div>
+        <div class="nov-detail">{{ r.statement_hash[:18] }}…</div>
+      </div>
+      <div class="nov-cell pass">
+        <div class="nov-level">Level 1 · Gate</div>
+        <div class="nov-title">Not a lookup ✓</div>
+        <div class="nov-detail"><code>exact?</code> failed ({{ r.novelty.level_1_budget_heartbeats }} hb)</div>
+      </div>
+      <div class="nov-cell {% if r.novelty.level_2_not_routine %}pass{% endif %}">
+        <div class="nov-level">Level 2 · Badge</div>
+        <div class="nov-title">{% if r.novelty.level_2_not_routine %}Not routine ✓{% else %}Routine{% endif %}</div>
+        <div class="nov-detail">
+          {% if r.novelty.level_2_not_routine %}
+            <code>simp</code> &amp; <code>aesop</code> failed
+          {% else %}
+            Closed by <code>{{ r.novelty.level_2_closed_by }}</code>
+          {% endif %}
+        </div>
+      </div>
+      <div class="nov-cell pass">
+        <div class="nov-level">Level 3 · Badge</div>
+        <div class="nov-title">Depth {{ "%.2f"|format(r.novelty.level_3_ratio) }}×</div>
+        <div class="nov-detail">Proof {{ r.novelty.level_3_proof_size }} / Stmt {{ r.novelty.level_3_statement_size }}</div>
+      </div>
+      <div class="nov-cell uncheckable" title="No formal test exists">
+        <div class="nov-level">Level 4</div>
+        <div class="nov-title">Surprising —</div>
+        <div class="nov-detail">No test in Lean</div>
+      </div>
+      <div class="nov-cell uncheckable" title="Socially constructed by the mathematical community">
+        <div class="nov-level">Level 5</div>
+        <div class="nov-title">Important —</div>
+        <div class="nov-detail">Socially constructed</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-card">
+    <div class="section-label">
+      <span>Formal Statement (Lean 4)</span>
+      <span>Shrunk local context</span>
+    </div>
+    <pre class="lean-code">{{ statement_html|safe }}</pre>
+  </section>
+
+  <section class="gloss-box">
+    <div class="section-label">
+      <span>Unverified Gloss — Informal LLM Reading (Not Kernel-Checked)</span>
+    </div>
+    <p>{{ r.editorial.unverified_gloss }}</p>
+  </section>
+
+  <section>
+    <div class="section-label" style="margin-bottom:0.5rem">
+      <span>Peer Review · Referee Reports</span>
+      <span>
+        {% if r.editorial.referee_disagreement == 0 %}
+          Referees agreed on score
+        {% else %}
+          Disagreement spread: Δ = {{ r.editorial.referee_disagreement }}
+        {% endif %}
+      </span>
+    </div>
+    <div class="referee-grid">
+      {% for ref in r.editorial.referees %}
+      <div class="referee-card">
+        <div class="referee-head">
+          <span class="referee-name">{{ ref.referee_id }}</span>
+          <span class="referee-model">{{ ref.model }}</span>
+        </div>
+        <div class="referee-verdict">
+          Classification: <strong>{{ ref.kind }}</strong> ·
+          Importance: <strong>{{ ref.importance }} / 10</strong> ·
+          MSC: <strong>{{ ref.msc_code }}</strong>
+        </div>
+        <blockquote>{{ ref.justification }}</blockquote>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+  {% if dep_svg %}
+  <section class="section-card">
+    <div class="section-label">
+      <span>Mathlib Dependency Graph</span>
+      <span>{{ r.dependencies.nodes|length }} Mathlib lemmas</span>
+    </div>
+    <div class="dep-graph-wrap">
+      {{ dep_svg|safe }}
+    </div>
+  </section>
+  {% endif %}
+
+  <section class="section-card">
+    <div class="section-label">
+      <span>Kernel-Checked Proof File (<code>Result.lean</code>)</span>
+      <div class="code-actions">
+        <a class="btn-small" href="{{ base_path }}/results/{{ r.id }}/Result.lean" download="{{ r.id }}.lean">Download .lean</a>
+        <button class="btn-small" type="button" onclick="navigator.clipboard.writeText(document.getElementById('raw-lean').textContent); this.textContent='Copied'; setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+      </div>
+    </div>
+    <div class="badge-row" style="margin:0 0 0.75rem">
+      <span class="badge badge-ok">Kernel Verified ✓</span>
+      <span class="badge">Axioms: {{ r.axioms|join(", ") if r.axioms else "none (pure logic)" }}</span>
+      <span class="badge">Toolchain: {{ r.lean_toolchain }}</span>
+    </div>
+    <pre class="lean-code" id="raw-lean">{{ full_lean_html|safe }}</pre>
+  </section>
+</article>
+{% endblock %}

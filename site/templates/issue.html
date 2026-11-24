@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Issue {{ issue.number }} · {{ journal.title }}{% endblock %}
+{% block extra_head %}
+  <link rel="alternate" type="application/atom+xml" title="{{ journal.title }} — Issue {{ issue.number }}" href="{{ base_url }}/issues/{{ issue.number }}/feed.xml">
+{% endblock %}
+
+{% block content %}
+{% if issue %}
+  <section class="issue-banner">
+    <div>
+      <h2>Volume {{ issue.volume }}, Issue {{ issue.number }}</h2>
+    </div>
+    <div class="issue-meta">
+      <span>Published {{ issue.date }}</span>
+      <span>{{ results|length }} kernel-checked results</span>
+      <span>Mean importance {{ issue_mean_importance }} / 10</span>
+      <a href="{{ base_path }}/issues/{{ issue.number }}/feed.xml">Issue {{ issue.number }} Atom Feed</a>
+    </div>
+  </section>
+
+  {% for sec_title, items in grouped_results %}
+  <section class="msc-group">
+    <h3 class="msc-heading">{{ sec_title }}</h3>
+    <ul class="toc-list">
+      {% for r in items %}
+      <li class="toc-item">
+        <div>
+          <div class="toc-kicker">
+            <span>{{ r.id }}</span>
+            <span>·</span>
+            <span>{{ r.editorial.kind }}</span>
+            <span>·</span>
+            <span>MSC {{ r.editorial.msc_code }}</span>
+            {% if r.is_legacy %}
+              <span class="badge badge-legacy">Legacy</span>
+            {% endif %}
+          </div>
+          <h4 class="toc-title">
+            <a href="{{ base_path }}/results/{{ r.id }}/">
+              <span>{{ r.editorial.title or r.editorial.eponym }}</span>
+              {% if r.editorial.proved_by %}
+                <span class="title-sep">|</span>
+                <span class="title-by">proved by {{ r.editorial.proved_by }}</span>
+              {% endif %}
+            </a>
+          </h4>
+          <div class="toc-preview">{{ r.statement_one_line }}</div>
+          <div class="badge-row">
+            <span class="badge badge-ok">L0 Unseen</span>
+            <span class="badge badge-ok">L1 Not a lookup</span>
+            {% if r.novelty.level_2_not_routine %}
+              <span class="badge badge-ok">L2 Not routine</span>
+            {% else %}
+              <span class="badge">L2 Closed by {{ r.novelty.level_2_closed_by }}</span>
+            {% endif %}
+            <span class="badge">L3 Depth {{ "%.2f"|format(r.novelty.level_3_ratio) }}×</span>
+            <span class="badge">{{ r.steps_taken }} steps · {{ r.interdisciplinarity }} ns</span>
+          </div>
+        </div>
+        <div class="toc-score">
+          <div class="score-big">{{ "%.1f"|format(r.editorial.mean_importance) }} <span style="font-weight:400;font-size:0.75rem;color:var(--ink-muted)">/ 10</span></div>
+          <div class="score-sub">
+            Referees: {{ r.editorial.referees[0].importance }} · {{ r.editorial.referees[1].importance }}
+          </div>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <h3>No issues published yet</h3>
+    <p>Run <code>scripts/pipeline.py --publish-issue</code> to generate and kernel-verify Issue 1.</p>
+  </div>
+{% endif %}
+{% endblock %}

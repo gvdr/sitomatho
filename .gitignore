@@ -1,0 +1,12 @@
+# Build & environment artifacts
+.lake/
+.venv/
+__pycache__/
+*.pyc
+_site/
+.tmp/
+*.olean
+*.ilean
+*.trace
+*.log
+.DS_Store

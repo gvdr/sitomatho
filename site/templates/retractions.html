@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Retractions · {{ journal.title }}{% endblock %}
+
+{% block content %}
+<section class="issue-banner">
+  <h2>Retractions</h2>
+  <div class="issue-meta">
+    <span>Refuted mutants from Generator B · Not kernel-checked</span>
+  </div>
+</section>
+
+<p style="max-width:68ch;color:var(--ink-muted);margin-top:0">
+  When Generator B mutates a Mathlib statement (dropping a hypothesis, weakening a typeclass, swapping
+  <code>≤</code> and <code>&lt;</code>, or altering a constant) and Lean's property-based tester
+  <code>plausible</code> discovers a counterexample, the refuted statement bypasses the novelty gates
+  and is archived here with its counterexample.
+</p>
+
+{% if retractions %}
+  {% for ret in retractions %}
+  <section class="section-card">
+    <div class="section-label">
+      <span>{{ ret.id }} · Refuted Mutant</span>
+      <span class="badge badge-warn">Not Kernel-Checked</span>
+    </div>
+    <p><strong>Mutation of:</strong> <code>{{ ret.source_lemma }}</code> ({{ ret.mutation_kind }})</p>
+    <pre class="lean-code">{{ ret.statement }}</pre>
+    <p style="margin-bottom:0"><strong>Counterexample (<code>plausible</code>):</strong> <code>{{ ret.counterexample }}</code></p>
+  </section>
+  {% endfor %}
+{% else %}
+  <div class="empty-state">
+    <p><strong>Zero retractions to date.</strong></p>
+    <p style="margin-bottom:0">{{ retractions_note }}</p>
+  </div>
+{% endif %}
+{% endblock %}

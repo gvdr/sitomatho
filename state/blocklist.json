@@ -1,0 +1,39 @@
+{
+  "real_ai_models": [
+    "gpt", "chatgpt", "openai", "o1", "o3", "o4", "codex", "davinci", "whisper", "sora",
+    "claude", "anthropic", "sonnet", "opus", "haiku",
+    "gemini", "palm", "bard", "gemma", "lamda", "chinchilla", "alphaproof", "alphageometry", "alphafold", "deepmind",
+    "llama", "meta", "opt", "galactica", "chameleon",
+    "mistral", "mixtral", "pixtral", "codestral", "ministral", "devstral",
+    "qwen", "qwq", "tongyi",
+    "deepseek", "janus",
+    "phi", "orca", "wizardlm", "copilot",
+    "grok", "xai",
+    "cohere", "command", "aya", "coral",
+    "falcon", "jais",
+    "yi", "baichuan", "ernie", "chatglm", "glm", "internlm", "kimi", "moonshot", "doubao", "minimax", "hunyuan", "step",
+    "olmo", "molmo", "tulu", "allenai",
+    "nova", "titan", "olympus",
+    "nemotron", "megatron",
+    "granite", "watson",
+    "jamba", "jurassic", "reka", "dbrx", "arctic", "starcoder", "bloom", "pythia", "vicuna", "alpaca", "zephyr", "solar", "smollm", "phi4", "hermes"
+  ],
+  "real_mathematicians": [
+    "euclid", "archimedes", "pythagoras", "diophantus", "eratosthenes", "apollonius", "hypatia",
+    "al-khwarizmi", "khwarizmi", "fibonacci", "cardano", "descartes", "fermat", "pascal", "newton", "leibniz",
+    "bernoulli", "euler", "lagrange", "laplace", "legendre", "fourier", "gauss", "cauchy", "abel", "jacobi", "galois",
+    "dirichlet", "hamilton", "boole", "weierstrass", "riemann", "dedekind", "cantor", "poincare", "hilbert", "minkowski",
+    "hadamard", "lebesgue", "hardy", "littlewood", "noether", "ramsey", "ramanujan", "banach", "kolmogorov", "neumann",
+    "godel", "goedel", "church", "turing", "weil", "cartan", "chevalley", "erdos", "selberg", "grothendieck", "serre",
+    "atiyah", "milnor", "smale", "nash", "thompson", "cohen", "langlands", "conway", "thurston", "deligne", "wiles",
+    "perelman", "kontsevich", "voevodsky", "tao", "scholze", "mirzakhani", "maynard", "viazovska", "gowers", "buzzard",
+    "wang", "borges", "lenat", "bengio", "malkin", "colton", "bundy", "walsh", "patel", "gangloff", "kasaura", "poesia",
+    "peano", "zermelo", "fraenkel", "russell", "whitehead", "frege", "tarski", "skolem", "gentzen", "kleene", "curry",
+    "howard", "martin-lof", "brouwer", "heyting", "de-bruijn", "bruijn", "lawvere", "maclane", "eilenberg", "yoneda",
+    "zariski", "artin", "krull", "hilbert", "sylow", "cayley", "jordan", "holder", "frobenius", "schur", "burnside",
+    "markov", "chebyshev", "lyapunov", "sobolev", "schwartz", "hormander", "lax", "nirenberg", "calderon", "zygmund",
+    "hausdorff", "urysohn", "tychonoff", "alexandroff", "brouwer", "lefschetz", "hopf", "whitney", "bott", "chern",
+    "stokes", "green", "bolzano", "heine", "borel", "baire", "arzela", "ascoli", "stone", "hahn", "riesz", "fubini",
+    "tonelli", "fatou", "jensen", "minkowski", "cauchy", "schwarz", "young", "parseval", "plancherel"
+  ]
+}

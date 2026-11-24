@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% block title %}About · {{ journal.title }}{% endblock %}
+
+{% block content %}
+<article class="prose">
+  <section class="issue-banner">
+    <h2>Kernel-Checked Babel: a generator of verified, unimportant theorems</h2>
+    <div class="issue-meta">
+      <span>Giulio Valentino Dalla Riva · Nov 23, 2026</span>
+    </div>
+  </section>
+
+  <div class="press-box" style="margin-bottom:1.6rem">
+    <div class="section-label"><span>Editorial Transparency Note</span></div>
+    <p>
+      <em>AI dreams of Maths after too much cheese</em> (the <em>Annals of Kernel-Checked Mathematics</em>)
+      is a tongue-in-cheek web experiment and parody
+      of automated discovery claims, not a real research journal. Every theorem published here is
+      genuinely type-checked by the Lean 4 kernel against a pinned Mathlib release using only standard
+      axioms (<code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>), while
+      every eponym, referee report, importance score, and press release is satire. Identifiers use the
+      site's own scheme (<code>AKCM-2026-NNNN</code>), never DOIs or arXiv numbers.
+    </p>
+  </div>
+
+  <h2>The note</h2>
+  <p>
+    Generating mathematical results that are formally correct, almost certainly new, and barely
+    intelligible to us is NOT HARD. In 1960 Hao Wang had an IBM 704 prove the roughly 220
+    propositional theorems of <em>Principia Mathematica</em> in about three minutes, and close to 400
+    of its first-order theorems overall [1]. Today, anyone can forward-chain from Lean's Mathlib and
+    produce unlimited, kernel-checked novelty. It is Borges's Library of Babel [2] with a type checker.
+  </p>
+  <p>
+    What is hard is generating results that are "important". But "important" is not an abstract,
+    formal metric. It is a value judgement: Poincaré described invention as discernment and choice
+    [3], and Hardy ranked theorems by their "seriousness", their generality and depth [4], a
+    criterion recently analysed explicitly as a value judgement [16]. For now it is a judgement
+    socially constructed within the mathematical community. As Thurston put it, the question is not
+    how mathematicians prove theorems but how they advance human understanding [5].
+  </p>
+  <p>
+    Every attempt to formalise "interestingness" encodes somebody's taste. That runs from Lenat's AM
+    [6] and the survey by Colton, Bundy and Walsh [7] to Bengio and Malkin's compression view [8]. It
+    includes proposals that score a theorem by its proof difficulty relative to its statement length
+    [9, 10]. These are defensible proxies, and still choices.
+  </p>
+  <p>
+    Sure, we can have AIs that develop results that are important <em>to them</em>. Self-motivated
+    conjecture-and-prove systems already do a version of this [11, 12, 13]. Do we care? Dunno. I
+    suppose anything can be of interest.
+  </p>
+
+  <h2>Is anything actually new?</h2>
+  <p>
+    Yes. Random chains of valid steps reach new mathematics in every checkable sense of "new", as
+    long as each result carries a certificate of which sense it meets. "New" is graded, and each
+    grade has a test Lean can run:
+  </p>
+
+  <table class="journal-table">
+    <thead>
+      <tr>
+        <th>Level</th>
+        <th>Meaning</th>
+        <th>Test in Lean</th>
+        <th>Cost</th>
+        <th>Used by</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>0. Unseen</strong></td><td>Statement not in Mathlib or the pool, up to renaming</td><td>Hash of normalised statement</td><td>Free</td><td>Nobody bothers</td></tr>
+      <tr><td><strong>1. Not a lookup</strong></td><td>Not one library lemma away</td><td><code>exact?</code> fails within a budget</td><td>Seconds</td><td>Conjecturing-Proving Loop [14]</td></tr>
+      <tr><td><strong>2. Not routine</strong></td><td>General automation can't prove it from scratch</td><td><code>aesop</code> (and <code>simp</code>) fail within a budget</td><td>Seconds to minutes</td><td>LeanConjecturer [13]</td></tr>
+      <tr><td><strong>3. Deep</strong></td><td>Shortest proof found is long relative to statement</td><td>Proof length / statement length, after shrinking</td><td>Minutes</td><td>Patel et al. [9], Gangloff [10]</td></tr>
+      <tr><td><strong>4. Surprising</strong></td><td>Nobody would have guessed it</td><td>None</td><td>n/a</td><td>Humans</td></tr>
+      <tr><td><strong>5. Important</strong></td><td>Someone cares</td><td>None</td><td>n/a</td><td>The community, socially</td></tr>
+    </tbody>
+  </table>
+
+  <p>
+    A forward chain of <em>k</em> random steps gives Level 0 almost surely. Gating on Level 1 alone is
+    cheap and guarantees nothing is a disguised single library lemma. Levels 2 and 3 are measured and
+    printed on each theorem's page as badges, not used to discard. Levels 0 to 3 are formal, so the
+    machine can climb them; Levels 4 and 5 are the note's point.
+  </p>
+  <p>
+    One honest caveat: every derivable statement is already implied by the axioms, so novelty is
+    always relative to a library and a searcher. It is a cheaper judgement than importance, but it is
+    a judgement too.
+  </p>
+
+  <h2>Method in plain words</h2>
+  <ol>
+    <li><strong>Random forward walk (Generator A)</strong>: a Lean 4 metaprogram opens a random Mathlib theorem into a local context Γ, repeatedly applies unifying Mathlib lemmas (biased toward crossing distinct namespaces), shrinks away unused hypotheses, and reads off the resulting theorem and proof term.</li>
+    <li><strong>Novelty gate &amp; badges</strong>: every candidate must survive <code>exact?</code> within a heartbeat budget (Level 1). We then measure whether <code>simp</code> or <code>aesop</code> can prove it (Level 2) and record its post-shrinking proof-to-statement AST ratio (Level 3).</li>
+    <li><strong>Standalone verification</strong>: each result is emitted as an independent <code>Result.lean</code> file, compiled by <code>lake env lean</code>, and checked with <code>#print axioms</code> to allow only <code>propext</code>, <code>Classical.choice</code>, and <code>Quot.sound</code>.</li>
+    <li><strong>Editorial parody</strong>: two LLM referees independently classify the result, assign an importance score (0–10) and MSC 2020 code, and write two-sentence reports—disagreements published in full. A namer assigns an eponym from an invented AI model family (checked against a blocklist of real models and mathematicians, version-bumped each issue, and retired to "legacy" at 50 results) plus a mandatory buzzword press release that never explains the mathematics.</li>
+  </ol>
+
+  <h2>References</h2>
+  <ol class="refs">
+    <li>Wang, H. (1960). <a href="https://www.Gwern.net/doc/math/1960-wang.pdf">Toward Mechanical Mathematics</a>. <em>IBM Journal of Research and Development</em> 4(1): 2–22. doi:10.1147/rd.41.0002.</li>
+    <li>Borges, J. L. (1941). "La biblioteca de Babel". In <a href="https://www.borges.pitt.edu/node/16311"><em>El jardín de senderos que se bifurcan</em></a>. Buenos Aires: Sur. Reprinted in <em>Ficciones</em> (1944).</li>
+    <li>Poincaré, H. (1908). <em>Science et méthode</em>, Book I, ch. 3, "L'invention mathématique". Paris: Flammarion. <a href="https://www.gutenberg.org/ebooks/39713">English translation by G. B. Halsted</a>.</li>
+    <li>Hardy, G. H. (1940). <em>A Mathematician's Apology</em>. Cambridge University Press, <a href="https://www.cambridge.org/core/product/identifier/CBO9781139644112A021/type/BOOK_PART">§§ 15–17</a>.</li>
+    <li>Thurston, W. P. (1994). <a href="https://arxiv.org/abs/math/9404236">On proof and progress in mathematics</a>. <em>Bulletin of the AMS</em> 30(2): 161–177.</li>
+    <li>Lenat, D. B. (1976). <a href="https://apps.dtic.mil/sti/pdfs/ADA155378.pdf">AM: An Artificial Intelligence Approach to Discovery in Mathematics as Heuristic Search</a>. PhD thesis, Stanford University; AIM-286.</li>
+    <li>Colton, S., Bundy, A. and Walsh, T. (2000). <a href="https://cgi.cse.unsw.edu.au/~tw/IJHCS00.pdf">On the notion of interestingness in automated mathematical discovery</a>. <em>Int. J. Human-Computer Studies</em> 53(3): 351–375.</li>
+    <li>Bengio, Y. and Malkin, N. (2024). <a href="https://arxiv.org/abs/2403.04571">Machine learning and information theory concepts towards an AI mathematician</a>. <em>Bulletin of the AMS</em> 61(3): 457–469.</li>
+    <li>Patel, N., Rammal, A., Hayat, A., Munos, R. and Kempe, J. (2026). <a href="https://neurips.cc/virtual/2026/156588">Learning to Discover Interesting Mathematics</a>. NeurIPS 2026 workshop <em>AI for Science</em>.</li>
+    <li>Gangloff, S. (2026). <a href="https://arxiv.org/abs/2611.02905">What makes a theorem interesting? Operationalizing interestingness for open-ended exploration</a>. arXiv:2611.02905.</li>
+    <li>Poesia, G., Broman, D., Haber, N. and Goodman, N. D. (2024). <a href="https://arxiv.org/abs/2407.00695">Learning Formal Mathematics From Intrinsic Motivation</a>. NeurIPS 2024.</li>
+    <li>Dong, K. and Ma, T. (2025). <a href="https://proceedings.mlr.press/v267/dong25h.html">STP: Self-play LLM Theorem Provers with Iterative Conjecturing and Proving</a>. ICML 2025, PMLR 267: 14114–14136.</li>
+    <li>Onda, N., Kasaura, K., Oriike, Y., Taniguchi, M., Sannai, A. and Sonoda, S. (2025). <a href="https://arxiv.org/abs/2506.22005">LeanConjecturer: Automatic Generation of Mathematical Conjectures for Theorem Proving</a>. arXiv:2506.22005.</li>
+    <li>Kasaura, K., Onda, N., Oriike, Y., Taniguchi, M., Sannai, A. and Sonoda, S. (2025). <a href="https://arxiv.org/abs/2509.14274">Discovering New Theorems via LLMs with In-Context Proof Learning in Lean</a>. arXiv:2509.14274.</li>
+    <li>Aniva, L., Sun, C., Miranda, B., Barrett, C. and Koyejo, S. (2025). <a href="https://arxiv.org/abs/2410.16429">Pantograph: A Machine-to-Machine Interaction Interface for Advanced Theorem Proving</a>. TACAS 2025.</li>
+    <li>Weisgerber, S. (2024). <a href="https://doi.org/10.1007/s10516-023-09705-y">Value Judgments in Mathematics: G. H. Hardy and the (Non-)seriousness of Mathematical Theorems</a>. <em>Global Philosophy</em> 34(1), article 1.</li>
+  </ol>
+</article>
+{% endblock %}

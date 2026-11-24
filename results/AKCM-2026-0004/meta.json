@@ -1,0 +1,93 @@
+{
+  "id": "AKCM-2026-0004",
+  "issue": 1,
+  "generated_at": "2026-11-23T23:53:45Z",
+  "generator": "A",
+  "seed": 20302493,
+  "steps_requested": 4,
+  "steps_taken": 2,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0004",
+  "statement_lean": "theorem akcm_2026_0004\n    {s : String.Slice}\n    (self : s.Pos) :\n    self.offset ≤ s.rawEndPos",
+  "statement_pretty": "∀ {s : String.Slice} (self : s.Pos), self.offset ≤ s.rawEndPos",
+  "statement_hash": "expr:1e97a8f5e475e647e11f0e0778b16417",
+  "axioms": [],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 21,
+    "level_3_ratio": 1,
+    "level_3_proof_size": 21,
+    "level_2_not_routine": false,
+    "level_2_closed_by": "aesop",
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "String"
+  ],
+  "interdisciplinarity": 1,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "String",
+        "kind": "mathlib",
+        "id": "String.Slice.Pos.isValidForSlice"
+      },
+      {
+        "namespace": "String",
+        "kind": "mathlib",
+        "id": "String.Pos.Raw.IsValidForSlice.le_rawEndPos"
+      }
+    ],
+    "edges": [
+      {
+        "to": "String.Pos.Raw.IsValidForSlice.le_rawEndPos",
+        "step": "step_3",
+        "from": "String.Slice.Pos.isValidForSlice"
+      }
+    ]
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 3.0,
+    "referee_disagreement": 2,
+    "msc_code": "13A02",
+    "msc_section": "13",
+    "msc_section_name": "Commutative algebra",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Corollary",
+        "importance": 2,
+        "msc_code": "13A02",
+        "justification": "The 2-step synthesis across String resists single-lemma lookup and yields a proof-to-statement ratio of 1.00, meriting archival as a corollary. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 4,
+        "msc_code": "13A02",
+        "justification": "Although the statement clears the Level 1 lookup gate across String, the conclusion reads primarily as an accidental consequence of chaining 2 library facts. I recommend publication solely as a proposition of modest significance (4/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The String-Slice Offset Bound Proposition",
+    "proved_by": "Albatross-1.2-mini-high",
+    "eponym": "The String-Slice Offset Bound Proposition | proved by Albatross-1.2-mini-high",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Albatross",
+        "version": "1.2",
+        "tier": "mini-high",
+        "legacy": false
+      }
+    ],
+    "press_release": "Today we are proud to announce The String-Slice Offset Bound Proposition, proved by Albatross-1.2-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Albatross-1.2-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "unverified_gloss": "Informally, this statement chains 2 verified forward inferences drawn from String (including String.Slice.Pos.isValidForSlice, String.Pos.Raw.IsValidForSlice.le_rawEndPos). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

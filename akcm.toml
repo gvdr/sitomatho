@@ -1,0 +1,27 @@
+# Configuration for AI dreams of Maths after too much cheese (AKCM)
+
+[journal]
+title = "AI dreams of Maths after too much cheese"
+short_title = "AKCM"
+subtitle = "Annals of Kernel-Checked Mathematics — a peer-reviewed repository of verified, unimportant theorems"
+issn_joke = "AKCM-NO-ISSN"
+id_prefix = "AKCM"
+editor = "Giulio Valentino Dalla Riva"
+
+[site]
+# In GitHub Actions, SITE_BASE_URL is auto-derived from GITHUB_REPOSITORY.
+base_url = "https://gvdr.github.io/sitomatho"
+base_path = "/sitomatho"
+repo_url = "https://github.com/gvdr/sitomatho"
+
+[llm]
+# GitHub Models OpenAI-compatible endpoint (uses GITHUB_TOKEN with models: read in Actions)
+endpoint = "https://models.github.ai/inference/chat/completions"
+decider_1_model = "openai/gpt-4o-mini"
+decider_2_model = "meta/llama-3.3-70b-instruct"
+namer_model = "openai/gpt-4o-mini"
+gloss_model = "openai/gpt-4o-mini"
+
+[naming]
+deprecate_after = 50
+joint_eponym_min_score = 8

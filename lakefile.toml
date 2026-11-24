@@ -1,0 +1,24 @@
+name = "babel"
+version = "0.1.0"
+defaultTargets = ["Babel", "Corpus", "walk"]
+
+[leanOptions]
+pp.unicode.fun = true
+autoImplicit = false
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4.git"
+rev = "v4.36.0"
+
+[[lean_lib]]
+name = "Babel"
+
+[[lean_lib]]
+name = "Corpus"
+roots = ["Babel.Corpus"]
+
+[[lean_exe]]
+name = "walk"
+root = "Babel.Walk"
+supportInterpreter = true

@@ -1,0 +1,105 @@
+{
+  "id": "AKCM-2026-0001",
+  "issue": 1,
+  "generated_at": "2026-11-23T23:53:39Z",
+  "generator": "A",
+  "seed": 20264151,
+  "steps_requested": 3,
+  "steps_taken": 3,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0001",
+  "statement_lean": "theorem akcm_2026_0001\n    {M : Type}\n    [inst_2 : Monoid M]\n    (l : List M)\n    (y : M)\n    (h : ∀ x ∈ l, Commute x y) :\n    l.prod * (y * y) = y * y * l.prod",
+  "statement_pretty": "∀ {M : Type} [inst_2 : Monoid M] (l : List M) (y : M),\n  (∀ x ∈ l, Commute x y) → l.prod * (y * y) = y * y * l.prod",
+  "statement_hash": "expr:a85c5e67ca9a943be8d39fb0bba72feb",
+  "axioms": [
+    "propext"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 219,
+    "level_3_ratio": 0.9,
+    "level_3_proof_size": 197,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Commute"
+  ],
+  "interdisciplinarity": 1,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.list_prod_left"
+      },
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.mul_right"
+      },
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.eq"
+      }
+    ],
+    "edges": [
+      {
+        "to": "Commute.mul_right",
+        "step": "step_1",
+        "from": "Commute.list_prod_left"
+      },
+      {
+        "to": "Commute.eq",
+        "step": "step_2",
+        "from": "Commute.mul_right"
+      }
+    ]
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 4.5,
+    "referee_disagreement": 3,
+    "msc_code": "03B05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "03B05",
+        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 0.90, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Corollary",
+        "importance": 3,
+        "msc_code": "03B05",
+        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a corollary of modest significance (3/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The List-Product Square Commutation Proposition",
+    "proved_by": "Hoatzin-4.0-Turbo",
+    "eponym": "The List-Product Square Commutation Proposition | proved by Hoatzin-4.0-Turbo",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Hoatzin",
+        "version": "4.0",
+        "tier": "Turbo",
+        "legacy": false
+      }
+    ],
+    "press_release": "Today we are proud to announce The List-Product Square Commutation Proposition, proved by Hoatzin-4.0-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Hoatzin-4.0-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Commute (including Commute.list_prod_left, Commute.mul_right, Commute.eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

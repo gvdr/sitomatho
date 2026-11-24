@@ -1,0 +1,116 @@
+{
+  "id": "AKCM-2026-0005",
+  "issue": 1,
+  "generated_at": "2026-11-23T23:53:48Z",
+  "generator": "A",
+  "seed": 20313592,
+  "steps_requested": 4,
+  "steps_taken": 4,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0005",
+  "statement_lean": "theorem akcm_2026_0005\n    {α : Type}\n    {β : Type}\n    [inst_3 : Preorder α]\n    [inst_4 : LinearOrder β]\n    {f : α → β}\n    {g : α → β}\n    (hf : Antitone f)\n    (hg : Antitone g) :\n    Antitone fun x ↦\n  max (min (max (min (f x) (g x)) (min (f x) (g x))) (min (f x) (g x)))\n    (min (f x) (g x))",
+  "statement_pretty": "∀ {α β : Type} [inst_3 : Preorder α] [inst_4 : LinearOrder β] {f g : α → β},\n  Antitone f →\n    Antitone g →\n      Antitone fun x ↦\n        max (min (max (min (f x) (g x)) (min (f x) (g x))) (min (f x) (g x)))\n          (min (f x) (g x))",
+  "statement_hash": "expr:aa5252b8a41fd3bf46dcefa143e76a2f",
+  "axioms": [
+    "propext",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 301,
+    "level_3_ratio": 1.77,
+    "level_3_proof_size": 533,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Antitone"
+  ],
+  "interdisciplinarity": 1,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Antitone",
+        "kind": "mathlib",
+        "id": "Antitone.min"
+      },
+      {
+        "namespace": "Antitone",
+        "kind": "mathlib",
+        "id": "Antitone.max"
+      }
+    ],
+    "edges": [
+      {
+        "to": "Antitone.max",
+        "step": "step_1",
+        "from": "Antitone.min"
+      },
+      {
+        "to": "Antitone.min",
+        "step": "step_2",
+        "from": "Antitone.max"
+      },
+      {
+        "to": "Antitone.min",
+        "step": "step_2",
+        "from": "Antitone.min"
+      },
+      {
+        "to": "Antitone.max",
+        "step": "step_3",
+        "from": "Antitone.min"
+      },
+      {
+        "to": "Antitone.max",
+        "step": "step_3",
+        "from": "Antitone.min"
+      }
+    ]
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 6.0,
+    "referee_disagreement": 0,
+    "msc_code": "03B05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "03B05",
+        "justification": "The 4-step synthesis across Antitone resists single-lemma lookup and yields a proof-to-statement ratio of 1.77, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 6,
+        "msc_code": "03B05",
+        "justification": "Although the statement clears the Level 1 lookup gate across Antitone, the conclusion reads primarily as an accidental consequence of chaining 4 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Nested Min–Max Antitonicity Proposition",
+    "proved_by": "Petrel-5.1-mini-high",
+    "eponym": "The Nested Min–Max Antitonicity Proposition | proved by Petrel-5.1-mini-high",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Petrel",
+        "version": "5.1",
+        "tier": "mini-high",
+        "legacy": false
+      }
+    ],
+    "press_release": "Today we are proud to announce The Nested Min–Max Antitonicity Proposition, proved by Petrel-5.1-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Petrel-5.1-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "unverified_gloss": "Informally, this statement chains 4 verified forward inferences drawn from Antitone (including Antitone.min, Antitone.max). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

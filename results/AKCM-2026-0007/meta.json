@@ -1,0 +1,105 @@
+{
+  "id": "AKCM-2026-0007",
+  "issue": 1,
+  "generated_at": "2026-11-23T23:53:51Z",
+  "generator": "A",
+  "seed": 20340835,
+  "steps_requested": 3,
+  "steps_taken": 3,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0007",
+  "statement_lean": "theorem akcm_2026_0007\n    {R : Type}\n    [inst_2 : NonUnitalNonAssocRing R]\n    {a : R}\n    {b : R}\n    {c : R}\n    (h_6 : Commute a c)\n    (h_7 : Commute b c) :\n    Commute (-c) (a - b)",
+  "statement_pretty": "∀ {R : Type} [inst_2 : NonUnitalNonAssocRing R] {a b c : R},\n  Commute a c → Commute b c → Commute (-c) (a - b)",
+  "statement_hash": "expr:f5c3dd030de246f6cbf36ccc61476146",
+  "axioms": [
+    "propext"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 141,
+    "level_3_ratio": 1.31,
+    "level_3_proof_size": 185,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Commute"
+  ],
+  "interdisciplinarity": 1,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.sub_left"
+      },
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.symm"
+      },
+      {
+        "namespace": "Commute",
+        "kind": "mathlib",
+        "id": "Commute.neg_left"
+      }
+    ],
+    "edges": [
+      {
+        "to": "Commute.symm",
+        "step": "step_1",
+        "from": "Commute.sub_left"
+      },
+      {
+        "to": "Commute.neg_left",
+        "step": "step_2",
+        "from": "Commute.symm"
+      }
+    ]
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 5.5,
+    "referee_disagreement": 1,
+    "msc_code": "03B05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 5,
+        "msc_code": "03B05",
+        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 1.31, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 6,
+        "msc_code": "03B05",
+        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Non-Associative Ring Difference Commutation Theorem",
+    "proved_by": "Kestrel-5.2-Thinking",
+    "eponym": "The Non-Associative Ring Difference Commutation Theorem | proved by Kestrel-5.2-Thinking",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Kestrel",
+        "version": "5.2",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release": "Today we are proud to announce The Non-Associative Ring Difference Commutation Theorem, proved by Kestrel-5.2-Thinking, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Kestrel-5.2-Thinking demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Commute (including Commute.sub_left, Commute.symm, Commute.neg_left). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

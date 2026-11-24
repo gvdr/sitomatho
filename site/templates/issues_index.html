@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Issues Archive · {{ journal.title }}{% endblock %}
+
+{% block content %}
+<section class="issue-banner">
+  <h2>Issues Archive</h2>
+  <div class="issue-meta">
+    <span>{{ issues|length }} published issue{% if issues|length != 1 %}s{% endif %}</span>
+    <span>{{ total_results }} total kernel-checked theorems</span>
+  </div>
+</section>
+
+{% if issues %}
+<table class="journal-table">
+  <thead>
+    <tr>
+      <th>Issue</th>
+      <th>Published</th>
+      <th class="num">Results</th>
+      <th class="num">Mean Importance</th>
+      <th>Feed</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for iss in issues %}
+    <tr>
+      <td><a href="{{ base_path }}/issues/{{ iss.number }}/"><strong>Volume {{ iss.volume }}, Issue {{ iss.number }}</strong></a></td>
+      <td>{{ iss.date }}</td>
+      <td class="num">{{ iss.count }}</td>
+      <td class="num">{{ iss.mean_importance }} / 10</td>
+      <td><a href="{{ base_path }}/issues/{{ iss.number }}/feed.xml">Atom</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<div class="empty-state">No issues archived yet.</div>
+{% endif %}
+{% endblock %}

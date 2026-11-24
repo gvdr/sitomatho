@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ journal.title }}{% endblock %}</title>
+  <meta name="description" content="{{ journal.subtitle }}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ base_path }}/static/style.css">
+  <link rel="alternate" type="application/atom+xml" title="{{ journal.title }}" href="{{ base_url }}/feed.xml">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <header class="masthead">
+    <div class="wrap">
+      <div class="masthead-top">
+        <span>{{ journal.issn_joke }} · Kernel-Verified Open Archive</span>
+        <span>Lean {{ lean_version }} · Mathlib {{ mathlib_rev }}</span>
+      </div>
+      <h1 class="masthead-title"><a href="{{ base_path }}/">{{ journal.title }}</a></h1>
+      <p class="masthead-sub">{{ journal.subtitle }}</p>
+      <nav class="nav" aria-label="Primary">
+        <a href="{{ base_path }}/" class="{% if nav_active == 'current' %}active{% endif %}">Current Issue</a>
+        <a href="{{ base_path }}/issues/" class="{% if nav_active == 'issues' %}active{% endif %}">Issues</a>
+        <a href="{{ base_path }}/leaderboard/" class="{% if nav_active == 'leaderboard' %}active{% endif %}">Leaderboard</a>
+        <a href="{{ base_path }}/retractions/" class="{% if nav_active == 'retractions' %}active{% endif %}">Retractions</a>
+        <a href="{{ base_path }}/about/" class="{% if nav_active == 'about' %}active{% endif %}">About</a>
+        <a href="{{ base_path }}/feed.xml">Atom Feed</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="wrap">
+    <div class="colophon">
+      <div>
+        <strong>{{ journal.title }}</strong> · Edited by {{ journal.editor }}.
+        Every published result is type-checked by the Lean 4 kernel with only standard axioms
+        (<code>propext</code>, <code>Classical.choice</code>, <code>Quot.sound</code>).
+        Importance is socially constructed.
+      </div>
+      <div>
+        <a href="{{ repo_url }}">Source &amp; proofs on GitHub</a> ·
+        <a href="{{ base_path }}/feed.xml">Atom</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
