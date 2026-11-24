@@ -24,7 +24,7 @@ def tryWithHeartbeats (budget : Nat) (act : MetaM Bool) : MetaM Bool := do
   let saved ← saveState
   try
     tryCatchRuntimeEx
-      (withCurrHeartbeats <| withOptions (fun o => o.set `maxHeartbeats budget) act)
+      (withHeartbeatBudget budget act)
       (fun _ => pure false)
   finally
     restoreState saved

@@ -47,6 +47,15 @@ def pickArray? {α : Type} (r : Rng) (arr : Array α) : Option α × Rng :=
 
 end Rng
 
+/-- Run `act` under a real limit of `budget` thousand heartbeats, counted from now.
+    Setting the `maxHeartbeats` option is not enough: the limit that `checkSystem` enforces
+    is `Core.Context.maxHeartbeats`, which is fixed when the context is built (0, unlimited,
+    for the walk). Exceeding the budget throws a runtime exception. -/
+def withHeartbeatBudget {α : Type} (budget : Nat) (act : MetaM α) : MetaM α :=
+  withCurrHeartbeats <|
+    withTheReader Core.Context (fun ctx => { ctx with maxHeartbeats := budget * 1000 }) <|
+      withOptions (fun o => o.set `maxHeartbeats budget) act
+
 /-- Count AST nodes in a Lean expression (used for Level 3 proof/statement depth ratio). -/
 partial def exprSize : Expr → Nat
   | .app f a => 1 + exprSize f + exprSize a

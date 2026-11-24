@@ -611,19 +611,19 @@ def finishWalk
     stats.reject .badAxioms
     return (none, rngConv)
 
-  -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
-  let nov ← evaluateNovelty stats stmtType fullProof exactBudget aesopBudget
-  if !nov.level1ExactFailed then
-    stats.reject .closedByExact
-    return (none, rngConv)
-
-  -- Render standalone Lean with baroque tactic choreography around the clean shrunk proof
+  -- Cheap check first: render standalone Lean with baroque tactic choreography around the clean shrunk proof
   let some (stmtDecl, stmtPretty, leanFile) ← timed stats "render" <|
     renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof
       usedSteps convoluteDepth seed specialist.isSome
     | do
       stats.reject .unrenderable
       return (none, rngConv)
+
+  -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
+  let nov ← evaluateNovelty stats stmtType fullProof exactBudget aesopBudget
+  if !nov.level1ExactFailed then
+    stats.reject .closedByExact
+    return (none, rngConv)
 
   let mut nsArr : Array String := #[]
   let mut nodes : Array (String × String × String) := #[]
@@ -755,8 +755,7 @@ def buildHypothesisTree (idx : LemmaIndex) : MetaM (DiscrTree Name) := do
       ambientAdded := ambientAdded + 1
   for lemma in toIndex do
     let some (.thmInfo info) := env.find? lemma | continue
-    let keys ← tryCatchRuntimeEx (withCurrHeartbeats do
-      withOptions (fun o => o.set `maxHeartbeats 25000) do
+    let keys ← tryCatchRuntimeEx (withHeartbeatBudget 25000 do
         withReducible do
           withNewMCtxDepth do
             let (args, binderInfos, _) ← forallMetaTelescope
@@ -849,16 +848,14 @@ partial def runSpecialistLoop
     remaining.set (left - 1)
     let saved ← saveState
     let candidate ← tryCatchRuntimeEx (do
-      let (result, nextRng) ← withCurrHeartbeats do
-        withOptions (fun options => options.set `maxHeartbeats 40000) do
-          tryApplyLemma stats lemma target steps.reverse ctxFVars addedHyps steps.size r
+      let (result, nextRng) ← withHeartbeatBudget 40000 do
+        tryApplyLemma stats lemma target steps.reverse ctxFVars addedHyps steps.size r
       match result with
       | none => pure none
       | some (binderSpecs, mkStep) =>
         withLocalDeclsList binderSpecs.toList #[] fun freshFVars => do
-          let step ← withCurrHeartbeats do
-            withOptions (fun options => options.set `maxHeartbeats 40000) do
-              mkStep freshFVars
+          let step ← withHeartbeatBudget 40000 do
+            mkStep freshFVars
           let some step := step | return none
           runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps exactBudget
             aesopBudget convoluteDepth (ctxFVars ++ freshFVars) (steps.push step) matchedLemmas

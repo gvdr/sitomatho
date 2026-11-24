@@ -190,10 +190,10 @@ unsafe def main (args : List String) : IO Unit := do
           seenHashes := seenHashes.insert cand.statementHash
           accepted := accepted.push cand
           IO.eprintln s!"[Babel.walk] #{accepted.size}/{cfg.count} (attempt {attempts}): steps={cand.stepsTaken}, depth={cand.proofDepth}, joins={cand.proofJoins}, L2_not_routine={cand.novelty.level2NotRoutine}, L3_ratio={cand.novelty.level3Ratio}, ns={cand.namespaces}"
-          -- "search" is the whole loop so far, gates included.
-          let now ← IO.monoMsNow
-          let soFar := (← stats.get).addMs "search" (now - searchStart)
-          writeOutput outFile false soFar accepted
+      -- Rewrite the output after every attempt, so a killed run keeps its candidates and
+      -- statistics. "search" is the whole loop so far, gates included.
+      let now ← IO.monoMsNow
+      writeOutput outFile false ((← stats.get).addMs "search" (now - searchStart)) accepted
     let searchStop ← IO.monoMsNow
     stats.modify (·.addMs "search" (searchStop - searchStart))
     IO.eprintln s!"[Babel.walk] Completed {attempts} attempts."
