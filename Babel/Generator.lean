@@ -4,6 +4,7 @@ import Std.Data.HashMap
 import Babel.Util
 import Babel.Stats
 import Babel.Gate
+import Babel.Interest
 import Babel.Convolute
 
 namespace Babel
@@ -14,6 +15,7 @@ structure SpecialistSearch where
   focus : Name
   minProofDepth : Nat := 8
   trialsPerWalk : Nat := 240
+  limits : StepLimits := {}
 deriving Inhabited
 
 structure SpecialistProgress where
@@ -132,6 +134,8 @@ structure WalkStep where
   factType : Expr
   factProof : Expr
   parentSteps : Array Nat
+  /-- Head constant of `factType`; what the step is "about". -/
+  concept : Option Name := none
 deriving Inhabited
 
 /-- Structured result emitted by Generator A. -/
@@ -151,6 +155,10 @@ structure WalkCandidate where
   proofJoins : Nat
   specialistSymbols : Array Name
   novelty : NoveltyReport
+  /-- Recomputed on the finished derivation: `simp` cannot shrink the conclusion. -/
+  simpNormal : Bool := true
+  /-- Recomputed on the finished proof: lemma applications that take one proof for two premises. -/
+  premiseReuse : Nat := 0
 deriving Inhabited
 
 /-- Reject trivial or degenerate conclusions (`True`, `False`, `x = x`). -/
@@ -218,9 +226,56 @@ def sampleCandidate
       return (some cand, r')
   return (pool.back?.map Prod.fst, r')
 
+/-- Lemma names of the given steps and all their ancestors, each step once.
+    Steps are looked up by `stepIdx`, so the array may be in any order. -/
+def ancestorLemmas (allSteps : Array WalkStep) (parents : Array Nat) : Array Name := Id.run do
+  let mut pending := parents.toList
+  let mut visited : Array Nat := #[]
+  let mut lemmas : Array Name := #[]
+  let mut fuel := allSteps.size * allSteps.size + parents.size + 1
+  while fuel > 0 do
+    fuel := fuel - 1
+    match pending with
+    | [] => break
+    | idx :: rest =>
+        pending := rest
+        if visited.contains idx then continue
+        visited := visited.push idx
+        if let some st := allSteps.find? (·.stepIdx == idx) then
+          lemmas := lemmas.push st.lemmaName
+          pending := st.parentSteps.toList ++ pending
+  return lemmas
+
+/-- Whether some lemma occurs more than `cap` times in `lemmas`. -/
+def exceedsRepeatCap (lemmas : Array Name) (cap : Nat) : Bool :=
+  lemmas.any fun name => (lemmas.filter (· == name)).size > cap
+
+/-- Count lemma applications inside a proof term that receive the same proof for two
+    explicit premises, such as `inter_mem h h`. -/
+partial def countPremiseReuse (e : Expr) : MetaM Nat := do
+  let fn := e.getAppFn
+  let args := e.getAppArgs
+  if args.isEmpty || !fn.isConst then return 0
+  let info ← getFunInfoNArgs fn args.size
+  let mut total := 0
+  let mut proofs : Array Expr := #[]
+  for i in [:args.size] do
+    if h : i < info.paramInfo.size then
+      let param := info.paramInfo[i]
+      if param.isProp && param.binderInfo == .default then
+        let arg := args[i]!
+        if proofs.contains arg then
+          total := total + 1
+        proofs := proofs.push arg
+        total := total + (← countPremiseReuse arg)
+  return total
+
+/-- A fact fills a hypothesis when the two statements agree up to instance-reducible
+    unfolding, the standard `rw` and `simp` apply. Default transparency would also unfold
+    definitions such as `Set α := α → Prop` and derive statements nobody would write. -/
 private def matchArgument (mvar expectedType proof actualType : Expr) : MetaM Bool := do
   let saved ← saveState
-  if (← isDefEq expectedType actualType) && (← isDefEq mvar proof) then
+  if (← withTransparency .instances (isDefEq expectedType actualType)) && (← isDefEq mvar proof) then
     return true
   restoreState saved
   return false
@@ -228,6 +283,7 @@ private def matchArgument (mvar expectedType proof actualType : Expr) : MetaM Bo
 /-- Apply a lemma to a derived fact, reusing other facts and local hypotheses where possible. -/
 def tryApplyLemma
     (stats : StatsRef)
+    (limits : StepLimits)
     (lemmaName : Name)
     (targetStep : WalkStep)
     (allSteps : Array WalkStep)
@@ -236,11 +292,17 @@ def tryApplyLemma
     (nextStepIdx : Nat)
     (rng : Rng) :
     MetaM (Option (Array (Name × Expr × BinderInfo) × (Array Expr → MetaM (Option WalkStep))) × Rng) := do
-  -- We resolve inside a fresh metavariable context; any newly required open hypotheses
-  -- are returned as binder specs so the caller can `withLocalDecl` them cleanly!
+  -- Premises no existing fact fills become new variables and hypotheses of the theorem.
+  -- They are returned as `(name, metavariable, binder info)` specs; the caller opens them
+  -- with `withOpenedBinders` and then builds the step with the returned function.
   stats.modify fun s => { s with applicationsTried := s.applicationsTried + 1 }
   let env ← getEnv
   let some (.thmInfo info) := env.find? lemmaName | return (none, rng)
+  -- Cheap test before any unification: the fact being extended already descends from this lemma.
+  let onTargetPath := (ancestorLemmas allSteps #[targetStep.stepIdx]).filter (· == lemmaName)
+  if onTargetPath.size >= limits.maxLemmaRepeats then
+    stats.reject .repeatedLemma
+    return (none, rng)
   let lvls := concreteLevels info
   let lemmaType := info.instantiateTypeLevelParams lvls
   let lemmaConst := mkConst lemmaName lvls
@@ -262,8 +324,10 @@ def tryApplyLemma
 
   -- Track which earlier steps were used to close other hypotheses
   let mut parentSteps : Array Nat := #[targetStep.stepIdx]
+  -- Proofs already filling a premise of this application. A proof fills at most one premise;
+  -- otherwise closure lemmas turn one fact into `s ∩ s`.
+  let mut usedProofs : Array Expr := #[targetStep.factProof]
   let mut r := rng
-  let mut openBinders : Array (Nat × Name × Expr × BinderInfo) := #[]
 
   -- Pass 1: try synthesizing typeclass instances and closing explicit args from context/steps
   for i in [:mvars.size] do
@@ -281,18 +345,21 @@ def tryApplyLemma
       -- First try closing from previously derived steps
       let mut closed := false
       for st in allSteps do
+        if usedProofs.contains st.factProof then continue
         if ← matchArgument mv mtype st.factProof st.factType then
           if !parentSteps.contains st.stepIdx then
             parentSteps := parentSteps.push st.stepIdx
+          usedProofs := usedProofs.push st.factProof
           closed := true
           break
       -- Next try closing from existing local context variables (Props or matching data)
       if !closed then
         let mut matchingFVars : Array Expr := #[]
         for fv in ctxFVars do
+          if usedProofs.contains fv then continue
           let ft ← inferType fv
           let saved ← saveState
-          if (← isDefEq mtype ft) then
+          if (← withTransparency .instances (isDefEq mtype ft)) then
             matchingFVars := matchingFVars.push fv
           restoreState saved
         if !matchingFVars.isEmpty then
@@ -300,17 +367,31 @@ def tryApplyLemma
           r := r'
           if let some fv := pick? then
             if (← isDefEq mv fv) then
+              if ← isProof fv then
+                usedProofs := usedProofs.push fv
               closed := true
-      -- Otherwise, if type is fully concrete (no mvars) and we have budget, schedule an open binder
-      if !closed then
-        let mtype' ← instantiateMVars (← inferType mv)
-        if !mtype'.hasExprMVar && !mtype'.hasLevelMVar then
-          if addedHypsSoFar + openBinders.size < 4 then
-            let isP ← isProp mtype'
-            let bname :=
-              if isP then Name.mkSimple s!"h_{nextStepIdx}_{i}"
-              else Name.mkSimple s!"x_{nextStepIdx}_{i}"
-            openBinders := openBinders.push (i, bname, mtype', .default)
+
+  -- Pass 1b: whatever is still unassigned becomes a new variable or hypothesis, taken in
+  -- telescope order so that each type only mentions binders opened before it.
+  let mut openBinders : Array (Nat × Name × BinderInfo) := #[]
+  let mut openIds : Array MVarId := #[]
+  for i in [:mvars.size] do
+    let mv := mvars[i]!
+    if (← mv.mvarId!.isAssigned) || binfos[i]! == .instImplicit then continue
+    let mtype ← instantiateMVars (← inferType mv)
+    let pending ← getMVars mtype
+    -- No new types or type families, no type that depends on something left undetermined,
+    -- and a bound on how many assumptions one derivation may add.
+    let isTypeFamily ← forallTelescope mtype fun _ body => pure body.isSort
+    if isTypeFamily || mtype.hasLevelMVar || pending.any (fun id => !openIds.contains id)
+        || addedHypsSoFar + openBinders.size >= limits.maxNewBinders then
+      stats.reject .unresolved
+      return (none, r)
+    let bname :=
+      if ← isProp mtype then Name.mkSimple s!"h_{nextStepIdx}_{i}"
+      else Name.mkSimple s!"x_{nextStepIdx}_{i}"
+    openBinders := openBinders.push (i, bname, binfos[i]!)
+    openIds := openIds.push mv.mvarId!
 
   -- Pass 2: synthesize remaining typeclass instances now that explicit args may be known
   for i in [:mvars.size] do
@@ -321,26 +402,23 @@ def tryApplyLemma
       if !mtype.hasExprMVar then
         if let some inst ← synthInstance? mtype then
           let _ ← isDefEq mv inst
-      if !(← mv.mvarId!.isAssigned) then
+      if !(← mv.mvarId!.isAssigned) && !mtype.hasExprMVar then
         -- Reject: never invent unsolvable typeclasses on concrete types!
+        stats.reject .unresolved
         return (none, r)
 
-  -- Verify every mvar is either assigned OR scheduled to become a fresh open binder
-  let openIndices := openBinders.map fun (idx, _, _, _) => idx
-  for i in [:mvars.size] do
-    let mv := mvars[i]!
-    if !(← mv.mvarId!.isAssigned) && !openIndices.contains i then
-      return (none, r)
+  -- The new step's whole ancestry, itself included: joining two branches must not bring
+  -- the same lemma in from both sides.
+  if exceedsRepeatCap ((ancestorLemmas allSteps parentSteps).push lemmaName) limits.maxLemmaRepeats then
+    stats.reject .repeatedLemma
+    return (none, r)
 
   -- Check conclusion is free of unassigned mvars (except those from openBinders)
-  let binderSpecs := openBinders.map fun (_, nm, tp, bi) => (nm, tp, bi)
+  let binderSpecs := openBinders.map fun (idx, nm, bi) => (nm, mvars[idx]!, bi)
   let mkStep : Array Expr → MetaM (Option WalkStep) := fun freshFVars => do
     if freshFVars.size != openBinders.size then return none
-    for k in [:openBinders.size] do
-      let (idx, _, _, _) := openBinders[k]!
-      if !(← isDefEq mvars[idx]! freshFVars[k]!) then
-        return none
-    -- Final instance synthesis pass in case freshFVars resolved anything
+    -- `withOpenedBinders` has assigned the opened metavariables; instances that depend on
+    -- the new binders can be synthesized now.
     for i in [:mvars.size] do
       let mv := mvars[i]!
       if !(← mv.mvarId!.isAssigned) then
@@ -349,20 +427,36 @@ def tryApplyLemma
           if let some inst ← synthInstance? mtype then
             let _ ← isDefEq mv inst
         if !(← mv.mvarId!.isAssigned) then
+          stats.reject .unresolved
           return none
 
     let args ← mvars.mapM instantiateMVars
     let proof := mkAppN lemmaConst args
     let concl ← instantiateMVars conclType
     if proof.hasExprMVar || proof.hasLevelMVar || concl.hasExprMVar || concl.hasLevelMVar then
+      stats.reject .unresolved
       return none
-    if !(← isInterestingConclusion concl) then
+    if !(← isInterestingConclusion concl) || alreadyKnown allSteps concl then
+      stats.reject .dullConclusion
       return none
-    if alreadyKnown allSteps concl then
+    if exprSize concl > limits.maxFactSize then
+      stats.reject .sizeCap
       return none
+    -- Safety net behind `usedProofs`: no two explicit premises may be the same proof.
+    let mut premises : Array Expr := #[]
+    for i in [:args.size] do
+      if binfos[i]! == .default && (← isProof args[i]!) then
+        if premises.contains args[i]! then
+          stats.reject .selfReuse
+          return none
+        premises := premises.push args[i]!
     try
       check proof
     catch _ =>
+      stats.reject .kernelCheck
+      return none
+    if ← isPaddedFact concl limits.simpBudget then
+      stats.reject .paddedFact
       return none
     stats.modify fun s => { s with applicationsSucceeded := s.applicationsSucceeded + 1 }
     return some {
@@ -372,20 +466,33 @@ def tryApplyLemma
       factType := concl
       factProof := proof
       parentSteps := parentSteps
+      concept := conceptOf concl
     }
 
   return (some (binderSpecs, mkStep), r)
 
-/-- Helper to recursively introduce `specs` via `withLocalDecl` and invoke continuation `k`. -/
-def withLocalDeclsList {α : Type}
+/-- Open new binders for the metavariables in `specs`, in order, and run `k` on them.
+    Each metavariable is assigned its fresh variable directly: `isDefEq` would refuse, because
+    the variable is declared after the metavariable and so lies outside its scope. The
+    assignment is sound here since `k` builds and kernel-checks the term inside this scope.
+    Returns `none` when a type is still undetermined at the moment its binder is opened, or
+    when a new hypothesis is trivial, contradictory or padded. -/
+def withOpenedBinders {α : Type}
+    (stats : StatsRef)
     (specs : List (Name × Expr × BinderInfo))
     (acc : Array Expr)
-    (k : Array Expr → MetaM α) : MetaM α := do
+    (k : Array Expr → MetaM (Option α)) : MetaM (Option α) := do
   match specs with
   | [] => k acc
-  | (nm, tp, bi) :: rest =>
-      withLocalDecl nm bi tp fun fv =>
-        withLocalDeclsList rest (acc.push fv) k
+  | (nm, mv, bi) :: rest =>
+      let ty ← instantiateMVars (← inferType mv)
+      if ty.hasExprMVar || ty.hasLevelMVar then return none
+      if (← isProp ty) && (← isDegenerateHypothesis ty) then
+        stats.reject .paddedFact
+        return none
+      withLocalDecl nm bi ty fun fv => do
+        mv.mvarId!.assign fv
+        withOpenedBinders stats rest (acc.push fv) k
 
 /-- Produce a clean, non-hygienic, non-colliding Lean identifier for a binder. -/
 def sanitizeBinderName (raw : Name) (bi : BinderInfo) (isP : Bool) (used : Std.HashSet String) (idx : Nat) : Name :=
@@ -636,6 +743,9 @@ def finishWalk
     for p in st.parentSteps do
       edges := edges.push (toString p, nodeId, st.lemmaName.toString)
 
+  let simpNormal := !(← isPaddedFact finalStep.factType)
+  let premiseReuse ← countPremiseReuse finalStep.factProof
+
   let cand : WalkCandidate := {
     seed := seed
     stepsRequested := targetSteps
@@ -652,12 +762,15 @@ def finishWalk
     proofJoins := shape.joins
     specialistSymbols := specialistSymbols
     novelty := nov
+    simpNormal := simpNormal
+    premiseReuse := premiseReuse
   }
   return (some cand, rngConv)
 
 /-- Recursive driver executing steps `stepNum .. targetSteps` inside nested `withLocalDecl` scopes. -/
 partial def runWalkLoop
     (stats : StatsRef)
+    (limits : StepLimits)
     (idx : LemmaIndex)
     (seed : Nat)
     (targetSteps : Nat)
@@ -688,14 +801,14 @@ partial def runWalkLoop
   let some headName := headName? | do
     -- Dead end: if we already have >= 3 steps, finish early!
     if steps.size >= 3 then
-      return ← runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
   let cands := idx.byHypHead.getD headName #[]
   if cands.isEmpty then
     if steps.size >= 3 then
-      return ← runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
@@ -708,18 +821,18 @@ partial def runWalkLoop
     r := r'
     let some candName := candOpt | continue
     let saved ← saveState
-    let (resOpt, r'') ← tryApplyLemma stats candName targetStep steps ctxFVars addedHyps steps.size r
+    let (resOpt, r'') ← tryApplyLemma stats limits candName targetStep steps ctxFVars addedHyps steps.size r
     r := r''
     match resOpt with
     | none =>
         restoreState saved
     | some (binderSpecs, mkStep) =>
-        let stepRes ← withLocalDeclsList binderSpecs.toList #[] fun freshFVars => do
+        let stepRes ← withOpenedBinders stats binderSpecs.toList #[] fun freshFVars => do
           match ← mkStep freshFVars with
           | none => return none
           | some newStep =>
               let (finalOpt, _) ← runWalkLoop
-                stats idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
+                stats limits idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
                 (ctxFVars ++ freshFVars)
                 (steps.push newStep)
                 (addedHyps + freshFVars.size)
@@ -731,7 +844,7 @@ partial def runWalkLoop
 
   -- Couldn't extend further; if we reached >= 3 steps, try finishing here
   if steps.size >= 3 then
-    runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+    runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
   else
     return (none, r)
 
@@ -849,11 +962,11 @@ partial def runSpecialistLoop
     let saved ← saveState
     let candidate ← tryCatchRuntimeEx (do
       let (result, nextRng) ← withHeartbeatBudget 40000 do
-        tryApplyLemma stats lemma target steps.reverse ctxFVars addedHyps steps.size r
+        tryApplyLemma stats search.limits lemma target steps.reverse ctxFVars addedHyps steps.size r
       match result with
       | none => pure none
       | some (binderSpecs, mkStep) =>
-        withLocalDeclsList binderSpecs.toList #[] fun freshFVars => do
+        withOpenedBinders stats binderSpecs.toList #[] fun freshFVars => do
           let step ← withHeartbeatBudget 40000 do
             mkStep freshFVars
           let some step := step | return none
@@ -868,6 +981,7 @@ partial def runSpecialistLoop
 /-- Start a single random forward walk from a random Mathlib seed theorem. -/
 def runSingleWalk
     (stats : StatsRef)
+    (limits : StepLimits)
     (idx : LemmaIndex)
     (seed : Nat)
     (minSteps maxSteps : Nat)
@@ -903,6 +1017,7 @@ def runSingleWalk
       factType := concl
       factProof := proof0
       parentSteps := #[]
+      concept := conceptOf concl
     }
     if let some (search, hypotheses, progress) := specialist then
       let (walkRng, nextRng) := r2.nextUInt64
@@ -910,6 +1025,6 @@ def runSingleWalk
       let candidate ← runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps
         exactBudget aesopBudget convoluteDepth fvars #[step0] #[] 0 { state := walkRng }
       return (candidate, nextRng)
-    runWalkLoop stats idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
+    runWalkLoop stats limits idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
 
 end Babel

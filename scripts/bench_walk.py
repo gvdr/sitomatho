@@ -58,6 +58,10 @@ def check_invariants(
         violations.append("too_large")
     if min_concepts is not None and "concepts" in interest and interest["concepts"] < min_concepts:
         violations.append("few_concepts")
+    # A set used as a bare predicate prints as an unapplied `Membership.mem`; a lemma was
+    # applied through the definitional unfolding of `Set`, which no reader would write.
+    if "Membership.mem" in candidate.get("statement_pretty", ""):
+        violations.append("unfolded_notation")
     return violations
 
 

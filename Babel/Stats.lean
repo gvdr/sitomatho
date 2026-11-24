@@ -8,6 +8,7 @@ open Lean
 /-- Why a lemma application or a finished derivation was dropped. -/
 inductive Reject
   | selfReuse | repeatedLemma | paddedFact | sizeCap | noUnifier | heartbeat
+  | unresolved | dullConclusion
   | fewSteps | fewConcepts | noFocusSymbol | kernelCheck | badAxioms
   | closedByExact | closedBySimp | closedByAesop | unrenderable | duplicateHash
 deriving Inhabited, BEq, Repr
@@ -19,6 +20,8 @@ def Reject.key : Reject → String
   | .sizeCap => "size_cap"
   | .noUnifier => "no_unifier"
   | .heartbeat => "heartbeat"
+  | .unresolved => "unresolved"
+  | .dullConclusion => "dull_conclusion"
   | .fewSteps => "few_steps"
   | .fewConcepts => "few_concepts"
   | .noFocusSymbol => "no_focus_symbol"

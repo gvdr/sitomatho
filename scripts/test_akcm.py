@@ -346,6 +346,8 @@ def test_bench_invariants() -> None:
     }
     assert check_invariants(clean, max_statement_size=400, min_concepts=3) == []
     assert check_invariants({"dependencies": {"nodes": [node("A.u")]}}) == []
+    leaky = clean | {"statement_pretty": "s ≤ᶠ[l] t → (fun x ↦ x ∈ t) ⊓ Membership.mem (sᶜ \\ t) ≤ᶠ[l] t"}
+    assert check_invariants(leaky) == ["unfolded_notation"]
 
 
 def test_screening_uses_referee_and_falls_back() -> None:

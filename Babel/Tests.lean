@@ -1,6 +1,8 @@
 import Babel.Stats
 import Babel.Interest
+import Babel.Generator
 import Mathlib.Data.Set.Basic
+import Mathlib.Order.Filter.Basic
 
 /-!
 Build-time checks for the pure parts of the generator.
@@ -50,4 +52,81 @@ def onBody (source : String) (k : Expr → MetaM Bool) : TermElabM Bool := do
 #guard_msgs in
 #eval onBody "∀ (α : Type) (s t : Set α), s ⊆ t" (isPaddedFact ·)
 
+/-- Padding inside an argument counts even when `simp` rewrites the whole statement into a
+    larger unfolded form. -/
+def paddedArgument : TermElabM Bool :=
+  onBody "∀ (α : Type) (s t : Set α) (l : Filter α), (s ∩ t)ᶜᶜ ≤ᶠ[l] tᶜᶜ" (isPaddedFact ·)
+
+/-- info: true -/
+#guard_msgs in
+#eval paddedArgument
+
+/-- info: false -/
+#guard_msgs in
+#eval onBody "∀ (α : Type) (s t : Set α) (l : Filter α), s ≤ᶠ[l] t" (isPaddedFact ·)
+
 end Interest
+
+/-! ## Step-level checks -/
+
+#guard ancestorLemmas
+  #[{ (default : WalkStep) with stepIdx := 0, lemmaName := `A, parentSteps := #[] },
+    { (default : WalkStep) with stepIdx := 1, lemmaName := `B, parentSteps := #[0] },
+    { (default : WalkStep) with stepIdx := 2, lemmaName := `C, parentSteps := #[] }]
+  #[1] == #[`B, `A]
+
+/-- A two-premise lemma applied to one fact must be able to assume its other premise:
+    here `Set.Subset.trans` on `s ⊆ t` introduces a new set `c` and the hypothesis `t ⊆ c`. -/
+def opensNewHypothesis : Lean.Elab.Term.TermElabM Bool := do
+  let stmt ← elabClosed "∀ (α : Type) (s t : Set α), s ⊆ t → True"
+  Lean.Meta.forallBoundedTelescope stmt (some 4) fun xs _ => do
+    let h := xs[3]!
+    let target : WalkStep := {
+      stepIdx := 0, lemmaName := `seed, namespaceName := "Set"
+      factType := ← Lean.Meta.inferType h, factProof := h, parentSteps := #[] }
+    let stats ← IO.mkRef {}
+    let (result, _) ← tryApplyLemma stats {} ``Set.Subset.trans target #[target] xs 0 1 (Rng.ofSeed 1)
+    let some (specs, mkStep) := result | return false
+    let opened ← withOpenedBinders stats specs.toList #[] fun fresh => do
+      let some step ← mkStep fresh | return none
+      return some (fresh.size, step.factType.getAppNumArgs, step.parentSteps)
+    return opened == some (2, 4, #[0])
+
+/-- info: true -/
+#guard_msgs in
+#eval opensNewHypothesis
+
+-- Two branches that each used a lemma once must not be joined past the repetition cap.
+#guard exceedsRepeatCap #[`A, `B, `A] 1
+#guard !exceedsRepeatCap #[`A, `B] 1
+#guard !exceedsRepeatCap #[`A, `A] 2
+
+namespace Tests
+
+theorem familyLemma {α : Type} {β : α → Type} {s t : Set α} (h : s ⊆ t)
+    (_f : (x : α) → β x → Prop) : s ⊆ t := h
+
+theorem trivialPremise {α : Type} {s t : Set α} (h : s ⊆ t) (_h2 : ¬False) : s ⊆ t := h
+
+theorem falsePremise {α : Type} {s t : Set α} (h : s ⊆ t) (_h2 : (1 : Nat) = 2) : s ⊆ t := h
+
+end Tests
+
+/-- Whether applying `lemmaName` to the fact `s ⊆ t` gets as far as opening its new binders. -/
+def opensBindersFor (lemmaName : Lean.Name) : Lean.Elab.Term.TermElabM Bool := do
+  let stmt ← elabClosed "∀ (α : Type) (s t : Set α), s ⊆ t → True"
+  Lean.Meta.forallBoundedTelescope stmt (some 4) fun xs _ => do
+    let h := xs[3]!
+    let target : WalkStep := {
+      stepIdx := 0, lemmaName := `seed, namespaceName := "Set"
+      factType := ← Lean.Meta.inferType h, factProof := h, parentSteps := #[] }
+    let stats ← IO.mkRef {}
+    let (result, _) ← tryApplyLemma stats {} lemmaName target #[target] xs 0 1 (Rng.ofSeed 1)
+    let some (specs, _) := result | return false
+    return (← withOpenedBinders stats specs.toList #[] fun _ => pure (some ())).isSome
+
+/-- info: (true, false, false, false) -/
+#guard_msgs in
+#eval do
+  return (← opensBindersFor ``Set.Subset.trans, ← opensBindersFor ``Tests.familyLemma,
+    ← opensBindersFor ``Tests.trivialPremise, ← opensBindersFor ``Tests.falsePremise)

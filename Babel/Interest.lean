@@ -13,6 +13,8 @@ structure StepLimits where
   maxFactSize : Nat := 400
   /-- Heartbeat budget (in thousands) for the padded-fact check. -/
   simpBudget : Nat := 20000
+  /-- New variables and hypotheses a whole derivation may introduce beyond its seed's. -/
+  maxNewBinders : Nat := 6
 deriving Inhabited
 
 /-- What the cheap interest score is computed from. -/
@@ -65,11 +67,39 @@ def simplifiedSize? (e : Expr) (budget : Nat) : MetaM (Option (Expr × Nat)) := 
   finally
     restoreState saved
 
-/-- A fact is padded when `simp` proves it outright or rewrites it to something smaller:
-    the statement then carries terms that add nothing, such as `s ∩ s`. -/
+/-- The explicit arguments of the head application: the terms a reader sees. -/
+def explicitArgs (e : Expr) : MetaM (Array Expr) := do
+  let args := e.getAppArgs
+  if args.isEmpty then return #[]
+  let info ← getFunInfoNArgs e.getAppFn args.size
+  let mut explicit := #[]
+  for i in [:args.size] do
+    if h : i < info.paramInfo.size then
+      if info.paramInfo[i].binderInfo == .default then
+        explicit := explicit.push args[i]!
+  return explicit
+
+/-- A fact is padded when `simp` proves it outright, rewrites it to something smaller, or
+    shrinks one of its explicit arguments: the statement then carries terms that add
+    nothing, such as `s ∩ s` or `sᶜᶜ`. The arguments are checked on their own because `simp`
+    may also unfold the statement into a larger normal form, which would hide the padding. -/
 def isPaddedFact (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
-  match ← simplifiedSize? e budget with
-  | none => return false
-  | some (simplified, size) => return simplified.isConstOf ``True || size < exprSize e
+  if let some (simplified, size) ← simplifiedSize? e budget then
+    if simplified.isConstOf ``True || size < exprSize e then
+      return true
+  for arg in ← explicitArgs e do
+    if (← inferType arg).isSort then continue
+    if let some (_, size) ← simplifiedSize? arg budget then
+      if size < exprSize arg then
+        return true
+  return false
+
+/-- A hypothesis not worth assuming: `simp` decides it (trivially true, or false and so
+    making the theorem vacuous) or it is padded. -/
+def isDegenerateHypothesis (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
+  if let some (simplified, _) ← simplifiedSize? e budget then
+    if simplified.isConstOf ``False then
+      return true
+  isPaddedFact e budget
 
 end Babel

@@ -17,6 +17,8 @@ structure CliConfig where
   focus : Option Name := none
   minProofDepth : Nat := 8
   trialsPerWalk : Nat := 240
+  maxLemmaRepeats : Nat := 1
+  maxStatementSize : Nat := 400
   outPath : String := ".tmp/walk_out.json"
 
 def parseFloatArg (s : String) (fallback : Float) : Float :=
@@ -62,6 +64,10 @@ partial def parseArgs (args : List String) (cfg : CliConfig := {}) : CliConfig :
       parseArgs rest { cfg with minProofDepth := v.toNat?.getD cfg.minProofDepth }
   | "--trials-per-walk" :: v :: rest =>
       parseArgs rest { cfg with trialsPerWalk := v.toNat?.getD cfg.trialsPerWalk }
+  | "--max-lemma-repeats" :: v :: rest =>
+      parseArgs rest { cfg with maxLemmaRepeats := v.toNat?.getD cfg.maxLemmaRepeats }
+  | "--max-statement-size" :: v :: rest =>
+      parseArgs rest { cfg with maxStatementSize := v.toNat?.getD cfg.maxStatementSize }
   | "--out" :: v :: rest =>
       parseArgs rest { cfg with outPath := v }
   | _ :: rest => parseArgs rest cfg
@@ -107,6 +113,9 @@ def candidateToJson (c : WalkCandidate) : Json :=
     ("namespaces", Json.arr (c.namespaces.map Json.str)),
     ("dependencies", Json.mkObj [("nodes", Json.arr nodesJson), ("edges", Json.arr edgesJson)]),
     ("proof_shape", shape),
+    ("checks", Json.mkObj [
+      ("simp_normal", Json.bool c.simpNormal),
+      ("premise_reuse", toJson c.premiseReuse)]),
     ("novelty", novJson)
   ]
 
@@ -135,8 +144,10 @@ def statsSummary (stats : WalkStats) : String :=
 
 unsafe def main (args : List String) : IO Unit := do
   let cfg := parseArgs args
+  let limits : StepLimits :=
+    { maxLemmaRepeats := cfg.maxLemmaRepeats, maxFactSize := cfg.maxStatementSize }
   let specialist : Option SpecialistSearch := cfg.focus.map fun focus =>
-    { focus, minProofDepth := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk }
+    { focus, minProofDepth := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk, limits }
   if specialist.isSome && (cfg.minProofDepth < 3 || cfg.maxSteps <= cfg.minProofDepth) then
     throw <| IO.userError "Specialist search requires 3 <= --min-proof-depth < --max-steps."
   let outFile := System.FilePath.mk cfg.outPath
@@ -178,7 +189,7 @@ unsafe def main (args : List String) : IO Unit := do
       attempts := attempts + 1
       stats.modify fun s => { s with attempts := attempts }
       let walkSeed := cfg.seed + attempts * 1009
-      let walk := runSingleWalk stats idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
+      let walk := runSingleWalk stats limits idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
         cfg.exactHeartbeats cfg.aesopHeartbeats cfg.convolute rng
         specialistContext
       let (candOpt, rng') ← if specialist.isSome then
