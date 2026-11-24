@@ -2,6 +2,7 @@ import Lean
 import Lean.Meta.DiscrTree.Main
 import Std.Data.HashMap
 import Babel.Util
+import Babel.Stats
 import Babel.Gate
 import Babel.Convolute
 
@@ -226,6 +227,7 @@ private def matchArgument (mvar expectedType proof actualType : Expr) : MetaM Bo
 
 /-- Apply a lemma to a derived fact, reusing other facts and local hypotheses where possible. -/
 def tryApplyLemma
+    (stats : StatsRef)
     (lemmaName : Name)
     (targetStep : WalkStep)
     (allSteps : Array WalkStep)
@@ -236,6 +238,7 @@ def tryApplyLemma
     MetaM (Option (Array (Name × Expr × BinderInfo) × (Array Expr → MetaM (Option WalkStep))) × Rng) := do
   -- We resolve inside a fresh metavariable context; any newly required open hypotheses
   -- are returned as binder specs so the caller can `withLocalDecl` them cleanly!
+  stats.modify fun s => { s with applicationsTried := s.applicationsTried + 1 }
   let env ← getEnv
   let some (.thmInfo info) := env.find? lemmaName | return (none, rng)
   let lvls := concreteLevels info
@@ -253,7 +256,9 @@ def tryApplyLemma
         matchedIdx? := some i
         break
 
-  let some matchedIdx := matchedIdx? | return (none, rng)
+  let some matchedIdx := matchedIdx? | do
+    stats.reject .noUnifier
+    return (none, rng)
 
   -- Track which earlier steps were used to close other hypotheses
   let mut parentSteps : Array Nat := #[targetStep.stepIdx]
@@ -359,6 +364,7 @@ def tryApplyLemma
       check proof
     catch _ =>
       return none
+    stats.modify fun s => { s with applicationsSucceeded := s.applicationsSucceeded + 1 }
     return some {
       stepIdx := nextStepIdx
       lemmaName := lemmaName
@@ -552,6 +558,7 @@ def proofShape (steps : Array WalkStep) : ProofShape := Id.run do
   return { shape with joins }
 
 def finishWalk
+    (stats : StatsRef)
     (seed targetSteps exactBudget aesopBudget convoluteDepth : Nat)
     (ctxFVars : Array Expr)
     (steps : Array WalkStep)
@@ -561,15 +568,18 @@ def finishWalk
   let some finalStep := steps.back? | return (none, rng)
   let usedSteps := steps.filter fun st => (shape.ancestors.back?.getD {}).contains st.stepIdx
   if usedSteps.size < 2 then
+    stats.reject .fewSteps
     return (none, rng)
   let mut specialistSymbols := #[]
   if let some search := specialist then
     if shape.depths.back?.getD 0 < search.minProofDepth || shape.joins == 0 then
+      stats.reject .fewSteps
       return (none, rng)
     let env ← getEnv
     specialistSymbols := ((collectConsts finalStep.factType).toList.filter fun decl =>
       (definingModule env decl).any search.focus.isPrefixOf).toArray
     if specialistSymbols.isEmpty then
+      stats.reject .noFocusSymbol
       return (none, rng)
   let seedFVars := collectFVarsExpr finalStep.factType (collectFVarsExpr finalStep.factProof)
   let keptIds ← closeFVarsTransitively seedFVars
@@ -586,28 +596,34 @@ def finishWalk
   let stmtType ← mkForallFVars usedFVars finalStep.factType
   let fullProof ← mkLambdaFVars usedFVars convFactProof
   if stmtType.hasExprMVar || fullProof.hasExprMVar || stmtType.hasLevelMVar || fullProof.hasLevelMVar then
+    stats.reject .kernelCheck
     return (none, rngConv)
 
   -- Verify kernel typecheck and axioms strictly
   try
     check fullProof
   catch _ =>
+    stats.reject .kernelCheck
     return (none, rngConv)
 
   let axs ← collectExprAxioms fullProof
   if !axiomsAreClean axs then
+    stats.reject .badAxioms
     return (none, rngConv)
 
   -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
-  let nov ← evaluateNovelty stmtType fullProof exactBudget aesopBudget
+  let nov ← evaluateNovelty stats stmtType fullProof exactBudget aesopBudget
   if !nov.level1ExactFailed then
+    stats.reject .closedByExact
     return (none, rngConv)
 
   -- Render standalone Lean with baroque tactic choreography around the clean shrunk proof
-  let some (stmtDecl, stmtPretty, leanFile) ←
+  let some (stmtDecl, stmtPretty, leanFile) ← timed stats "render" <|
     renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof
       usedSteps convoluteDepth seed specialist.isSome
-    | return (none, rngConv)
+    | do
+      stats.reject .unrenderable
+      return (none, rngConv)
 
   let mut nsArr : Array String := #[]
   let mut nodes : Array (String × String × String) := #[]
@@ -641,6 +657,7 @@ def finishWalk
 
 /-- Recursive driver executing steps `stepNum .. targetSteps` inside nested `withLocalDecl` scopes. -/
 partial def runWalkLoop
+    (stats : StatsRef)
     (idx : LemmaIndex)
     (seed : Nat)
     (targetSteps : Nat)
@@ -653,7 +670,7 @@ partial def runWalkLoop
     (addedHyps : Nat)
     (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
   if steps.size >= targetSteps then
-    return ← finishWalk seed targetSteps exactBudget aesopBudget convoluteDepth ctxFVars steps rng
+    return ← finishWalk stats seed targetSteps exactBudget aesopBudget convoluteDepth ctxFVars steps rng
 
   -- Otherwise attempt the next forward step
   let mut r := rng
@@ -671,14 +688,14 @@ partial def runWalkLoop
   let some headName := headName? | do
     -- Dead end: if we already have >= 3 steps, finish early!
     if steps.size >= 3 then
-      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
   let cands := idx.byHypHead.getD headName #[]
   if cands.isEmpty then
     if steps.size >= 3 then
-      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
@@ -691,7 +708,7 @@ partial def runWalkLoop
     r := r'
     let some candName := candOpt | continue
     let saved ← saveState
-    let (resOpt, r'') ← tryApplyLemma candName targetStep steps ctxFVars addedHyps steps.size r
+    let (resOpt, r'') ← tryApplyLemma stats candName targetStep steps ctxFVars addedHyps steps.size r
     r := r''
     match resOpt with
     | none =>
@@ -702,7 +719,7 @@ partial def runWalkLoop
           | none => return none
           | some newStep =>
               let (finalOpt, _) ← runWalkLoop
-                idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
+                stats idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
                 (ctxFVars ++ freshFVars)
                 (steps.push newStep)
                 (addedHyps + freshFVars.size)
@@ -714,7 +731,7 @@ partial def runWalkLoop
 
   -- Couldn't extend further; if we reached >= 3 steps, try finishing here
   if steps.size >= 3 then
-    runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+    runWalkLoop stats idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
   else
     return (none, r)
 
@@ -779,6 +796,7 @@ def joinCandidates (idx : LemmaIndex) (shape : ProofShape) (matchedLemmas : Arra
   return candidates
 
 partial def runSpecialistLoop
+    (stats : StatsRef)
     (idx : LemmaIndex)
     (hypotheses : DiscrTree Name)
     (search : SpecialistSearch)
@@ -795,9 +813,9 @@ partial def runSpecialistLoop
   recordProgress progress shape
   if depth >= search.minProofDepth && shape.joins > 0 then
     let candidate ← tryCatchRuntimeEx
-      (return (← finishWalk seed maxSteps exactBudget aesopBudget convoluteDepth
+      (return (← finishWalk stats seed maxSteps exactBudget aesopBudget convoluteDepth
         ctxFVars steps rng (some search)).1)
-      (fun _ => pure none)
+      (fun _ => do stats.reject .heartbeat; pure none)
     if candidate.isSome then return candidate
   if steps.size >= maxSteps then return none
 
@@ -833,7 +851,7 @@ partial def runSpecialistLoop
     let candidate ← tryCatchRuntimeEx (do
       let (result, nextRng) ← withCurrHeartbeats do
         withOptions (fun options => options.set `maxHeartbeats 40000) do
-          tryApplyLemma lemma target steps.reverse ctxFVars addedHyps steps.size r
+          tryApplyLemma stats lemma target steps.reverse ctxFVars addedHyps steps.size r
       match result with
       | none => pure none
       | some (binderSpecs, mkStep) =>
@@ -842,16 +860,17 @@ partial def runSpecialistLoop
             withOptions (fun options => options.set `maxHeartbeats 40000) do
               mkStep freshFVars
           let some step := step | return none
-          runSpecialistLoop idx hypotheses search progress remaining seed maxSteps exactBudget
+          runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps exactBudget
             aesopBudget convoluteDepth (ctxFVars ++ freshFVars) (steps.push step) matchedLemmas
             (addedHyps + freshFVars.size) nextRng)
-      (fun _ => pure none)
+      (fun _ => do stats.reject .heartbeat; pure none)
     if candidate.isSome then return candidate
     restoreState saved
   return none
 
 /-- Start a single random forward walk from a random Mathlib seed theorem. -/
 def runSingleWalk
+    (stats : StatsRef)
     (idx : LemmaIndex)
     (seed : Nat)
     (minSteps maxSteps : Nat)
@@ -891,9 +910,9 @@ def runSingleWalk
     if let some (search, hypotheses, progress) := specialist then
       let (walkRng, nextRng) := r2.nextUInt64
       let remaining ← IO.mkRef search.trialsPerWalk
-      let candidate ← runSpecialistLoop idx hypotheses search progress remaining seed maxSteps
+      let candidate ← runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps
         exactBudget aesopBudget convoluteDepth fvars #[step0] #[] 0 { state := walkRng }
       return (candidate, nextRng)
-    runWalkLoop idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
+    runWalkLoop stats idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
 
 end Babel

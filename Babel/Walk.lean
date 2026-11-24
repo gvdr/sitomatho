@@ -178,11 +178,11 @@ unsafe def main (args : List String) : IO Unit := do
       attempts := attempts + 1
       stats.modify fun s => { s with attempts := attempts }
       let walkSeed := cfg.seed + attempts * 1009
-      let walk := runSingleWalk idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
+      let walk := runSingleWalk stats idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
         cfg.exactHeartbeats cfg.aesopHeartbeats cfg.convolute rng
         specialistContext
       let (candOpt, rng') ← if specialist.isSome then
-        tryCatchRuntimeEx walk (fun _ => pure (none, (rng.nextUInt64).2))
+        tryCatchRuntimeEx walk (fun _ => do stats.reject .heartbeat; pure (none, (rng.nextUInt64).2))
       else walk
       rng := rng'
       if let some cand := candOpt then

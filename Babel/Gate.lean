@@ -2,6 +2,7 @@ import Lean
 import Lean.Meta.Tactic.LibrarySearch
 import Aesop
 import Babel.Util
+import Babel.Stats
 
 namespace Babel
 
@@ -67,11 +68,12 @@ def closedByAesop (stmtType : Expr) (budget : Nat) : MetaM Bool :=
 
 /-- Evaluate Levels 1, 2, and 3 on a shrunk `(stmtType, proofExpr)` pair. -/
 def evaluateNovelty
+    (stats : StatsRef)
     (stmtType : Expr)
     (proofExpr : Expr)
     (exactBudget : Nat)
     (aesopBudget : Nat) : MetaM NoveltyReport := do
-  let exactClosed ← closedByExact? stmtType exactBudget
+  let exactClosed ← timed stats "gate_exact" (closedByExact? stmtType exactBudget)
   let proofSz := exprSize proofExpr
   let stmtSz := exprSize stmtType
   let ratio := Float.ofNat proofSz / Float.ofNat (max 1 stmtSz)
@@ -90,9 +92,9 @@ def evaluateNovelty
 
   -- Level 2: measure whether routine automation (`simp`, `aesop`) closes it
   let closedBy ←
-    if (← closedBySimp stmtType aesopBudget) then
+    if (← timed stats "gate_simp" (closedBySimp stmtType aesopBudget)) then
       pure (some "simp")
-    else if (← closedByAesop stmtType aesopBudget) then
+    else if (← timed stats "gate_aesop" (closedByAesop stmtType aesopBudget)) then
       pure (some "aesop")
     else
       pure none
