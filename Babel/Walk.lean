@@ -15,7 +15,9 @@ structure CliConfig where
   convolute : Nat := 3
   importModule : Name := `Babel.Corpus
   focus : Option Name := none
-  minProofDepth : Nat := 8
+  minProofDepth : Nat := 4
+  minConcepts : Nat := 3
+  keep : Nat := 3
   trialsPerWalk : Nat := 240
   maxLemmaRepeats : Nat := 1
   maxStatementSize : Nat := 400
@@ -64,6 +66,10 @@ partial def parseArgs (args : List String) (cfg : CliConfig := {}) : CliConfig :
       parseArgs rest { cfg with minProofDepth := v.toNat?.getD cfg.minProofDepth }
   | "--trials-per-walk" :: v :: rest =>
       parseArgs rest { cfg with trialsPerWalk := v.toNat?.getD cfg.trialsPerWalk }
+  | "--min-concepts" :: v :: rest =>
+      parseArgs rest { cfg with minConcepts := v.toNat?.getD cfg.minConcepts }
+  | "--keep" :: v :: rest =>
+      parseArgs rest { cfg with keep := v.toNat?.getD cfg.keep }
   | "--max-lemma-repeats" :: v :: rest =>
       parseArgs rest { cfg with maxLemmaRepeats := v.toNat?.getD cfg.maxLemmaRepeats }
   | "--max-statement-size" :: v :: rest =>
@@ -113,6 +119,14 @@ def candidateToJson (c : WalkCandidate) : Json :=
     ("namespaces", Json.arr (c.namespaces.map Json.str)),
     ("dependencies", Json.mkObj [("nodes", Json.arr nodesJson), ("edges", Json.arr edgesJson)]),
     ("proof_shape", shape),
+    ("interest", Json.mkObj [
+      ("score", floatToJson c.interestScore),
+      ("concepts", toJson c.components.concepts),
+      ("modules", toJson c.components.modules),
+      ("steps", toJson c.components.steps),
+      ("joins", toJson c.components.joins),
+      ("statement_size", toJson c.components.statementSize),
+      ("conclusion_size", toJson c.conclusionSize)]),
     ("checks", Json.mkObj [
       ("simp_normal", Json.bool c.simpNormal),
       ("premise_reuse", toJson c.premiseReuse)]),
@@ -147,9 +161,12 @@ unsafe def main (args : List String) : IO Unit := do
   let limits : StepLimits :=
     { maxLemmaRepeats := cfg.maxLemmaRepeats, maxFactSize := cfg.maxStatementSize }
   let specialist : Option SpecialistSearch := cfg.focus.map fun focus =>
-    { focus, minSteps := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk, limits }
+    { focus, minSteps := cfg.minProofDepth, minConcepts := cfg.minConcepts, keep := cfg.keep,
+      trialsPerWalk := cfg.trialsPerWalk, limits }
   if specialist.isSome && (cfg.minProofDepth < 3 || cfg.maxSteps <= cfg.minProofDepth) then
     throw <| IO.userError "Specialist search requires 3 <= --min-proof-depth < --max-steps."
+  if specialist.isSome && cfg.minConcepts < 2 then
+    throw <| IO.userError "Specialist search requires --min-concepts >= 2."
   let outFile := System.FilePath.mk cfg.outPath
   let stats : StatsRef ← IO.mkRef {}
   writeOutput outFile false (← stats.get) #[]
@@ -200,7 +217,7 @@ unsafe def main (args : List String) : IO Unit := do
         if !seenHashes.contains cand.statementHash then
           seenHashes := seenHashes.insert cand.statementHash
           accepted := accepted.push cand
-          IO.eprintln s!"[Babel.walk] #{accepted.size}/{cfg.count} (attempt {attempts}): steps={cand.stepsTaken}, depth={cand.proofDepth}, joins={cand.proofJoins}, L2_not_routine={cand.novelty.level2NotRoutine}, L3_ratio={cand.novelty.level3Ratio}, ns={cand.namespaces}"
+          IO.eprintln s!"[Babel.walk] #{accepted.size}/{cfg.count} (attempt {attempts}): steps={cand.stepsTaken}, concepts={cand.components.concepts}, score={cand.interestScore}, joins={cand.proofJoins}, L2_not_routine={cand.novelty.level2NotRoutine}, L3_ratio={cand.novelty.level3Ratio}, ns={cand.namespaces}"
       -- Rewrite the output after every attempt, so a killed run keeps its candidates and
       -- statistics. "search" is the whole loop so far, gates included.
       let now ← IO.monoMsNow

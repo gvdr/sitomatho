@@ -11,18 +11,21 @@ Identifiers follow our own non-academic scheme (`AKCM-2026-NNNN`), never DOIs or
 ## Architecture
 
 - **`Babel/`** — Lean 4 metaprogram (`lake exe walk`):
-  - **Generator A**: random forward walk over Mathlib's theorem environment, biased toward crossing namespaces, with unused-hypothesis shrinking and clean standalone `.lean` emission.
+  - **Generator A**: random forward walk over Mathlib's theorem environment. Each step applies a lemma to a fact already derived. A premise that no existing fact fills becomes a new variable or hypothesis of the theorem. The walk rejects a step that reuses one proof for two premises, repeats a lemma, exceeds a size cap, or yields a statement that `simp` can shrink. Unused hypotheses are pruned and the result is emitted as a standalone `.lean` file.
+  - **Specialist search** (`--focus`): seeds from one Mathlib module prefix and spends a fixed budget of lemma applications per walk. A derivation qualifies with at least `--min-proof-depth` retained steps (default 4) that pass through at least `--min-concepts` distinct head predicates (default 3) and end in a statement about the focus area. The walk keeps its best derivations by a cheap interest score (distinct concepts and modules, length, statement size) and runs the expensive gates only on those.
   - **Baroque Proof Convoluter (`Babel/Convolute.lean`)**: semantics-preserving proof inflation (`--convolute N`, default `3`) that inserts vacuous order dichotomies, unreachable contradiction branches, symmetric conjunction–disjunction round-trips, and inductive case-analysis ceremonies—optimizing the Level 3 proof-to-statement depth proxy directly with zero extra axioms.
-  - **Novelty Gate & Badges (Levels 0–3)**: alpha-invariant expression hashing (L0), `exact?` lookup gate (L1), `simp` / `aesop` routine checks (L2), and post-shrinking proof-to-statement AST depth ratio (L3).
+  - **Novelty Gate & Badges (Levels 0–3)**: alpha-invariant expression hashing (L0), `exact?` lookup gate (L1), `simp` / `aesop` routine checks with the default simp set (L2, a hard gate in specialist search), and post-shrinking proof-to-statement AST depth ratio (L3). Every check runs under an enforced heartbeat budget.
+  - **Checks**: `lake build BabelTest` runs the build-time checks in `Babel/Tests.lean`.
 - **`scripts/`** — Python orchestration, verification, editorial desk, and static site generator:
   - `scripts/verify.py`: runs `lake env lean` + `#print axioms` on standalone `results/*/Result.lean` files.
-  - `scripts/editorial.py`: runs two independent LLM referees (via GitHub Models with `GITHUB_TOKEN`, or any OpenAI-compatible endpoint via `LLM_ENDPOINT` + `LLM_API_KEY`), the blocklisted AI-model Namer (monotonically increasing versions per issue, deprecation at 50 results, joint eponyms when both referees rate ≥ 8, press releases requiring `"first"` and `"state of the art"`), and the Unverified Gloss.
-  - `scripts/pipeline.py`: ties together `walk` → kernel verification → editorial desk → issue publication.
+  - `scripts/editorial.py`: runs two independent LLM referees (Referee A through the Gemini Decisions API, Referee B through an OpenAI-compatible chat endpoint; both configured in `akcm.toml` and authenticated with `LLM_API_KEY`), the blocklisted AI-model Namer (monotonically increasing versions per issue, deprecation at 50 results, joint eponyms when both referees rate ≥ 8, press releases requiring `"first"` and `"state of the art"`), and the Unverified Gloss.
+  - `scripts/pipeline.py`: ties together `walk` → referee screening → kernel verification → editorial desk → issue publication. With `--wander` it runs the walks for several modules in parallel (`--workers`), collects `--pool-factor` times more candidates than it will publish, has Referee A score each one, and verifies and publishes from the top of that ranking, at most half of the pool. Every screened candidate is logged in `state/candidates.jsonl`, and past scores steer which modules are visited next.
+  - `scripts/bench_walk.py`: fixed benchmark of the specialist search (timing, yield, and the non-triviality invariants). Summaries are kept in `docs/superpowers/specs/bench/`.
   - `scripts/build_site.py`: Jinja2 static journal generator producing `_site/` (Issues grouped by MSC 2020, Result pages with inline SVG Mathlib dependency graphs, Leaderboard, Retractions, About, and per-issue + site-wide Atom feeds).
 - **`results/AKCM-YYYY-NNNN/`** — Git as the database (`Result.lean` + `meta.json`).
 - **`.github/workflows/`**:
   - `pages.yml`: verifies all Lean results and deploys `_site/` to GitHub Pages.
-  - `nightly.yml`: nightly theorem generation & editorial labeling (using `GITHUB_TOKEN` with `models: read`) and weekly issue publication.
+  - `nightly.yml`: nightly theorem generation and editorial labeling (using the `LLM_API_KEY` repository secret) and weekly issue publication.
 
 For the AI SLOP launch, run **Nightly Generation & Weekly Issue** on `main` with **launch_issue** selected. The workflow searches several Mathlib areas and verifies seven standalone proofs before replacing Issue 1. It keeps the original proofs in the Prelaunch Archive.
 
@@ -34,8 +37,10 @@ lake exe cache get
 lake build Babel walk
 
 # 2. Generate, kernel-verify, referee, name, and publish an issue
-#    (uses GITHUB_TOKEN / LLM_API_KEY / `gh auth token` for GitHub Models, or pass --offline)
+#    (uses LLM_API_KEY for the referees, namer and gloss; pass --offline to run without it)
 .venv/bin/python scripts/pipeline.py --seed 20261124 --count 10 --publish-issue
+#    Specialist search over mutated Mathlib modules, as the nightly job runs it:
+.venv/bin/python scripts/pipeline.py --wander --areas 4 --count 6 --seed 20261126 --offline
 
 # 3. Verify all standalone Result.lean files and axioms
 .venv/bin/python scripts/verify.py
@@ -47,4 +52,4 @@ python3 -m http.server -d _site 8000
 
 ## Configuration
 
-Edit [`akcm.toml`](akcm.toml) to set your repository slug (`base_url`, `base_path`, `repo_url`) and default GitHub Models identifiers. In GitHub Actions, `pages.yml` automatically derives the GitHub Pages base URL and path from `GITHUB_REPOSITORY`.
+Edit [`akcm.toml`](akcm.toml) to set the site address (`custom_domain`, or `base_url` and `base_path` when no custom domain is set), `repo_url`, and the default model identifiers. While `custom_domain` is set it determines `base_url` and `base_path`. In GitHub Actions, `repo_url` is taken from `GITHUB_REPOSITORY`. The `SITE_*` and model environment variables read in `scripts/config.py` override the file.

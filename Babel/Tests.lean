@@ -65,6 +65,15 @@ def paddedArgument : TermElabM Bool :=
 #guard_msgs in
 #eval onBody "∀ (α : Type) (s t : Set α) (l : Filter α), s ≤ᶠ[l] t" (isPaddedFact ·)
 
+/-- A set written as `fun x ↦ x ∈ s` is the set itself in unfolded form. -/
+def etaExpandedSet : TermElabM Bool :=
+  onBody "∀ (α : Type) (s t : Set α) (l : Filter α), (fun x => x ∈ s) ≤ᶠ[l] fun x => x ∈ t"
+    (isPaddedFact ·)
+
+/-- info: true -/
+#guard_msgs in
+#eval etaExpandedSet
+
 end Interest
 
 /-! ## Step-level checks -/
@@ -153,3 +162,13 @@ def renderForallConclusion : Lean.Elab.Term.TermElabM Bool := do
 /-- info: true -/
 #guard_msgs in
 #eval renderForallConclusion
+
+/-- Lemmas stated purely in logical and basic order vocabulary are glue, not mathematics. -/
+def glueLemmas : Lean.Meta.MetaM (List Bool) := do
+  let env ← Lean.getEnv
+  return [isGlueLemma env ``ne_of_eq_of_ne, isGlueLemma env ``mt, isGlueLemma env ``not_or_intro,
+    isGlueLemma env ``Set.Subset.trans, isGlueLemma env ``Filter.inter_mem]
+
+/-- info: [true, true, true, false, false] -/
+#guard_msgs in
+#eval glueLemmas

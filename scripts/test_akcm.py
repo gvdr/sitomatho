@@ -334,7 +334,7 @@ def test_bench_invariants() -> None:
     padded = {
         "dependencies": {"nodes": [node("A.u"), node("A.i"), node("A.u")]},
         "checks": {"simp_normal": False, "premise_reuse": 2},
-        "interest": {"statement_size": 900, "concepts": 1},
+        "interest": {"statement_size": 2000, "conclusion_size": 900, "concepts": 1},
     }
     assert check_invariants(padded, max_statement_size=400, min_concepts=3) == [
         "lemma_repeated:A.u", "padded", "premise_reuse", "too_large", "few_concepts",
@@ -342,12 +342,15 @@ def test_bench_invariants() -> None:
     clean = {
         "dependencies": {"nodes": [node("A.u"), node("B.v")]},
         "checks": {"simp_normal": True, "premise_reuse": 0},
-        "interest": {"statement_size": 120, "concepts": 3},
+        "interest": {"statement_size": 1200, "conclusion_size": 120, "concepts": 3},
     }
     assert check_invariants(clean, max_statement_size=400, min_concepts=3) == []
     assert check_invariants({"dependencies": {"nodes": [node("A.u")]}}) == []
     leaky = clean | {"statement_pretty": "s ≤ᶠ[l] t → (fun x ↦ x ∈ t) ⊓ Membership.mem (sᶜ \\ t) ≤ᶠ[l] t"}
     assert check_invariants(leaky) == ["unfolded_notation"]
+    eta = clean | {"statement_pretty": "(fun y ↦ y ∈ s \\ t) ≤ᶠ[l] fun y ↦ y ∈ t"}
+    assert check_invariants(eta) == ["unfolded_notation"]
+    assert check_invariants(clean | {"statement_pretty": "Antitone fun x ↦ min (f x) (g x)"}) == []
 
 
 def test_screening_uses_referee_and_falls_back() -> None:

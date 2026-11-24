@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 import time
 from collections import Counter
@@ -23,10 +24,12 @@ BENCH_ARGS: dict[str, Any] = dict(
     exact_heartbeats=150000,
     aesop_heartbeats=150000,
     convolute=0,
-    min_proof_depth=6,
+    min_proof_depth=4,
+    min_concepts=3,
     trials_per_walk=180,
     timeout=300,
 )
+UNFOLDED_SET = re.compile(r"fun (\w+) ↦ \1 ∈ ")
 BENCH_DIR = ROOT / "docs" / "superpowers" / "specs" / "bench"
 
 
@@ -54,13 +57,15 @@ def check_invariants(
     if checks.get("premise_reuse", 0):
         violations.append("premise_reuse")
     interest = candidate.get("interest", {})
-    if max_statement_size is not None and interest.get("statement_size", 0) > max_statement_size:
+    # The cap applies to each derived fact, so it is the conclusion that is measured here.
+    if max_statement_size is not None and interest.get("conclusion_size", 0) > max_statement_size:
         violations.append("too_large")
     if min_concepts is not None and "concepts" in interest and interest["concepts"] < min_concepts:
         violations.append("few_concepts")
-    # A set used as a bare predicate prints as an unapplied `Membership.mem`; a lemma was
-    # applied through the definitional unfolding of `Set`, which no reader would write.
-    if "Membership.mem" in candidate.get("statement_pretty", ""):
+    # A set used as a bare predicate prints as an unapplied `Membership.mem` or as
+    # `fun x ↦ x ∈ s`; a lemma was applied through the definitional unfolding of `Set`.
+    pretty = candidate.get("statement_pretty", "")
+    if "Membership.mem" in pretty or UNFOLDED_SET.search(pretty):
         violations.append("unfolded_notation")
     return violations
 

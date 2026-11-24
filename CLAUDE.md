@@ -16,6 +16,7 @@ AI SLOP ("AI Studies in Laboriously Obtained Proofs") is a parody journal. The t
 # Lean side
 lake exe cache get                 # prebuilt Mathlib oleans, needed before anything else
 lake build Babel Corpus walk       # generator library, curated corpus, and the walk executable
+lake build BabelTest               # Lean checks in Babel/Tests.lean; a failing #guard fails the build
 
 # Python side (local venv is .venv/, CI uses Python 3.12; the only dependency is Jinja2)
 .venv/bin/python scripts/test_akcm.py                      # whole test suite, no Lean or network needed
@@ -23,6 +24,7 @@ lake build Babel Corpus walk       # generator library, curated corpus, and the 
 .venv/bin/python scripts/verify.py                         # kernel-check every results/*/Result.lean (slow)
 .venv/bin/python scripts/verify.py results/AKCM-2026-0001  # kernel-check one result
 .venv/bin/python scripts/pipeline.py --seed 20261124 --count 1 --offline   # generate without LLM credentials
+.venv/bin/python scripts/bench_walk.py --label try --strict --only Filter  # benchmark one module (omit --only for all four)
 SITE_BASE_PATH="" .venv/bin/python scripts/build_site.py   # render _site/
 python3 -m http.server -d _site 8000
 ```
@@ -33,38 +35,49 @@ Scripts import each other as flat modules (`from config import ROOT`), so run th
 
 `pipeline.py` writes into `results/` and `state/`, which are committed data. After an experimental run, check `git status` and revert what you do not intend to publish.
 
-Useful `pipeline.py` modes: `--wander --areas N` (specialist search across mutated Mathlib modules, what the nightly job runs), `--module M --focus F` (specialist search on one module), `--issue-only` (bundle unissued results into the next issue), `--publish-issue` (generate then bundle), `--launch-issue` (replace Issue 1). `scripts/reeditorial.py --issue N` re-runs the editorial desk on existing results without touching the proofs.
+Useful `pipeline.py` modes: `--wander --areas N` (specialist search across mutated Mathlib modules, what the nightly job runs; `--pool-factor` sets how many candidates are screened per published result and `--workers` how many walks run at once), `--module M --focus F` (specialist search on one module), `--issue-only` (bundle unissued results into the next issue), `--publish-issue` (generate then bundle), `--launch-issue` (replace Issue 1). `scripts/reeditorial.py --issue N` re-runs the editorial desk on existing results without touching the proofs.
+
+`scripts/bench_walk.py` runs the specialist search on four fixed modules with two seeds each and writes a summary to `docs/superpowers/specs/bench/<label>.json`. Run it after any change to `Babel/`; `--strict` fails on a candidate that violates the non-triviality invariants. Wall time includes module loading, which varies a lot with the page cache, so compare the `search` phase when timing matters.
 
 ## Architecture
 
-The flow is `lake exe walk` (Lean) → JSON candidates in `.tmp/` → standalone kernel verification → editorial desk → `results/` and `state/` → static site.
+The flow is `lake exe walk` (Lean) → JSON candidates in `.tmp/` → referee screening and ranking → standalone kernel verification → editorial desk → `results/` and `state/` → static site.
 
 ### Lean generator (`Babel/`)
 
-`Babel/Walk.lean` is the CLI entry point. It imports a module at runtime with `importModules` (default `Babel.Corpus`, a curated multi-domain import list; `--module` substitutes any Mathlib module whose olean exists), builds a lemma index, runs walks until `--count` candidates pass the gates, and writes a JSON array to `--out`.
+`Babel/Walk.lean` is the CLI entry point. It imports a module at runtime with `importModules` (default `Babel.Corpus`, a curated multi-domain import list; `--module` substitutes any Mathlib module whose olean exists), builds a lemma index, and runs walks until `--count` candidates pass the gates. The output file is one JSON object, `{"complete", "stats", "candidates"}`, rewritten atomically after every attempt, so a run killed by the pipeline's timeout still leaves its candidates and statistics.
 
-`Babel/Generator.lean` contains two search strategies that share `tryApplyLemma` and `finishWalk`:
+`Babel/Generator.lean` holds the search. Both strategies extend a derivation with `tryApplyLemma`:
 
-- **Default walk** (`runWalkLoop`): starts from a random seed theorem, opens its binders as local hypotheses, then repeatedly picks a Mathlib lemma whose explicit hypothesis has the same head symbol as an already derived fact (`LemmaIndex.byHypHead`) and applies it. Sampling is weighted toward namespaces not yet used (`--interdisciplinary`).
-- **Specialist search** (`runSpecialistLoop`, enabled by `--focus`): seeds only from theorems defined under the focus module prefix, matches hypotheses through a `DiscrTree`, and only accepts derivations that reach `--min-proof-depth` and contain at least one join of two independent branches, with a conclusion that mentions a symbol defined under the focus. `--trials-per-walk` caps lemma applications per walk.
+- It unifies one explicit hypothesis of a lemma with an already derived fact, up to instance-reducible unfolding only. Default transparency would unfold `Set α` to `α → Prop` and derive statements nobody would write.
+- Other premises are filled from other derived facts or local hypotheses. A proof fills at most one premise of an application.
+- A premise nothing fills becomes a new variable or hypothesis of the theorem (`withOpenedBinders`), in telescope order. New type variables, and hypotheses that `simp` decides or shrinks, are refused, and a derivation may add at most `StepLimits.maxNewBinders` binders.
+- The step is rejected when the lemma already occurs in its ancestry (`--max-lemma-repeats`, default 1), when the new fact exceeds `--max-statement-size` expression nodes, or when the new fact is padded (`isPaddedFact` in `Babel/Interest.lean`: `simp` proves it, shrinks it, or shrinks one of its explicit arguments).
 
-`finishWalk` is where a candidate is accepted or dropped. It prunes hypotheses the final fact does not depend on, kernel-checks the closed proof term, rejects any axiom outside the allowlist, then runs the novelty gate in `Babel/Gate.lean`. Level 1 is a hard gate: a statement closed by `exact?` within the heartbeat budget is discarded. Level 2 (`simp` or `aesop` closes it) and Level 3 (proof size over statement size) are recorded as badges and do not reject.
+The two strategies differ in what they search for:
 
-`renderStandaloneLean` prints the result as a self-contained file with minimal imports and sanitized binder names. It returns `none` when the pretty-printed statement contains proof ellipses, since that text would fail to re-elaborate.
+- **Default walk** (`runWalkLoop`): starts from a random seed theorem, opens its binders as local hypotheses, and chains lemmas found through `LemmaIndex.byHypHead`, sampling toward namespaces not yet used (`--interdisciplinary`). It stops at a random target length and gates that one derivation.
+- **Specialist search** (`runSpecialistLoop`, enabled by `--focus`): seeds only from theorems defined under the focus module prefix and matches hypotheses through a `DiscrTree`. It spends `--trials-per-walk` lemma applications per walk and never runs a gate while searching. Every node whose derivation has at least `--min-proof-depth` retained steps, at least `--min-concepts` distinct concepts (the head constant of each step's statement), and a conclusion mentioning a symbol defined under the focus is closed over its hypotheses (`closeDerivation`) and offered to a small list of the best `--keep` derivations, ordered by `interestScore`. When the budget is spent, `runSingleWalk` gates that list best first.
+
+`gateKept` is where a candidate is accepted or dropped, cheapest check first: duplicate statement, rendering, kernel check and axiom allowlist, then the novelty gate in `Babel/Gate.lean`. Level 1 is a hard gate: a statement closed by `exact?` is discarded. Level 2 (`simp` with the default simp set, or `aesop`, closes it) is a hard gate in specialist search and a badge in the default walk. Level 3 (proof size over statement size) is a badge.
+
+`renderStandaloneClosed` prints the result as a self-contained file with minimal imports. It opens exactly the recorded number of hypothesis binders, so a conclusion that is itself a `∀` stays the conclusion, and it returns `none` when a printed term contains proof ellipses or hygienic names, since that text would fail to re-elaborate. In specialist mode the statement in `Result.lean` and `statement_lean` is printed fully explicit; `statement_pretty` is the readable form.
 
 `Babel/Convolute.lean` has two independent inflation mechanisms. `convoluteExpr` wraps the kernel proof term and feeds the Level 3 ratio. `renderBaroqueTacticProof` generates the tactic-script ceremony ("Phase 1", "Phase 2", ...) that appears in the emitted `Result.lean`. Both use only core Lean lemmas so the axiom set is unchanged.
 
-All randomness goes through the SplitMix64 `Rng` in `Babel/Util.lean`, threaded explicitly, so a given seed and toolchain reproduce the same walks.
+`Babel/Stats.lean` counts why applications and derivations were rejected and how long each phase took; the counts are in the output file and printed at exit. All randomness goes through the SplitMix64 `Rng` in `Babel/Util.lean`, threaded explicitly, and every budget is in heartbeats, so a given seed and toolchain reproduce the same walks on any machine.
 
 ### Python pipeline (`scripts/`)
 
-`pipeline.py` orchestrates. For each candidate it skips statement hashes already present in any `results/*/meta.json` (this is the real Level 0 check; the Lean side always reports `level_0_unseen: true`), renames the theorem from `akcm_candidate` to the ID-derived name, and re-verifies the standalone source with `verify.py` before anything is saved.
+`pipeline.py` orchestrates. It skips statement hashes already present in any `results/*/meta.json` (this is the real Level 0 check; the Lean side always reports `level_0_unseen: true`), renames the theorem from `akcm_candidate` to the ID-derived name, and re-verifies the standalone source with `verify.py` before anything is saved.
+
+With `--wander` (and for the launch issue) the referee chooses what is published. `run_wander` runs the walks of all profiles in parallel (`walk_runner.run_walks_parallel`), asking for `pool_factor × count` candidates in total. `editorial.screen_candidate` has Referee A score every new candidate before any verification, since a referee call takes about a second and a standalone verification much longer. `selection.py` ranks the pool by that score and verifies down the ranking until `min(count, half the pool)` results pass, with at most two per module. The screening verdict is reused as Referee A's published report, so no result is scored twice by the same referee. Offline, without a key, or when a screening call fails, the generator's own `interest` score ranks the candidate instead and the record says so (`selection.source`).
 
 `verify.py` copies the source into `.tmp/` with `#print axioms <name>` appended, runs `lake env lean` on it, and fails on a non-zero exit, on `sorry`, or on any axiom outside `propext`, `Classical.choice`, `Quot.sound`. The temp file has to live inside the workspace so Lake resolves Mathlib. This is the same check the Pages workflow runs before every deploy.
 
-`wander.py` picks which Mathlib modules the specialist search visits. It scans the Mathlib sources under `.lake/packages/mathlib/` for theorem-rich modules, weights domains inversely to how often past results and `state/wander.json` have visited them (`explore`), and reserves one slot for a sibling module of a recently used focus (`drift`). If the Mathlib checkout is absent, `pipeline.py` falls back to the hardcoded `LAUNCH_PROFILES`.
+`wander.py` picks which Mathlib modules the specialist search visits. It scans the Mathlib sources under `.lake/packages/mathlib/` for theorem-rich modules, weights domains inversely to how often past results and `state/wander.json` have visited them (`explore`), and reserves one slot for a sibling module of a recently used focus (`drift`), preferring focuses whose candidates the referee scored highly. If the Mathlib checkout is absent, `pipeline.py` falls back to the hardcoded `LAUNCH_PROFILES`.
 
-`editorial.py` runs the satire layer in `process_editorial`: two referees, then the namer, then the gloss. Referee A defaults to `gemini-decision-1` through the Gemini Decisions API (structured choice and score questions); any model whose name does not start with `gemini-decision-` goes through the OpenAI-compatible chat endpoint using `prompts/decider.md`. The namer (`prompts/namer.md`) is validated and retried up to four times: exactly one model family, or two when both referees score at least `joint_eponym_min_score`; no family matching `state/blocklist.json` (real AI models and real mathematicians, substring match included); press copy must contain "first" and "state of the art" and must omit the title. Model family versions and result counts persist in `state/families.json`; a family is retired after `deprecate_after` results, and every active family gets a minor version bump when an issue is published.
+`editorial.py` runs the satire layer in `process_editorial`: two referees, then the namer, then the gloss. All of them read `statement_pretty` when the record has one. Referee A defaults to `gemini-decision-1` through the Gemini Decisions API (structured choice and score questions); any model whose name does not start with `gemini-decision-` goes through the OpenAI-compatible chat endpoint using `prompts/decider.md`. The namer (`prompts/namer.md`) is validated and retried up to four times: exactly one model family, or two when both referees score at least `joint_eponym_min_score`; no family matching `state/blocklist.json` (real AI models and real mathematicians, substring match included); press copy must contain "first" and "state of the art" and must omit the title. Model family versions and result counts persist in `state/families.json`; a family is retired after `deprecate_after` results, and every active family gets a minor version bump when an issue is published.
 
 Every editorial step degrades to a deterministic offline heuristic. This happens with `--offline`, when no API key is found (`LLM_API_KEY`, then `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`), and on any `LLMError`. A run therefore never fails because of the LLM, and a result whose referee `model` is `offline-heuristic-referee` was not reviewed live.
 
@@ -79,6 +92,9 @@ Git is the database. `results/AKCM-YYYY-NNNN/` holds `Result.lean` and `meta.jso
 - `meta.json` `issue` is `null` for accepted results waiting for publication, a positive number once published, and `0` for the Prelaunch Archive. Issue 0 results keep their pages but are excluded from the leaderboard, the site-wide feed, and the archive totals.
 - The displayed heading and press release are derived at render time by `render_editorial` from `title`, `proved_by`, and `press_release_body`. Older records store `eponym` and `press_release` directly, and `render_editorial` handles both shapes, so a title can be edited in `meta.json` without regenerating the rest.
 - `run_launch` only writes results, issue state, and family state after the full requested count has been verified; a partial batch leaves the repository untouched and exits with status 1.
+- New results carry `interest` (the generator's score and its components), `checks` (`simp_normal`, `premise_reuse`, recomputed on the finished derivation), and `selection` (pool size, rank, ranking source, screening score). Older results have none of these.
+- `state/candidates.jsonl` logs every screened candidate, published or not, with its interest components, screening score, and outcome, trimmed to the last 500 lines. It is the data for judging whether the interest score predicts the referee.
+- Entries in `state/wander.json` carry the pool size, number published, and best and mean referee score of each explored module; entries written before this existed, or by offline runs, have no score and get a neutral weight.
 
 ### CI
 
@@ -88,6 +104,8 @@ Git is the database. `results/AKCM-YYYY-NNNN/` holds `Result.lean` and `meta.jso
 
 - The Mathlib and Lean version is recorded in four places that have to move together: `lean-toolchain`, `lakefile.toml` (`rev`), and the hardcoded `"mathlib_rev": "v4.36.0"` in both `scripts/pipeline.py` and `scripts/build_site.py`. Existing results were verified against the old version and need `scripts/verify.py` rerun after a bump.
 - The axiom allowlist is duplicated in `Babel/Util.lean` (`allowedAxioms`) and `scripts/verify.py` (`ALLOWED_AXIOMS`).
-- `README.md` still describes the editorial desk as running on GitHub Models with `GITHUB_TOKEN`. The code and `akcm.toml` use the Gemini endpoints with `LLM_API_KEY`, and nothing reads `GITHUB_TOKEN` for LLM calls.
+- Setting the `maxHeartbeats` option does not limit anything inside the walk: the limit Lean enforces is `Core.Context.maxHeartbeats`, which the walk sets to unlimited. Use `withHeartbeatBudget` from `Babel/Util.lean` for any new check.
+- A metavariable cannot be assigned, through `isDefEq`, a local variable declared after it; the scope check refuses and returns `false` without an error. `withOpenedBinders` assigns directly for that reason.
+- The referees are the measuring instrument. Do not tune `prompts/decider.md`, the decision rubric, or the offline referee to raise scores.
 - Result IDs are an in-house scheme (`AKCM-YYYY-NNNN`). The project deliberately never mints DOIs or arXiv-style identifiers, and invented model names must stay clear of real models and real mathematicians.
-- While `custom_domain` is set in `akcm.toml`, `config.py` forces `base_url` to that domain and `base_path` to empty, so editing those two keys in the file has no effect. Only the `SITE_*` environment variables override them. In Actions, `GITHUB_REPOSITORY` changes `repo_url` only, despite what the README says about deriving the Pages URL.
+- While `custom_domain` is set in `akcm.toml`, `config.py` forces `base_url` to that domain and `base_path` to empty, so editing those two keys in the file has no effect. Only the `SITE_*` environment variables override them. In Actions, `GITHUB_REPOSITORY` changes `repo_url` only.

@@ -1,0 +1,823 @@
+{
+  "label": "part2",
+  "args": {
+    "count": 4,
+    "min_steps": 3,
+    "max_steps": 12,
+    "max_attempts": 40,
+    "interdisciplinary": 2.5,
+    "exact_heartbeats": 150000,
+    "aesop_heartbeats": 150000,
+    "convolute": 0,
+    "min_proof_depth": 4,
+    "min_concepts": 3,
+    "trials_per_walk": 180,
+    "timeout": 300
+  },
+  "totals": {
+    "wall_seconds": 165.4,
+    "candidates": 22,
+    "valid_candidates": 22,
+    "modules_with_valid": 3,
+    "seconds_per_valid_candidate": 7.5,
+    "violations": 0
+  },
+  "runs": [
+    {
+      "module": "Mathlib.Topology.Sheaves.MayerVietoris",
+      "focus": "Mathlib.Topology.Sheaves",
+      "seed": 20261124,
+      "wall_seconds": 13.9,
+      "candidates": 0,
+      "valid_candidates": 0,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 633,
+          "size_cap": 152,
+          "padded_fact": 123,
+          "no_unifier": 381,
+          "few_steps": 53,
+          "dull_conclusion": 1
+        },
+        "phase_ms": {
+          "search": 3361,
+          "index": 2762,
+          "import": 4883,
+          "hyp_tree": 426
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1303,
+        "applications_succeeded": 13
+      },
+      "results": []
+    },
+    {
+      "module": "Mathlib.Topology.Sheaves.MayerVietoris",
+      "focus": "Mathlib.Topology.Sheaves",
+      "seed": 20261125,
+      "wall_seconds": 8.9,
+      "candidates": 0,
+      "valid_candidates": 0,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 609,
+          "size_cap": 140,
+          "padded_fact": 128,
+          "no_unifier": 346,
+          "heartbeat": 1,
+          "few_steps": 50,
+          "dull_conclusion": 1
+        },
+        "phase_ms": {
+          "search": 3379,
+          "index": 2409,
+          "import": 1072,
+          "hyp_tree": 445
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1235,
+        "applications_succeeded": 10
+      },
+      "results": []
+    },
+    {
+      "module": "Mathlib.RingTheory.Localization.Ideal",
+      "focus": "Mathlib.RingTheory.Localization",
+      "seed": 20261124,
+      "wall_seconds": 29.5,
+      "candidates": 2,
+      "valid_candidates": 2,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 1124,
+          "size_cap": 207,
+          "repeated_lemma": 36,
+          "padded_fact": 135,
+          "no_unifier": 815,
+          "no_focus_symbol": 63,
+          "heartbeat": 1,
+          "few_steps": 98,
+          "few_concepts": 9,
+          "dull_conclusion": 35,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 24289,
+          "render": 106,
+          "index": 1992,
+          "import": 1281,
+          "hyp_tree": 433,
+          "gate_simp": 65,
+          "gate_exact": 6989,
+          "gate_aesop": 252
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 2510,
+        "applications_succeeded": 157
+      },
+      "results": [
+        {
+          "statement_hash": "expr:ecfd6e1f8223655208fb2dfd2478fa02",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] (M : Submonoid R) (S : Type)\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S]\n  {u : Set (R → S)},\n  ⇑(algebraMap R S) ∈ u →\n    ∀ (v : R → S),\n      Disjoint u (v • u) →\n        ∀ {w : ℕ∞},\n          emultiplicity 2 w ≤\n            emultiplicity\n              {{⇑(IsLocalization.toLocalizationMap M S),\n                    v * ⇑(IsLocalization.toLocalizationMap M S)},\n                  ∅}.encard\n              w",
+          "interest": {
+            "steps": 9,
+            "statement_size": 695,
+            "score": 25.63,
+            "modules": 8,
+            "joins": 0,
+            "conclusion_size": 355,
+            "concepts": 6
+          },
+          "lemmas": [
+            "IsLocalization.coe_toLocalizationMap",
+            "Set.mem_of_eq_of_mem",
+            "mem_leftCoset",
+            "Disjoint.ne_of_mem",
+            "Set.nontrivial_pair",
+            "Set.Nontrivial.ne_empty",
+            "Set.encard_pair",
+            "Eq.dvd",
+            "emultiplicity_le_emultiplicity_of_dvd_left"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:5faf19315e1a9e478dafe718c8e7b057",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] {M : Submonoid R} {S : Type}\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S] (x y : R)\n  (z : ↥M) {u : S},\n  (algebraMap R S) x * IsLocalization.mk' S y z ∣ u →\n    ∀ {v : S},\n      emultiplicity (IsLocalization.mk' S (x * y) z + u) v -\n          emultiplicity ((algebraMap R S) x * IsLocalization.mk' S y z) v =\n        0",
+          "interest": {
+            "steps": 5,
+            "statement_size": 567,
+            "score": 9.82,
+            "modules": 5,
+            "joins": 0,
+            "conclusion_size": 281,
+            "concepts": 3
+          },
+          "lemmas": [
+            "IsLocalization.mul_mk'_eq_mk'_of_mul",
+            "dvd_of_eq",
+            "dvd_add",
+            "emultiplicity_le_emultiplicity_of_dvd_left",
+            "tsub_eq_zero_of_le"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.RingTheory.Localization.Ideal",
+      "focus": "Mathlib.RingTheory.Localization",
+      "seed": 20261125,
+      "wall_seconds": 31.4,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 835,
+          "unrenderable": 6,
+          "size_cap": 123,
+          "repeated_lemma": 52,
+          "padded_fact": 143,
+          "no_unifier": 797,
+          "no_focus_symbol": 40,
+          "heartbeat": 3,
+          "few_steps": 80,
+          "few_concepts": 21,
+          "dull_conclusion": 49,
+          "closed_by_aesop": 3
+        },
+        "phase_ms": {
+          "search": 25405,
+          "render": 208,
+          "index": 2008,
+          "import": 1194,
+          "hyp_tree": 432,
+          "gate_simp": 190,
+          "gate_exact": 6574,
+          "gate_aesop": 417
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 32,
+        "applications_tried": 2164,
+        "applications_succeeded": 162
+      },
+      "results": [
+        {
+          "statement_hash": "expr:1d48e79b148d1d5c2c3631e2845d79cc",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] (M : Submonoid R) (S : Type)\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S] (x : R)\n  {u : Set S},\n  (algebraMap R S) x ∈ u →\n    ∀ {v : S},\n      v ∉ u →\n        ∀ (w : ℕ∞),\n          IsRelPrime (insert v (u \\ {(IsLocalization.toLocalizationMap M S) x})).encard\n              u.encard →\n            multiplicity (insert v (u \\ {(IsLocalization.toLocalizationMap M S) x})).encard\n                w =\n              0",
+          "interest": {
+            "steps": 7,
+            "statement_size": 443,
+            "score": 22.93,
+            "modules": 6,
+            "joins": 0,
+            "conclusion_size": 137,
+            "concepts": 5
+          },
+          "lemmas": [
+            "IsLocalization.toLocalizationMap_apply",
+            "Set.mem_of_eq_of_mem",
+            "Set.encard_exchange",
+            "Eq.dvd",
+            "IsRelPrime.isUnit_of_dvd",
+            "FiniteMultiplicity.not_of_isUnit_left",
+            "multiplicity_eq_one_of_not_finiteMultiplicity"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:70f6bdd9aa3c4e218d802ef5ea8e97b1",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] {M : Submonoid R} (x : R) (y : ↥M),\n  IsRelPrime (Localization.mk x y) (IsLocalization.mk' (Localization M) x y) →\n    ∀ (u : ℕ),\n      ¬IsUnit (Localization.mk x y) →\n        Associated\n          (emultiplicity (IsLocalization.mk' (Localization M) x y)\n            (Localization.mk x y ^ u))\n          0",
+          "interest": {
+            "steps": 7,
+            "statement_size": 615,
+            "score": 20.63,
+            "modules": 6,
+            "joins": 1,
+            "conclusion_size": 291,
+            "concepts": 5
+          },
+          "lemmas": [
+            "Localization.mk_eq_mk'_apply",
+            "dvd_of_eq",
+            "IsRelPrime.isUnit_of_dvd",
+            "IsUnit.pow",
+            "not_isUnit_of_not_isUnit_dvd",
+            "emultiplicity_of_isUnit_right",
+            "Associated.of_eq"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:1ffc7e91500ab96805492db4fc33b418",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] (M : Submonoid R) (S : Type)\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S]\n  {u : Set (R →* S)},\n  ↑↑(algebraMap R S) ∈ u →\n    autoParam u.Finite Set.ncard_sdiff_singleton_lt_of_mem._auto_1 →\n      Relation.TransGen (fun x1 x2 ↦ x1 ⋖ x2)\n        (u \\ {(IsLocalization.toLocalizationMap M S).toMonoidHom}).ncard u.ncard",
+          "interest": {
+            "steps": 4,
+            "statement_size": 937,
+            "score": 0.57,
+            "modules": 4,
+            "joins": 0,
+            "conclusion_size": 371,
+            "concepts": 4
+          },
+          "lemmas": [
+            "IsLocalization.toLocalizationMap_toMonoidHom",
+            "Set.mem_of_eq_of_mem",
+            "Set.ncard_diff_singleton_lt_of_mem",
+            "transGen_covBy_of_lt"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:9092194a02df97a56a540d0089091975",
+          "statement_pretty": "∀ {A : Type} [inst_2 : CommRing A] {K : Type} [inst_4 : Field K] {L : Type}\n  [inst_6 : Field L] [inst_7 : Algebra A K] [inst_8 : IsFractionRing A K] {g : A →+* L}\n  (hg : Function.Injective ⇑g) {f : K →+* L},\n  (∀ (x : A), f ((algebraMap A K) x) = g x) →\n    ∀ {u : Set (K →+* L)},\n      f ∈ u → 0 < emultiplicity ((u \\ {IsFractionRing.lift hg}).encard + 1) u.encard",
+          "interest": {
+            "steps": 5,
+            "statement_size": 1115,
+            "score": -0.88,
+            "modules": 5,
+            "joins": 0,
+            "conclusion_size": 393,
+            "concepts": 4
+          },
+          "lemmas": [
+            "IsFractionRing.lift_unique",
+            "Set.mem_of_eq_of_mem",
+            "Set.encard_diff_singleton_add_one",
+            "dvd_of_eq",
+            "emultiplicity_pos_of_dvd"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Algebra.Homology.ShortComplex.ShortExact",
+      "focus": "Mathlib.Algebra.Homology.ShortComplex",
+      "seed": 20261124,
+      "wall_seconds": 18.8,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 956,
+          "unrenderable": 3,
+          "size_cap": 94,
+          "repeated_lemma": 13,
+          "padded_fact": 45,
+          "no_unifier": 529,
+          "no_focus_symbol": 20,
+          "few_steps": 46,
+          "few_concepts": 6,
+          "dull_conclusion": 11
+        },
+        "phase_ms": {
+          "search": 13900,
+          "render": 124,
+          "index": 1621,
+          "import": 1082,
+          "hyp_tree": 500,
+          "gate_simp": 76,
+          "gate_exact": 7802,
+          "gate_aesop": 184
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 27,
+        "applications_tried": 1728,
+        "applications_succeeded": 80
+      },
+      "results": [
+        {
+          "statement_hash": "expr:e581037de8702ddd791e8ad0f65ed72d",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C] [inst_3 : CategoryTheory.Preadditive C]\n  {x_4 x_5 : CategoryTheory.ShortComplex C} (hom : x_4 ⟶ x_5) (inv : x_5 ⟶ x_4)\n  (homotopyHomInvId :\n    CategoryTheory.ShortComplex.Homotopy (CategoryTheory.CategoryStruct.comp hom inv)\n      (CategoryTheory.CategoryStruct.id x_4))\n  (homotopyInvHomId :\n    CategoryTheory.ShortComplex.Homotopy (CategoryTheory.CategoryStruct.comp inv hom)\n      (CategoryTheory.CategoryStruct.id x_5))\n  (hom_1 : x_4 ⟶ x_5) (inv_1 : x_5 ⟶ x_4)\n  (homotopyHomInvId_1 :\n    CategoryTheory.ShortComplex.Homotopy (CategoryTheory.CategoryStruct.comp hom_1 inv_1)\n      (CategoryTheory.CategoryStruct.id x_4))\n  (homotopyInvHomId_1 :\n    CategoryTheory.ShortComplex.Homotopy (CategoryTheory.CategoryStruct.comp inv_1 hom_1)\n      (CategoryTheory.CategoryStruct.id x_5))\n  {u : Set Prop},\n  (hom = hom_1 ∧\n        inv = inv_1 ∧\n          homotopyHomInvId ≍ homotopyHomInvId_1 ∧ homotopyInvHomId ≍ homotopyInvHomId_1) ∈\n      u →\n    ∀ {v : Set Prop},\n      v ⊆ u →\n        ∀ {w : Set Prop},\n          IsCofinalFor\n            (insert\n                ({ hom := hom, inv := inv, homotopyHomInvId := homotopyHomInvId,\n                    homotopyInvHomId := homotopyInvHomId } =\n                  { hom := hom_1, inv := inv_1, homotopyHomInvId := homotopyHomInvId_1,\n                    homotopyInvHomId := homotopyInvHomId_1 })\n                v ∪\n              w)\n            (u ∪ w)",
+          "interest": {
+            "steps": 5,
+            "statement_size": 1541,
+            "score": -13.52,
+            "modules": 4,
+            "joins": 0,
+            "conclusion_size": 107,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.HomotopyEquiv.mk.injEq",
+            "Set.mem_of_eq_of_mem",
+            "Set.insert_subset",
+            "Set.union_subset_union_left",
+            "LE.le.isCofinalFor"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:755abeabfb44ddb9c3b36e1f52fa1f89",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C] {S : CategoryTheory.ShortComplex C},\n  S.ShortExact →\n    S.Exact →\n      CategoryTheory.Mono S.f →\n        ∀ {u : CategoryTheory.ShortComplex C} (v : S.op.unop ≅ u), u.HasHomology",
+          "interest": {
+            "steps": 7,
+            "statement_size": 131,
+            "score": 19.73,
+            "modules": 2,
+            "joins": 0,
+            "conclusion_size": 9,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.ShortExact.epi_g",
+            "CategoryTheory.ShortComplex.ShortExact.mk'",
+            "CategoryTheory.ShortComplex.ShortExact.op",
+            "CategoryTheory.ShortComplex.ShortExact.unop",
+            "CategoryTheory.ShortComplex.shortExact_of_iso",
+            "CategoryTheory.ShortComplex.ShortExact.exact",
+            "CategoryTheory.ShortComplex.Exact.hasHomology"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:ae09a914d09c7cc990b0fe3708723679",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C] (S : CategoryTheory.ShortComplex C)\n  [inst_5 : CategoryTheory.Limits.HasCokernel S.f] (hg : S.g = 0) {u : Set C},\n  CategoryTheory.Limits.cokernel S.f ∈ u →\n    ∀ {v : Set C} {w : Set (Set C)},\n      IsCoinitialFor w\n        (symmDiff (𝒫 (v \\ u)) w ∪\n          symmDiff\n            (insert (CategoryTheory.ShortComplex.LeftHomologyData.ofHasCokernel S hg).H ''\n              𝒫 (v \\ u))\n            w)",
+          "interest": {
+            "steps": 6,
+            "statement_size": 461,
+            "score": 24.48,
+            "modules": 6,
+            "joins": 0,
+            "conclusion_size": 187,
+            "concepts": 6
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.LeftHomologyData.ofHasCokernel_H",
+            "Set.mem_of_eq_of_mem",
+            "Set.notMem_sdiff_of_mem",
+            "Set.disjoint_powerset_insert",
+            "Set.subset_symmDiff_union_symmDiff_left",
+            "LE.le.isCoinitialFor"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:049b3d92c77ce28d1821b8541b5331dd",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C]\n  {x_4 x_5 : CategoryTheory.ShortComplex C} {φ : x_4 ⟶ x_5} {x_7 : x_4.LeftHomologyData}\n  {x_8 : x_5.LeftHomologyData}\n  (γ : CategoryTheory.ShortComplex.LeftHomologyMapData φ x_7 x_8)\n  [inst_10 : x_4.HasLeftHomology] [inst_11 : x_5.HasLeftHomology]\n  {u : Set (x_4.cycles ⟶ x_8.K)},\n  CategoryTheory.CategoryStruct.comp x_7.cyclesIso.hom γ.φK ∈ u →\n    ∀ {v : Set (x_4.cycles ⟶ x_8.K)},\n      u ⊆ v →\n        ∀ {w : Set (x_4.cycles ⟶ x_8.K)},\n          w \\ v ≠\n            insert\n              (CategoryTheory.CategoryStruct.comp (CategoryTheory.ShortComplex.cyclesMap φ)\n                x_8.cyclesIso.hom)\n              w",
+          "interest": {
+            "steps": 5,
+            "statement_size": 923,
+            "score": 1.93,
+            "modules": 4,
+            "joins": 0,
+            "conclusion_size": 357,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.LeftHomologyMapData.cyclesMap_comm",
+            "Set.mem_of_eq_of_mem",
+            "Set.mem_of_subset_of_mem",
+            "Set.notMem_diff_of_mem",
+            "Set.ne_insert_of_notMem"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Algebra.Homology.ShortComplex.ShortExact",
+      "focus": "Mathlib.Algebra.Homology.ShortComplex",
+      "seed": 20261125,
+      "wall_seconds": 14.7,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 873,
+          "size_cap": 112,
+          "repeated_lemma": 2,
+          "padded_fact": 68,
+          "no_unifier": 397,
+          "no_focus_symbol": 24,
+          "few_steps": 36,
+          "dull_conclusion": 7,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 10080,
+          "render": 179,
+          "index": 1637,
+          "import": 822,
+          "hyp_tree": 497,
+          "gate_simp": 28,
+          "gate_exact": 1841,
+          "gate_aesop": 3514
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 23,
+        "applications_tried": 1527,
+        "applications_succeeded": 68
+      },
+      "results": [
+        {
+          "statement_hash": "expr:43490f7566e852084318287ca2d60818",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C] [inst_3 : CategoryTheory.Preadditive C]\n  {S : CategoryTheory.ShortComplex Cᵒᵖ} (h : S.Splitting)\n  {u : Set (Opposite.unop S.X₁ ⟶ Opposite.unop S.X₂)},\n  h.r.unop ∈ u →\n    (∃ y ∈ u, y ≠ h.unop.s) → Nontrivial (Opposite.unop S.X₁ ⟶ Opposite.unop S.X₂)",
+          "interest": {
+            "steps": 4,
+            "statement_size": 1221,
+            "score": -8.52,
+            "modules": 3,
+            "joins": 0,
+            "conclusion_size": 91,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.Splitting.unop_s",
+            "Set.mem_of_eq_of_mem",
+            "Set.nontrivial_of_exists_ne",
+            "Set.nontrivial_of_nontrivial"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:024d050d8d130148f5196565e44915b8",
+          "statement_pretty": "∀ {C D : Type} [inst_3 : CategoryTheory.Category C] [inst_4 : CategoryTheory.Category D]\n  [inst_5 : CategoryTheory.Limits.HasZeroMorphisms C]\n  [inst_6 : CategoryTheory.Limits.HasZeroMorphisms D] (S : CategoryTheory.ShortComplex C)\n  (F : CategoryTheory.Functor C D) [inst_9 : F.PreservesZeroMorphisms]\n  {u : Set (F.obj S.X₂ ⟶ F.obj S.X₃)},\n  F.map S.g ∈ u →\n    ∀ {v : Set (F.obj S.X₂ ⟶ F.obj S.X₃)},\n      Disjoint u v →\n        ∀ {w : List (Set (F.obj S.X₂ ⟶ F.obj S.X₃))},\n          List.Duplicate v (insert (S.map F).g u :: w) → ¬w.Nodup",
+          "interest": {
+            "steps": 6,
+            "statement_size": 1671,
+            "score": -10.77,
+            "modules": 5,
+            "joins": 0,
+            "conclusion_size": 65,
+            "concepts": 5
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.map_g",
+            "Set.mem_of_eq_of_mem",
+            "Disjoint.notMem_of_mem_left",
+            "Set.ne_insert_of_notMem",
+            "List.Duplicate.of_duplicate_cons",
+            "List.Duplicate.not_nodup"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:644bc8b28abcc11d3755e74bbe99508d",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C]\n  {x_4 x_5 : CategoryTheory.ShortComplex C} [inst_6 : x_4.HasHomology]\n  [inst_7 : x_5.HasHomology] (φ : x_4 ⟶ x_5) {Z : C} (h : x_5.homology ⟶ Z)\n  {u : Set (x_4.rightHomology ⟶ Z)},\n  CategoryTheory.CategoryStruct.comp (CategoryTheory.ShortComplex.rightHomologyMap φ)\n        (CategoryTheory.CategoryStruct.comp x_5.rightHomologyIso.hom h) ∈\n      u →\n    CategoryTheory.CategoryStruct.comp x_4.rightHomologyIso.hom\n          (CategoryTheory.CategoryStruct.comp (CategoryTheory.ShortComplex.homologyMap φ)\n            h) ≠\n        CategoryTheory.CategoryStruct.comp (CategoryTheory.ShortComplex.rightHomologyMap φ)\n          (CategoryTheory.CategoryStruct.comp x_5.rightHomologyIso.hom h) →\n      ∀ {v : x_4.rightHomology ⟶ Z}, {v} ≠ u",
+          "interest": {
+            "steps": 5,
+            "statement_size": 1067,
+            "score": 1.32,
+            "modules": 4,
+            "joins": 0,
+            "conclusion_size": 165,
+            "concepts": 5
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.rightHomologyIso_hom_naturality_assoc",
+            "Set.mem_of_eq_of_mem",
+            "Set.nontrivial_of_mem_mem_ne",
+            "Set.Nontrivial.not_subset_singleton",
+            "ne_of_not_superset"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:012059d0f5c0db7e886c0ac8d2fc556e",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C]\n  {x_4 x_5 x_6 : CategoryTheory.ShortComplex C} [inst_7 : x_4.HasHomology]\n  [inst_8 : x_5.HasHomology] [inst_9 : x_6.HasHomology] (x_10 : x_4 ⟶ x_5)\n  (x_11 : x_5 ⟶ x_6) {u : Set (x_4.homology ⟶ x_6.homology)},\n  CategoryTheory.CategoryStruct.comp (CategoryTheory.ShortComplex.homologyMap x_10)\n        (CategoryTheory.ShortComplex.homologyMap x_11) ∈\n      u →\n    ∀ {v : Set (x_4.homology ⟶ x_6.homology)},\n      Disjoint u v →\n        Set.InjOn\n          (insert\n            (CategoryTheory.ShortComplex.homologyMap\n              (CategoryTheory.CategoryStruct.comp x_10 x_11)))\n          (𝒫 v)",
+          "interest": {
+            "steps": 4,
+            "statement_size": 1275,
+            "score": -7.88,
+            "modules": 4,
+            "joins": 0,
+            "conclusion_size": 297,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.homologyMap_comp",
+            "Set.mem_of_eq_of_mem",
+            "Disjoint.notMem_of_mem_left",
+            "Set.powerset_insert_injOn"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Order.Filter.Basic",
+      "focus": "Mathlib.Order.Filter",
+      "seed": 20261124,
+      "wall_seconds": 25.7,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 308,
+          "size_cap": 23,
+          "repeated_lemma": 108,
+          "padded_fact": 164,
+          "no_unifier": 105,
+          "no_focus_symbol": 14,
+          "few_steps": 34,
+          "few_concepts": 86,
+          "dull_conclusion": 17,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 23173,
+          "render": 88,
+          "index": 710,
+          "import": 532,
+          "hyp_tree": 125,
+          "gate_simp": 161,
+          "gate_exact": 3957,
+          "gate_aesop": 2279
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 6,
+        "applications_tried": 910,
+        "applications_succeeded": 185
+      },
+      "results": [
+        {
+          "statement_hash": "expr:b967a832bd3e984fb73a10de4c0ddd5f",
+          "statement_pretty": "∀ {α β x_3 : Type} [inst_4 : SMul x_3 β] {l : Filter α} {f f' : α → x_3} {g g' : α → β},\n  f =ᶠ[l] f' →\n    g =ᶠ[l] g' →\n      ∀ {u : α → β},\n        (fun x ↦ f' x • g' x) =ᶠ[l] u →\n          ∀ (v : Set (β × β)) {w a : Set α},\n            a ≤ᶠ[l] w →\n              ((fun x ↦ (u x, f' x • g' x)) ⁻¹' v \\ a ∩\n                    ((fun x ↦ (f x • g x, f x • g x)) ⁻¹' v)ᶜ)ᶜ ≤ᶠ[l]\n                ((fun x ↦ (f x • g x, f x • g x)) ⁻¹' v \\ w ∩\n                    ((fun x ↦ (u x, f' x • g' x)) ⁻¹' v)ᶜ)ᶜ",
+          "interest": {
+            "steps": 9,
+            "statement_size": 443,
+            "score": 10.93,
+            "modules": 1,
+            "joins": 1,
+            "conclusion_size": 321,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.smul",
+            "Filter.EventuallyEq.trans",
+            "Filter.EventuallyEq.prodMk",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallySubset.diff",
+            "Filter.EventuallyLE.compl",
+            "Filter.EventuallyLE.inter",
+            "Filter.EventuallySubset.compl"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:563d07c2430689e6589d2172c752b4d6",
+          "statement_pretty": "∀ {α : Type} {s t : Set α} {l l' : Filter α},\n  s ≤ᶠ[l] t →\n    l' ≤ l →\n      t ≤ᶠ[l'] s →\n        ∀ {u v : Set α}, u =ᶠ[l'] v → ∃ v_1 ∈ l', ∀ y ∈ v_1, y ∈ (s ∩ u)ᶜ ↔ y ∈ (t ∩ v)ᶜ",
+          "interest": {
+            "steps": 6,
+            "statement_size": 207,
+            "score": 14.83,
+            "modules": 1,
+            "joins": 0,
+            "conclusion_size": 125,
+            "concepts": 4
+          },
+          "lemmas": [
+            "Filter.EventuallySubset.filter_mono",
+            "Filter.EventuallySubset.antisymm",
+            "Filter.EventuallyEqSet.inter",
+            "Filter.EventuallyEqSet.compl",
+            "Filter.EventuallyEqSet.mem_iff",
+            "Filter.Eventually.exists_mem"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:bd836c47ce5fc1a45b3a95f9e8941b54",
+          "statement_pretty": "∀ {α β : Type} {l : Filter α} {f g : α → β},\n  f = g →\n    ∀ (u : Set β) {v : Set α},\n      g ⁻¹' u =ᶠ[l] v → ((g ⁻¹' u)ᶜ \\ v)ᶜ ≤ᶠ[l] ((f ⁻¹' u)ᶜ \\ f ⁻¹' u)ᶜ",
+          "interest": {
+            "steps": 8,
+            "statement_size": 149,
+            "score": 17.27,
+            "modules": 1,
+            "joins": 1,
+            "conclusion_size": 97,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.of_eq",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallySubset.trans",
+            "Filter.EventuallyLE.compl",
+            "Filter.EventuallyLE.diff",
+            "Filter.EventuallySubset.compl"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:1219ab53b1ba276e84d2c4a30fc77d7e",
+          "statement_pretty": "∀ {α : Type} {s t : Set α} {l : Filter α},\n  s =ᶠ[l] t →\n    ∀ {u v : Set α},\n      u ≤ᶠ[l] v →\n        (t ∩ v) \\ s ≤ᶠ[l] (s ∩ u) \\ t → ∀ᶠ (x : α) in l, x ∈ (s ∩ u) \\ t ↔ x ∈ (t ∩ v) \\ s",
+          "interest": {
+            "steps": 5,
+            "statement_size": 189,
+            "score": 11.28,
+            "modules": 1,
+            "joins": 0,
+            "conclusion_size": 89,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallyLE.inter",
+            "Filter.EventuallySubset.diff",
+            "Filter.EventuallySubset.antisymm",
+            "Filter.EventuallyEqSet.mem_iff"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Order.Filter.Basic",
+      "focus": "Mathlib.Order.Filter",
+      "seed": 20261125,
+      "wall_seconds": 22.5,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 227,
+          "size_cap": 50,
+          "repeated_lemma": 84,
+          "padded_fact": 144,
+          "no_unifier": 71,
+          "heartbeat": 1,
+          "few_steps": 32,
+          "few_concepts": 39,
+          "dull_conclusion": 10,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 19948,
+          "render": 191,
+          "index": 709,
+          "import": 541,
+          "hyp_tree": 126,
+          "gate_simp": 238,
+          "gate_exact": 4030,
+          "gate_aesop": 508
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 4,
+        "applications_tried": 720,
+        "applications_succeeded": 133
+      },
+      "results": [
+        {
+          "statement_hash": "expr:a8f0049208dbe69dd09155fe7c2e14cd",
+          "statement_pretty": "∀ {α : Type} {s t : Set α} {l : Filter α},\n  s =ᶠ[l] t →\n    ∀ {s' t' : Set α},\n      s' =ᶠ[l] t' →\n        ∀ {u v : Set α},\n          u ≤ᶠ[l] v →\n            ∀ {w : Set α},\n              t \\ t' =ᶠ[l] w →\n                t \\ t' ∪ s \\ s' ∩ v ≤ᶠ[l] w ∪ t \\ t' ∩ u →\n                  ∀ᶠ (x : α) in l, x ∈ w ∪ t \\ t' ∩ u ↔ x ∈ t \\ t' ∪ s \\ s' ∩ v",
+          "interest": {
+            "steps": 7,
+            "statement_size": 305,
+            "score": 12.38,
+            "modules": 1,
+            "joins": 1,
+            "conclusion_size": 125,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEqSet.diff",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallyLE.inter",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallySubset.union",
+            "Filter.EventuallySubset.antisymm",
+            "Filter.EventuallyEq.mem_iff"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:51287b49f3e8504d464a6cb25efe9b9d",
+          "statement_pretty": "∀ {α : Type} {f : Filter α} {s t : Set α},\n  s ∈ f →\n    tᶜ ∈ f →\n      Disjoint (s \\ t) tᶜ →\n        f ≠ ⊥ → ∀ {u : Set (Filter α)}, {f} ⊂ u → IsGreatest (Set.Ioc ({f, ⊤} \\ {⊤}) u) u",
+          "interest": {
+            "steps": 6,
+            "statement_size": 621,
+            "score": 18.48,
+            "modules": 5,
+            "joins": 0,
+            "conclusion_size": 309,
+            "concepts": 6
+          },
+          "lemmas": [
+            "Filter.sdiff_mem",
+            "Filter.disjoint_of_disjoint_of_mem",
+            "Disjoint.ne_top_of_ne_bot",
+            "Set.pair_diff_right",
+            "ssubset_of_eq_of_ssubset",
+            "isGreatest_Ioc"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:db0f5841d5f0849d7896caae7484cc4d",
+          "statement_pretty": "∀ {α β : Type} {l : Filter α} [inst_4 : Mul β] {x_5 x_6 x_7 : α → β},\n  x_5 =ᶠ[l] x_6 →\n    ∀ (u : Set β),\n      (x_7 * x_5) ⁻¹' u ≤ᶠ[l] (x_7 * x_6) ⁻¹' u →\n        (x_7 * x_5) ⁻¹' u \\ ((x_7 * x_5) ⁻¹' u ∪ (x_7 * x_6) ⁻¹' u)ᶜ ≤ᶠ[l]\n          (x_7 * x_6) ⁻¹' u \\ ((x_7 * x_6) ⁻¹' u ∪ (x_7 * x_5) ⁻¹' u)ᶜ",
+          "interest": {
+            "steps": 10,
+            "statement_size": 463,
+            "score": 11.43,
+            "modules": 1,
+            "joins": 1,
+            "conclusion_size": 329,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.mul_left",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallySubset.antisymm",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallyEq.union",
+            "Filter.EventuallyEqSet.symm",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallySubset.compl",
+            "Filter.EventuallySubset.diff"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:9ad0d48cf2b01781b793781b42e4a0b1",
+          "statement_pretty": "∀ {α β : Type} (l : Filter α) (f : α → β) {u : α → β},\n  f =ᶠ[l] u →\n    ∀ (v : Set β) {w a : Set α},\n      w ≤ᶠ[l] a →\n        ((u ⁻¹' v ∩ a) \\ f ⁻¹' v ∪ (f ⁻¹' v ∩ w)ᶜ)ᶜ ≤ᶠ[l]\n          ((f ⁻¹' v ∩ w) \\ u ⁻¹' v ∪ (u ⁻¹' v ∩ a)ᶜ)ᶜ",
+          "interest": {
+            "steps": 9,
+            "statement_size": 243,
+            "score": 15.93,
+            "modules": 1,
+            "joins": 1,
+            "conclusion_size": 193,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.refl",
+            "Filter.EventuallyEq.trans",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallySubset.inter",
+            "Filter.EventuallySubset.diff",
+            "Filter.EventuallyLE.compl",
+            "Filter.EventuallyLE.union",
+            "Filter.EventuallySubset.compl"
+          ],
+          "violations": []
+        }
+      ]
+    }
+  ]
+}

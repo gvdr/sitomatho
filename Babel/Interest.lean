@@ -67,6 +67,24 @@ def simplifiedSize? (e : Expr) (budget : Nat) : MetaM (Option (Expr × Nat)) := 
   finally
     restoreState saved
 
+/-- A set appearing as a bare predicate: an unapplied `Membership.mem`, or the eta-expanded
+    form `fun x ↦ x ∈ s`. Mathlib states some facts about sets through `Set α = α → Prop`,
+    and lemmas about functions then produce these forms, which no reader would write. -/
+partial def hasUnfoldedSet (e : Expr) : Bool :=
+  match e with
+  | .app .. =>
+      let fn := e.getAppFn
+      let args := e.getAppArgs
+      (fn.isConstOf ``Membership.mem && args.size < 5) || hasUnfoldedSet fn || args.any hasUnfoldedSet
+  | .lam _ ty body _ =>
+      (body.isAppOfArity ``Membership.mem 5 && body.appArg! == .bvar 0 && !body.appFn!.hasLooseBVar 0)
+        || hasUnfoldedSet ty || hasUnfoldedSet body
+  | .forallE _ ty body _ => hasUnfoldedSet ty || hasUnfoldedSet body
+  | .letE _ ty value body _ => hasUnfoldedSet ty || hasUnfoldedSet value || hasUnfoldedSet body
+  | .mdata _ inner => hasUnfoldedSet inner
+  | .proj _ _ inner => hasUnfoldedSet inner
+  | _ => false
+
 /-- The explicit arguments of the head application: the terms a reader sees. -/
 def explicitArgs (e : Expr) : MetaM (Array Expr) := do
   let args := e.getAppArgs
@@ -81,9 +99,11 @@ def explicitArgs (e : Expr) : MetaM (Array Expr) := do
 
 /-- A fact is padded when `simp` proves it outright, rewrites it to something smaller, or
     shrinks one of its explicit arguments: the statement then carries terms that add
-    nothing, such as `s ∩ s` or `sᶜᶜ`. The arguments are checked on their own because `simp`
+    nothing, such as `s ∩ s` or `sᶜᶜ`. A set in unfolded form counts as well. The arguments are checked on their own because `simp`
     may also unfold the statement into a larger normal form, which would hide the padding. -/
 def isPaddedFact (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
+  if hasUnfoldedSet e then
+    return true
   if let some (simplified, size) ← simplifiedSize? e budget then
     if simplified.isConstOf ``True || size < exprSize e then
       return true

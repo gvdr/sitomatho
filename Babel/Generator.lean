@@ -63,6 +63,22 @@ def isCleanMathlibName (n : Name) : Bool :=
     ]
     !badSubstr.any fun b => (s.splitOn b).length > 1
 
+/-- Modules whose declarations are logical or basic order vocabulary. -/
+def isLogicModule (m : Name) : Bool :=
+  let s := m.toString
+  s.startsWith "Init" || s.startsWith "Mathlib.Logic" || s.startsWith "Mathlib.Order.Defs"
+    || s == "Mathlib.Order.Notation" || s == "Mathlib.Order.Basic"
+
+/-- A lemma whose whole statement is in logical and basic order vocabulary, such as
+    `ne_of_eq_of_ne` or `not_or_intro`. Such a step adds length without mathematical content. -/
+def isGlueLemma (env : Environment) (lemmaName : Name) : Bool :=
+  match env.find? lemmaName with
+  | none => false
+  | some info => info.type.getUsedConstants.all fun c =>
+      match definingModule env c with
+      | some m => isLogicModule m
+      | none => false
+
 /-- Inspect leading `forallE` binders syntactically (no MetaM needed!) for fast indexing. -/
 partial def inspectBinders (e : Expr) (totalBinders : Nat := 0) (hypHeads : Array Name := #[]) :
     Nat × Array Name × Option Name :=
@@ -97,7 +113,7 @@ def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaInd
   for (name, cinfo) in env.constants.map₁ do
     match cinfo with
     | .thmInfo info =>
-        if !isCleanMathlibName name then continue
+        if !isCleanMathlibName name || isGlueLemma env name then continue
         let specialist := focus.any fun root => (definingModule env name).any root.isPrefixOf
         if info.levelParams.length > (if specialist then 8 else 3) then continue
         let (nBinders, hypHeads, conclHead?) := inspectBinders info.type
@@ -170,6 +186,8 @@ structure WalkCandidate where
   premiseReuse : Nat := 0
   components : InterestComponents := {}
   interestScore : Float := 0.0
+  /-- Expression nodes of the conclusion alone, the quantity `maxFactSize` caps. -/
+  conclusionSize : Nat := 0
 deriving Inhabited
 
 /-- Reject trivial or degenerate conclusions (`True`, `False`, `x = x`). -/
@@ -782,7 +800,7 @@ def gateKept
       return (none, rng)
 
   -- Reopen the hypotheses to convolute the proof and recompute the invariants on the open terms.
-  let (fullProof, rngConv, simpNormal, premiseReuse) ←
+  let (fullProof, rngConv, simpNormal, premiseReuse, conclusionSize) ←
     forallBoundedTelescope kept.stmtClosed (some kept.nBinders) fun xs concl => do
       let proofOpen := kept.proofClosed.beta xs
       let (convProof, rngConv) ←
@@ -790,7 +808,7 @@ def gateKept
         else pure (proofOpen, rng)
       let simpNormal := !(← isPaddedFact concl)
       let premiseReuse ← countPremiseReuse proofOpen
-      return (← mkLambdaFVars xs convProof, rngConv, simpNormal, premiseReuse)
+      return (← mkLambdaFVars xs convProof, rngConv, simpNormal, premiseReuse, exprSize concl)
 
   try
     check fullProof
@@ -836,6 +854,7 @@ def gateKept
     premiseReuse := premiseReuse
     components := kept.components
     interestScore := kept.score
+    conclusionSize := conclusionSize
   }
   return (some cand, rngConv)
 
