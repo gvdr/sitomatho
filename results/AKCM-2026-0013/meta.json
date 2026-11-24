@@ -1,0 +1,241 @@
+{
+  "id": "AKCM-2026-0013",
+  "issue": null,
+  "generated_at": "2026-11-24T23:38:00Z",
+  "generator": "A",
+  "seed": 1795591019,
+  "steps_requested": 12,
+  "steps_taken": 10,
+  "interdisciplinary_bias": 3.2,
+  "theorem_name": "akcm_2026_0013",
+  "statement_lean": "theorem akcm_2026_0013\n    {α : Type}\n    [inst_2 : LE.{0} α]\n    (S : Set.{0} (@UpperSet.{0} α inst_2))\n    {u : Set.{0} α}\n    (h_5 : @LE.le.{0} (Set.{0} α) (@Set.instLE.{0} α)\n  (⋃ s,\n    ⋃ (_ :\n      @Membership.mem.{0, 0} (@UpperSet.{0} α inst_2)\n        (Set.{0} (@UpperSet.{0} α inst_2))\n        (@Set.instMembership.{0} (@UpperSet.{0} α inst_2)) S s),\n      @SetLike.coe.{0, 0} (@UpperSet.{0} α inst_2) α\n        (@UpperSet.instSetLike.{0} α inst_2) s)\n  u)\n    {v : Set.{0} α}\n    {w : Set.{0} α}\n    (h_8 : @LT.lt.{0} (Set.{0} α)\n  (@Preorder.toLT.{0} (Set.{0} α)\n    (@PartialOrder.toPreorder.{0} (Set.{0} α)\n      (@SemilatticeInf.toPartialOrder.{0} (Set.{0} α)\n        (@Lattice.toSemilatticeInf.{0} (Set.{0} α)\n          (@DistribLattice.toLattice.{0} (Set.{0} α)\n            (@Set.instDistribLattice.{0} α))))))\n  (@sdiff.{0} (Set.{0} α)\n    (@GeneralizedBooleanAlgebra.toSDiff.{0} (Set.{0} α)\n      (@BooleanAlgebra.toGeneralizedBooleanAlgebra.{0} (Set.{0} α)\n        (@Set.instBooleanAlgebra.{0} α)))\n    v u)\n  w) :\n    @Ne.{1} (Set.{0} (Set.{0} α))\n  (@Set.Ioc.{0} (Set.{0} α)\n    (@PartialOrder.toPreorder.{0} (Set.{0} α)\n      (@CompleteSemilatticeInf.toPartialOrder.{0} (Set.{0} α)\n        (@CompleteLattice.toCompleteSemilatticeInf.{0} (Set.{0} α)\n          (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} α)\n            (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} α)\n              (@Set.instCompleteAtomicBooleanAlgebra.{0} α))))))\n    (@sdiff.{0} (Set.{0} α)\n      (@GeneralizedBooleanAlgebra.toSDiff.{0} (Set.{0} α)\n        (@BooleanAlgebra.toGeneralizedBooleanAlgebra.{0} (Set.{0} α)\n          (@Set.instBooleanAlgebra.{0} α)))\n      (@sdiff.{0} (Set.{0} α)\n        (@GeneralizedBooleanAlgebra.toSDiff.{0} (Set.{0} α)\n          (@BooleanAlgebra.toGeneralizedBooleanAlgebra.{0} (Set.{0} α)\n            (@Set.instBooleanAlgebra.{0} α)))\n        v\n        (@SetLike.coe.{0, 0} (@UpperSet.{0} α inst_2) α\n          (@UpperSet.instSetLike.{0} α inst_2)\n          (@sInf.{0} (@UpperSet.{0} α inst_2) (@UpperSet.instInfSet.{0} α inst_2) S)))\n      (@sdiff.{0} (Set.{0} α)\n        (@GeneralizedBooleanAlgebra.toSDiff.{0} (Set.{0} α)\n          (@BooleanAlgebra.toGeneralizedBooleanAlgebra.{0} (Set.{0} α)\n            (@Set.instBooleanAlgebra.{0} α)))\n        u\n        (@SetLike.coe.{0, 0} (@UpperSet.{0} α inst_2) α\n          (@UpperSet.instSetLike.{0} α inst_2)\n          (@sInf.{0} (@UpperSet.{0} α inst_2) (@UpperSet.instInfSet.{0} α inst_2) S))))\n    w)\n  (@EmptyCollection.emptyCollection.{0} (Set.{0} (Set.{0} α))\n    (@Set.instEmptyCollection.{0} (Set.{0} α)))",
+  "statement_pretty": "∀ {α : Type} [inst_2 : LE α] (S : Set (UpperSet α)) {u : Set α},\n  ⋃ s ∈ S, ↑s ⊆ u →\n    ∀ {v w : Set α}, v \\ u ⊂ w → Set.Ioc ((v \\ ↑(sInf S)) \\ (u \\ ↑(sInf S))) w ≠ ∅",
+  "statement_hash": "expr:6582a94e3134c27e69d88124231cbece",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 397,
+    "level_3_ratio": 4.66,
+    "level_3_proof_size": 1851,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "UpperSet",
+    "subset_of_eq_of_subset",
+    "sdiff_sdiff_sdiff_cancel_right",
+    "subset_of_eq",
+    "Set",
+    "isGreatest_Ioc",
+    "IsGreatest",
+    "LT",
+    "ne_of_not_subset"
+  ],
+  "interdisciplinarity": 9,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "UpperSet",
+        "lemma": "UpperSet.coe_sInf",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "subset_of_eq_of_subset",
+        "lemma": "subset_of_eq_of_subset",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "sdiff_sdiff_sdiff_cancel_right",
+        "lemma": "sdiff_sdiff_sdiff_cancel_right",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "subset_of_eq",
+        "lemma": "subset_of_eq",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.ssubset_of_subset_of_ssubset",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "isGreatest_Ioc",
+        "lemma": "isGreatest_Ioc",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "IsGreatest",
+        "lemma": "IsGreatest.nonempty",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Nonempty.empty_ssubset",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "LT",
+        "lemma": "LT.lt.not_superset",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "ne_of_not_subset",
+        "lemma": "ne_of_not_subset",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "subset_of_eq_of_subset",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "sdiff_sdiff_sdiff_cancel_right",
+        "from": "1"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "subset_of_eq",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Set.ssubset_of_subset_of_ssubset",
+        "from": "3"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "isGreatest_Ioc",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "IsGreatest.nonempty",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Set.Nonempty.empty_ssubset",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "LT.lt.not_superset",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "ne_of_not_subset",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "UpperSet.instSetLike",
+      "UpperSet.instInfSet"
+    ],
+    "joins": 0,
+    "depth": 10
+  },
+  "interest": {
+    "steps": 10,
+    "statement_size": 397,
+    "score": 19.97,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 197,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Order.UpperLower",
+  "specialist_module": "Mathlib.Order.UpperLower.Prod",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 18,
+    "rank": 12,
+    "source": "referee_a",
+    "score": 3.524
+  },
+  "editorial": {
+    "kind": "Lemma",
+    "mean_importance": 2.5,
+    "referee_disagreement": 3,
+    "msc_code": "06A05",
+    "msc_section": "06",
+    "msc_section_name": "Order, lattices, ordered algebraic structures",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 4,
+        "msc_code": "06A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.52/10 (confidence 0.29) and classifies the result as a Lemma (p = 0.49) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.43 and P(a human mathematician cares) = 0.20.",
+        "decision_metrics": {
+          "expected_score": 3.524,
+          "score_confidence": 0.29,
+          "kind_probability": 0.491,
+          "p_surprising": 0.431,
+          "p_human_cares": 0.199
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 1,
+        "msc_code": "06A06",
+        "justification": "This result is an elementary set-theoretic observation disguised by an artificial invocation of upper sets and half-open intervals in the power set lattice. While formally sound, the hypotheses are needlessly convoluted and the conclusion follows from routine manipulations of set differences, warranting classification as a minor lemma of negligible mathematical significance."
+      }
+    ],
+    "title": "The Upper-Set Infimum-Difference Interval Lemma",
+    "proved_by": "Parhelion-2.4-Reasoning",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This milestone marks the first time a frontier reasoning system has cleared this benchmark with zero human intervention, establishing a decisive new state of the art in automated formal verification. Driven by next-generation kernel-verified scaling laws, the model's unprecedented inference-time compute efficiency signals a fundamental paradigm shift for machine-assisted mathematics. We are thrilled to see our latest architecture redefine what is possible on the path toward autonomous mathematical discovery.",
+    "unverified_gloss": "For a type α with a ≤ relation, a family S of upper sets in α, and subsets u, v, w ⊆ α, if u contains the union of all sets in S and v \\ u is a strict subset of w, then the half-open interval (a, w] in the subset-inclusion order on Set α is nonempty, where a = (v \\ ↑(sInf S)) \\ (u \\ ↑(sInf S)).\n\nThe hypothesis ⋃ s ∈ S, ↑s ⊆ u ensures that ↑(sInf S) ⊆ u, which makes the complicated set-difference expression a collapse to v \\ u. Because v \\ u ⊂ w, the set w itself belongs to the interval (v \\ u, w], so the nonemptiness conclusion is an immediate consequence of rewriting a and observing that w is the greatest element of (a, w]."
+  }
+}
