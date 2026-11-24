@@ -1,0 +1,202 @@
+# Design: theorems the reviewer finds interesting
+
+Date: 2026-11-25
+Status: draft, awaiting approval
+
+## Intent
+
+The journal's generator should produce theorems that the AI referees rate as interesting. A necessary condition is that a result is not trivial. Today's output fails that condition, and the generator is slow and opaque about why it fails. This design changes what the specialist search looks for, lets the referee choose what gets published, and makes the generator measurable and faster.
+
+## Evidence this design rests on
+
+Live referee verdicts on the seven published results (commit `3e1f646` on `origin/main`):
+
+| Referee | Scores | Mean |
+|---|---|---|
+| A, `gemini-decision-1`, expected score out of 10 | 3.07, 3.02, 1.75, 1.95, 1.40, 4.46, 2.40 | 2.58 |
+| B, `gemini-4-hydrogen`, integer out of 10 | 1, 2, 1, 1, 1, 1, 1 | 1.14 |
+
+Referee B's written complaints fall into two groups.
+
+- Padding: "idempotent self-union ... adding syntactic bulk without any mathematical substance", "baroque nesting of redundant `max` and `min` terms", "nested AddOpposite wrappers are entirely artificial".
+- Closure composition: "an artificial specialization ... of a routine closure property", "an immediate corollary of the elementary fact that a finite intersection of clopen sets is clopen".
+
+Two local runs of the current specialist search (`--min-proof-depth 6 --trials-per-walk 180 --max-steps 12 --convolute 0`):
+
+- `Mathlib.Order.Filter.Basic`, focus `Mathlib.Order.Filter`: 4 candidates in 30 s wall time, peak memory 1.5 GB. Every candidate is padded. The depth-10 candidate uses `Filter.union_mem_sup` four times and its statement begins `U ∈ s → ((U ∪ (U \ U) \ U) ∩ (U ∪ (U \ U) \ U) ∪ ...`.
+- `Mathlib.RingTheory.Localization.Ideal`, focus `Mathlib.RingTheory.Localization`: 80 attempts, 368 s, zero candidates, although derivations reached depth 10 with a branch join. The log does not say why they were rejected. About 11 s of each run is module loading and lemma indexing.
+
+Mechanisms in the code that produce the padding:
+
+- `tryApplyLemma` fills a lemma's remaining explicit hypotheses from already derived facts, and the fact being extended is among the ones it tries. A closure lemma such as `inter_mem` therefore receives the same fact twice.
+- Closure lemmas have a conclusion with the same head predicate as their hypothesis, so they can be applied again without limit.
+- `finishWalk` in specialist mode accepts on derivation depth plus one branch join. Neither measures what the statement says.
+- `runSpecialistLoop` calls `finishWalk`, including the `exact?`, `simp` and `aesop` gates, at every node that reaches the depth target, and returns the first that passes.
+- `closedBySimp` in `Babel/Gate.lean` builds its context with `Simp.mkContext` and passes no lemma set and no simprocs, so the Level 2 `simp` check runs with an empty simp set and closes almost nothing. Padded statements therefore earn the "not routine" badge. The fix is to use `Simp.Context.mkDefault` and the default simprocs, and it is part of Part 2.
+
+- In specialist mode the statement stored as `statement_lean` is printed with `pp.explicit`, `pp.universes` and `pp.proofs` switched on, and `_candidate_summary_for_llm` sends that field to the referees. A statement whose readable form is a few lines reaches the referee as several thousand characters of `@Filter.Eventually.{0} α (fun x ↦ ...`. The seven baseline results came from the default walk, where the field is readable, so no referee has yet read a specialist result in readable form.
+
+## Goals
+
+1. No published statement is padded: the default `simp` set cannot make it smaller, and no fact fills two premises of one lemma.
+2. The specialist search prefers a short statement backed by a long derivation that passes through several distinct concepts, and returns the best such derivation it finds within its budget.
+3. The referee decides which candidates are published: the pipeline generates a pool larger than needed, ranks it by referee score, and publishes the top of the ranking.
+4. Every walk run reports where its time went and why candidates were rejected.
+5. A run that is cut off by its time limit keeps the candidates it had already produced.
+6. Wall time per accepted candidate on a fixed benchmark goes down, and a benchmark module that yields nothing says why.
+
+## Non-goals
+
+- A new generator. "Generator B" (mutating existing theorems) stays a future milestone.
+- New inference moves such as rewriting with equalities, using `Iff` lemmas, or instantiating type variables with concrete types.
+- Redesigning the default, non-specialist walk (`runWalkLoop`). It only inherits the step-level checks placed in shared code.
+- Changing the baroque proof convoluter, the site, or the namer and gloss.
+- Caching the loaded environment or the lemma index between processes.
+- Automatic tuning of the interest-score weights from referee data. This design only records the data that would make it possible.
+
+## Anti-goals
+
+- Raising scores by editing the referee prompts, the decision rubric, or the offline heuristic referee. The referees are the measuring instrument and stay as they are. Giving them the readable statement in place of the fully explicit rendering is allowed and is part of this design, because it is the form the baseline referees read.
+- Weakening verification. Every published `Result.lean` still passes `scripts/verify.py` with the same axiom allowlist.
+- A generator so strict that nights routinely produce nothing. The weekly issue must still fill.
+- Losing reproducibility: a given seed, toolchain and set of flags must still produce the same candidates from `lake exe walk`.
+
+## Constraints
+
+- Lean `v4.36.0` and Mathlib `v4.36.0`, pinned.
+- No LLM API key exists on the development machine. Referee scores can be observed only in GitHub Actions. All local development and all tests must work with `--offline`.
+- GitHub Actions job limit of 90 minutes for the nightly run; one walk process peaks around 1.5 GB of memory.
+- `scripts/test_akcm.py` is assertion-based with no pytest; new tests are registered in its main block.
+- The `meta.json` files already published must keep rendering. New fields are additive.
+
+## Approaches considered
+
+**A. Tighten the gate.** Reject a finished candidate when `simp` shrinks its statement, when one fact fills two premises, or when `simp` or `aesop` closes it. This is a small change in `finishWalk`. It answers the padding complaint only, leaves closure compositions as the typical output, and lowers yield because the search still spends its budget building padded derivations that are then thrown away.
+
+**B. Change what the search looks for.** Apply the checks from A at every step so padded branches are cut where they start, prefer steps that move to a different predicate, and keep the best derivation of a walk according to a cheap interest score. This is a medium rewrite of the specialist loop. It answers both complaints and cuts wasted search.
+
+**C. Let the reviewer pick.** Generate more candidates than needed, score each with the decision-model referee, publish the top few, and steer module choice by past scores. This is mostly Python and optimises the stated goal directly. On its own it can only select the least bad of what the generator makes, and it costs one referee call per candidate.
+
+**Chosen: B, then C.** The user picked this after seeing the three options. B changes what exists to be selected and C then selects with the real target. A is contained in B.
+
+## Design
+
+The work has three parts, built in this order. Each part leaves the pipeline working.
+
+### Part 1: measurement and plumbing
+
+**Walk statistics.** `lake exe walk` records and reports:
+
+- wall time per phase: module import, lemma index, hypothesis tree, search, gates (`exact?`, `simp`, `aesop` separately), rendering;
+- a counter per rejection reason, at step level (self-reuse, repeated lemma, padded fact, size cap, no unifier, heartbeat limit) and at candidate level (too few concepts, no focus symbol, kernel check failed, bad axioms, closed by `exact?`, closed by `simp`, closed by `aesop`, unrenderable statement, duplicate hash);
+- attempts made, lemma applications tried, lemma applications that succeeded.
+
+The statistics go to stderr as a summary and into the output file, so the pipeline can log them and tests can read them.
+
+**Incremental output.** The output file is valid and complete after every accepted candidate. When the pipeline's timeout expires it kills the process and reads what is there. `run_walk` returns the partial list with a flag that the run was cut short.
+
+**Parallel modules.** `run_wander` and `run_launch` start the walks for their profiles concurrently, bounded by a worker count that defaults to half the available CPUs and can be set by flag. Results are consumed in profile order so that ID assignment and acceptance stay deterministic for a given seed. Verification and editorial stay sequential.
+
+**Benchmark.** A script runs a fixed list of module, focus and seed combinations (the four `LAUNCH_PROFILES` with two seeds each) and prints, per run, wall time, candidates, the statistics above, and the invariants from Goal 1 checked against the output. It is run before Part 2 to record a baseline and after each later part. The baseline numbers are written into this folder next to the design.
+
+Fixing the largest cost that the statistics reveal is part of this work. The suspected costs, to be confirmed by the measurement, are the gates being run on every qualifying node and the gates being run before the cheap rendering check.
+
+### Part 2: search objective
+
+**Step-level checks, in shared `tryApplyLemma` or its callers, so both walks get them:**
+
+- One fact per premise. A derived fact or local hypothesis may fill at most one explicit premise of a lemma application.
+- Lemma repetition cap. A lemma may appear at most once on the retained path of a derivation. The cap is a parameter with default 1.
+- Padded facts. After a step produces a new fact, its statement is simplified with the default `simp` set under a small heartbeat budget. If the result is `True` or has fewer expression nodes than the original, the step is rejected. A timeout counts as not padded.
+- Size cap. A step is rejected when the new fact's statement exceeds a node-count cap. The cap is a parameter.
+
+**What a candidate must satisfy in specialist mode (replaces "depth at least N and one join"):**
+
+- at least `min-steps` retained steps;
+- at least `min-concepts` distinct concepts on the retained path, where the concept of a step is the head constant of its fact's statement, and the default minimum is 3;
+- the final statement mentions a symbol defined under the focus module prefix (unchanged);
+- the kernel check and axiom check pass (unchanged);
+- `exact?` does not close it (unchanged), and neither `simp` nor `aesop` closes it. Level 2 becomes a hard gate in specialist mode. The badge fields stay in the output.
+
+A branch join is no longer required. It contributes to the score.
+
+**Interest score.** A cheap number computed from a derivation without running any gate. It increases with distinct concepts, with distinct defining modules among the lemmas used, with retained steps, and with the presence of a join. It decreases with the node count of the final statement. The components and default weights live in one place in the Lean code and are emitted with each candidate (`interest_score` plus the raw components), so they can be compared with referee scores later.
+
+**Search loop.** Within one walk's trial budget the loop explores as today but no longer stops at the first qualifying derivation. It keeps the best-scoring qualifying derivation seen so far. Lemma choice at each step favours lemmas whose conclusion has a different head constant from the hypothesis they consume, using the existing specialist and ambient indexes. When the budget is spent, the expensive gates run on the kept derivation only, in order of cost: rendering check, kernel and axiom check, `exact?`, `simp`, `aesop`. If it fails a gate, the next best kept derivation is tried, up to a small fixed number.
+
+**Command line.** `walk` gains flags for the minimum concept count, the repetition cap, the statement size cap, and the number of fallback derivations per walk. `--min-proof-depth` keeps working and means minimum retained steps. `TopicProfile` in `scripts/wander.py` and `_mutate_knobs` mutate the new knobs in place of proof depth. The depth-relaxation retry in `_walk_mutated_profile` relaxes the concept minimum by one, down to 2.
+
+**Reproducibility.** All randomness stays on the threaded `Rng`. Heartbeat budgets, not wall-clock limits, bound every check inside Lean, so results do not depend on machine speed.
+
+### Part 3: the reviewer picks
+
+**Pool, then screen, then verify.** For a target of `count` published results, `run_wander` asks the walks for a pool of `pool-factor × count` candidates in total (default factor 4), spread over the profiles. It removes duplicates and already published hashes, then screens every remaining candidate with Referee A before any standalone verification, since a referee call takes about a second and a verification takes much longer. Candidates are ranked by Referee A's expected score, with the probability that a human cares as the tie-break. Verification then proceeds down the ranking until `count` results have passed. A cap of two published results per module keeps one productive module from filling an issue.
+
+**How much is published.** In `run_wander` the number published is `min(count, ceil(pool_size / 2))`, where `pool_size` is the number of screened candidates. At most half of a pool is published, so the referee's ranking always decides something, and a pool of one still publishes one. `run_launch` is exempt: it needs its full count.
+
+**What the editorial desk reads.** The referees, the namer and the gloss receive `statement_pretty` when the record has one and fall back to `statement_lean` otherwise. `statement_lean` and `Result.lean` keep the explicit form, which is what makes the standalone file re-elaborate. The site keeps showing what it shows today.
+
+**No second opinion on the same call.** The screening verdict is reused as Referee A's report in the editorial record. `process_editorial` accepts a precomputed Referee A verdict and then runs Referee B, the namer and the gloss only for results that will be published.
+
+**Offline and failure behaviour.** With `--offline`, with no API key, or when a screening call fails, the candidate is ranked by the generator's `interest_score` scaled into the referee's range. A run never fails because the referee is unavailable. The record shows which ranking source was used.
+
+**Steering module choice.** Each entry appended to `state/wander.json` gains the pool size, the number published, and the best and mean screening score for that profile. `mutate_profiles` keeps its exploration slots weighted by inverse visit count and changes the drift slot: its anchor is drawn from recent focuses with weight proportional to their best screening score, in place of a uniform draw. Entries without a score (older history, offline runs) get a neutral weight.
+
+**Candidate log.** Every screened candidate, published or not, is appended to `state/candidates.jsonl` with its statement hash, pretty statement, module, focus, interest-score components, screening scores, ranking source, and outcome (published, outranked, failed verification). The file is trimmed to the most recent 500 lines. It is the data set for judging later whether the interest score predicts the referee.
+
+**Metadata.** A published `meta.json` gains `interest` (score and components) and `selection` (pool size, rank, ranking source, screening score). Templates are untouched in this design.
+
+**Launch path.** `run_launch` uses the same pool, screen and verify sequence, keeping its rule that nothing is written unless the full count verifies.
+
+## How success is judged
+
+Measured locally with the benchmark, offline:
+
+- zero candidates violate the Goal 1 invariants;
+- every benchmark run ends with a statistics summary, and a run with zero candidates names its dominant rejection reason;
+- wall seconds per valid candidate is lower than the recorded baseline, where a valid candidate is one with no invariant violation. Padded baseline candidates therefore do not count for the baseline. If the baseline has no valid candidate, the criterion is that the final benchmark has some and that its total wall time does not exceed the baseline's;
+- no benchmark run exceeds the pipeline timeout without output;
+- yield floor used for calibration: at least 4 valid candidates across the eight benchmark runs, coming from at least 2 of the 4 modules;
+- `scripts/test_akcm.py` passes, with new tests for ranking and selection, reuse of the screening verdict, partial output after a timeout, deterministic consumption order under parallel walks, the score-weighted drift, and the candidate log trim.
+
+Measured in GitHub Actions after merge, since that is where the referees run:
+
+- across the first week of nightly runs, the mean Referee A expected score of published results is above the 2.58 baseline and the mean Referee B score is above 1.14;
+- Referee B's justifications for those results do not describe padding or redundant terms.
+
+The second group is the real target and cannot be guaranteed by construction. If the first week shows no improvement, the candidate log is the starting point for the next iteration.
+
+The 2.58 and 1.14 baselines come from default-walk results. The nightly job publishes specialist results, so results it publishes between now and the merge are the closer comparison, with the caveat that their referees read the explicit rendering. Both comparisons are reported. A manual run of the nightly workflow on the feature branch would give a cleaner before and after; it spends live referee calls and needs the user's go-ahead.
+
+## Decisions made by the author, open to correction
+
+These were not discussed with the user and are proposals.
+
+- Low-scoring pool candidates are dropped and only logged; the top `count` are published whatever their absolute score, so the weekly issue always fills.
+- Pool factor 4, module cap 2, concept minimum 3, repetition cap 1, candidate log length 500.
+- "Concept" is the head constant of a step's statement.
+- "Padded" means `simp` yields `True` or a smaller expression.
+- Level 2 becomes a hard gate in specialist mode.
+- The editorial desk reads the readable statement, as described under Part 3.
+- Wander publishes at most half of the screened pool.
+- When yield is below the floor, the settings give way in this order: derivations kept per walk, trials per walk, statement size cap, concept minimum from 3 to 2. The repetition cap of 1, the padded-fact check and the hard Level 2 gate do not give way. Redefining "concept" is a last resort and would be raised with the user first.
+- The nightly `count` stays at 6 and the walk timeout rises from 120 s to 240 s.
+- Screening uses Referee A only. Referee B is not used for selection, to keep cost at one decision call per candidate.
+- The site does not display the new metadata yet.
+- The design document and baseline numbers are left uncommitted until the user asks for a commit.
+
+## Left to the builder
+
+- Exact flag names, score weights, heartbeat budgets and size caps, calibrated against the benchmark so that yield stays usable.
+- The output file layout that carries candidates plus statistics while remaining valid after each append, and the matching reader in `run_walk`.
+- How the search keeps its best derivations given that facts live inside nested `withLocalDecl` scopes (closing over the context at the point of discovery is the expected route).
+- The concurrency primitive for parallel walks.
+- Which measured cost to fix first in Part 1.
+- Updating `README.md`, `CLAUDE.md` and `AGENTS.md` where commands or behaviour change.
+
+## Risks
+
+- The `simp` check on every step may cost more than the search it saves. The statistics will show this; the fallback is to run it only on facts that grew.
+- Head-constant concepts may be too coarse in some areas (many facts share the head `Eq` or `LE.le`). The benchmark covers four different areas so that this shows up early; a refinement would use the head of the main argument for such relations.
+- With padding removed, some modules may yield nothing at the default settings. The relaxation retry and the per-run rejection summary are there to make that visible and recoverable.
+- Selecting by referee score rewards whatever the referee happens to like. That is the stated aim of the project, and the anti-goal on editing referee prompts keeps the instrument fixed.
