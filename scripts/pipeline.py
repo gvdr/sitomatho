@@ -22,6 +22,7 @@ from editorial import (
     save_families,
 )
 from verify import find_lake, verify_lean_file
+from wander import TopicProfile, mutate_profiles, record_exploration
 
 LAUNCH_PROFILES = (
     ("Mathlib.Topology.Sheaves.MayerVietoris", "Mathlib.Topology.Sheaves"),
@@ -88,6 +89,7 @@ def run_walk(
     focus: str | None = None,
     min_proof_depth: int = 8,
     trials_per_walk: int = 240,
+    timeout: int = 240,
 ) -> list[dict[str, Any]]:
     lake = find_lake()
     out_file = ROOT / ".tmp" / f"walk_seed_{seed}.json"
@@ -133,7 +135,10 @@ def run_walk(
             "--trials-per-walk", str(trials_per_walk),
         ])
     print(f"[walk] Running: {' '.join(cmd)}")
-    proc = subprocess.run(cmd, cwd=ROOT, env=env)
+    try:
+        proc = subprocess.run(cmd, cwd=ROOT, env=env, timeout=timeout)
+    except subprocess.TimeoutExpired as exc:
+        raise RuntimeError(f"`lake exe walk` timed out after {timeout}s") from exc
     if proc.returncode != 0:
         raise RuntimeError(f"`lake exe walk` failed with exit code {proc.returncode}")
     if not out_file.exists():
@@ -195,6 +200,8 @@ def prepare_result(
     interdisciplinary: float,
     focus: str | None,
     toolchain: str,
+    specialist_module: str | None = None,
+    mutation_kind: str | None = None,
 ) -> tuple[dict[str, Any], str] | None:
     theorem_name = result_id.lower().replace("-", "_")
     source = rewrite_theorem_name(candidate["lean_file"], theorem_name)
@@ -235,6 +242,10 @@ def prepare_result(
         meta["proof_shape"] = candidate["proof_shape"]
     if focus:
         meta["specialist_focus"] = focus
+    if specialist_module:
+        meta["specialist_module"] = specialist_module
+    if mutation_kind:
+        meta["mutation_kind"] = mutation_kind
     return meta, source
 
 
@@ -261,6 +272,142 @@ def save_result(meta: dict[str, Any], source: str) -> None:
     )
 
 
+def _walk_mutated_profile(
+    profile: TopicProfile,
+    *,
+    batch_seed: int,
+    count: int,
+    max_attempts: int,
+    exact_heartbeats: int,
+    aesop_heartbeats: int,
+) -> list[dict[str, Any]]:
+    """Run specialist search on a mutated Mathlib profile with graceful depth relaxation."""
+    print(
+        f"[wander] ({profile.mutation_kind}) {profile.domain}: {profile.module} "
+        f"[focus={profile.focus}, min_depth={profile.min_proof_depth}, "
+        f"max_steps={profile.max_steps}, convolute={profile.convolute}]"
+    )
+    candidates: list[dict[str, Any]] = []
+    for depth in dict.fromkeys((profile.min_proof_depth, max(4, profile.min_proof_depth - 2))):
+        max_steps = max(profile.max_steps, depth + 4)
+        try:
+            candidates = run_walk(
+                seed=batch_seed,
+                count=count,
+                min_steps=3,
+                max_steps=max_steps,
+                max_attempts=max_attempts,
+                interdisciplinary=profile.interdisciplinary,
+                exact_heartbeats=exact_heartbeats,
+                aesop_heartbeats=aesop_heartbeats,
+                convolute=profile.convolute,
+                module=profile.module,
+                focus=profile.focus,
+                min_proof_depth=depth,
+                trials_per_walk=profile.trials_per_walk,
+                timeout=120,
+            )
+        except RuntimeError as exc:
+            print(f"  [wander] Walk error on {profile.module} (depth={depth}): {exc}")
+            candidates = []
+        if candidates:
+            break
+    return candidates
+
+
+def run_wander(
+    *,
+    count: int,
+    areas: int,
+    seed: int,
+    max_attempts: int,
+    exact_heartbeats: int,
+    aesop_heartbeats: int,
+    allow_convolution: bool,
+    cfg: dict[str, Any],
+    offline: bool,
+    publish_issue: bool,
+) -> int:
+    """Mutate across fresh Mathlib domains & sibling modules to generate deep diverse theorems."""
+    profiles = mutate_profiles(
+        seed=seed,
+        n_profiles=max(1, areas),
+        results_dir=ROOT / "results",
+        allow_convolution=allow_convolution,
+    )
+    if not profiles:
+        profiles = [
+            TopicProfile(module=m, focus=f, domain=m.split(".")[1], theorem_count=30)
+            for m, f in LAUNCH_PROFILES[: max(1, areas)]
+        ]
+
+    year = dt.datetime.now(dt.timezone.utc).year
+    toolchain = (ROOT / "lean-toolchain").read_text(encoding="utf-8").strip()
+    seen_hashes = load_existing_hashes()
+    seq = next_result_number(year)
+    prefix = cfg["journal"]["id_prefix"]
+
+    per_area = max(1, (count + len(profiles) - 1) // len(profiles))
+    accepted = 0
+    explored: list[TopicProfile] = []
+
+    for index, profile in enumerate(profiles):
+        if accepted >= count:
+            break
+        batch_seed = seed + index * 131
+        candidates = _walk_mutated_profile(
+            profile,
+            batch_seed=batch_seed,
+            count=per_area + 2,
+            max_attempts=max_attempts,
+            exact_heartbeats=exact_heartbeats,
+            aesop_heartbeats=aesop_heartbeats,
+        )
+        explored.append(profile)
+        candidates.sort(
+            key=lambda c: (
+                c.get("novelty", {}).get("level_2_not_routine", False),
+                c.get("proof_shape", {}).get("depth", 0),
+                c.get("steps_taken", 0),
+            ),
+            reverse=True,
+        )
+        area_accepted = 0
+        for cand in candidates:
+            if accepted >= count or area_accepted >= per_area:
+                break
+            stmt_hash = cand.get("statement_hash", "")
+            if stmt_hash in seen_hashes:
+                continue
+            result = prepare_result(
+                cand,
+                result_id=f"{prefix}-{year}-{seq:04d}",
+                seed=batch_seed,
+                interdisciplinary=profile.interdisciplinary,
+                focus=profile.focus,
+                toolchain=toolchain,
+                specialist_module=profile.module,
+                mutation_kind=profile.mutation_kind,
+            )
+            if result is None:
+                continue
+            meta, lean_source = result
+            apply_editorial(meta, cfg=cfg, offline=offline)
+            save_result(meta, lean_source)
+            seen_hashes.add(stmt_hash)
+            seq += 1
+            accepted += 1
+            area_accepted += 1
+
+    if explored:
+        record_exploration(explored, seed=seed, path=ROOT / "state" / "wander.json")
+
+    print(f"[wander] Accepted and verified {accepted}/{count} mutated specialist results across {len(explored)} domain(s).")
+    if publish_issue and accepted > 0:
+        publish_next_issue()
+    return 0
+
+
 def run_launch(
     *,
     count: int,
@@ -268,6 +415,8 @@ def run_launch(
     max_attempts: int,
     cfg: dict[str, Any],
     offline: bool,
+    wander: bool = False,
+    areas: int = 6,
 ) -> int:
     """Build a complete, verified launch issue before replacing Issue 1."""
     issues_path = ROOT / "state" / "issues.json"
@@ -284,9 +433,9 @@ def run_launch(
     seq = next_result_number(year)
     prefix = cfg["journal"]["id_prefix"]
     verified: list[tuple[dict[str, Any], str]] = []
-    reserve: list[tuple[dict[str, Any], str, int]] = []
+    reserve: list[tuple[dict[str, Any], TopicProfile, int]] = []
 
-    def verify_candidate(candidate: dict[str, Any], focus: str, batch_seed: int) -> None:
+    def verify_candidate(candidate: dict[str, Any], profile: TopicProfile, batch_seed: int) -> None:
         statement_hash = candidate["statement_hash"]
         if statement_hash in seen_hashes:
             return
@@ -294,33 +443,75 @@ def run_launch(
             candidate,
             result_id=f"{prefix}-{year}-{seq + len(verified):04d}",
             seed=batch_seed,
-            interdisciplinary=2.0,
-            focus=focus,
+            interdisciplinary=profile.interdisciplinary,
+            focus=profile.focus,
             toolchain=toolchain,
+            specialist_module=profile.module,
+            mutation_kind=profile.mutation_kind if wander else None,
         )
         if result:
             seen_hashes.add(statement_hash)
             verified.append(result)
 
-    # Give each area room in the issue, then use the remaining candidates if a search is sparse.
-    per_area = (count + len(LAUNCH_PROFILES) - 1) // len(LAUNCH_PROFILES)
-    for index, (module, focus) in enumerate(LAUNCH_PROFILES):
-        batch_seed = seed + index
-        candidates = run_walk(
-            seed=batch_seed,
-            count=count + per_area,
-            min_steps=3,
-            max_steps=14,
-            max_attempts=max_attempts,
-            interdisciplinary=2.0,
-            exact_heartbeats=150000,
-            aesop_heartbeats=150000,
-            convolute=0,
-            module=module,
-            focus=focus,
-            min_proof_depth=8,
-            trials_per_walk=160,
+    if wander:
+        profiles = mutate_profiles(
+            seed=seed,
+            n_profiles=max(4, areas),
+            results_dir=ROOT / "results",
+            allow_convolution=True,
+            min_depth_range=(5, 7),
         )
+    else:
+        profiles = []
+
+    if not profiles:
+        profiles = [
+            TopicProfile(
+                module=module,
+                focus=focus,
+                domain=module.split(".")[1] if "." in module else module,
+                theorem_count=30,
+                mutation_kind="curated",
+                min_proof_depth=8,
+                max_steps=14,
+                interdisciplinary=2.0,
+                convolute=0,
+                trials_per_walk=160,
+            )
+            for module, focus in LAUNCH_PROFILES
+        ]
+
+    # Give each area room in the issue, then use the remaining candidates if a search is sparse.
+    per_area = (count + len(profiles) - 1) // len(profiles)
+    explored: list[TopicProfile] = []
+    for index, profile in enumerate(profiles):
+        batch_seed = seed + index
+        if wander:
+            candidates = _walk_mutated_profile(
+                profile,
+                batch_seed=batch_seed,
+                count=count + per_area,
+                max_attempts=max_attempts,
+                exact_heartbeats=150000,
+                aesop_heartbeats=150000,
+            )
+        else:
+            candidates = run_walk(
+                seed=batch_seed,
+                count=count + per_area,
+                min_steps=3,
+                max_steps=profile.max_steps,
+                max_attempts=max_attempts,
+                interdisciplinary=profile.interdisciplinary,
+                exact_heartbeats=150000,
+                aesop_heartbeats=150000,
+                convolute=profile.convolute,
+                module=profile.module,
+                focus=profile.focus,
+                min_proof_depth=profile.min_proof_depth,
+                trials_per_walk=profile.trials_per_walk,
+            )
+        explored.append(profile)
         candidates.sort(
             key=lambda candidate: (
                 candidate["novelty"]["level_2_not_routine"],
@@ -331,19 +522,22 @@ def run_launch(
         limit = min(count, len(verified) + per_area)
         for candidate in candidates:
             if len(verified) < limit:
-                verify_candidate(candidate, focus, batch_seed)
+                verify_candidate(candidate, profile, batch_seed)
             else:
-                reserve.append((candidate, focus, batch_seed))
+                reserve.append((candidate, profile, batch_seed))
         if len(verified) == count:
             break
 
-    for candidate, focus, batch_seed in reserve:
+    for candidate, profile, batch_seed in reserve:
         if len(verified) == count:
             break
-        verify_candidate(candidate, focus, batch_seed)
+        verify_candidate(candidate, profile, batch_seed)
     if len(verified) < count:
         print(f"[launch] Verified {len(verified)} of {count} requested results. No issue written.", file=sys.stderr)
         return 1
+
+    if wander and explored:
+        record_exploration(explored, seed=seed, path=ROOT / "state" / "wander.json")
 
     families = load_families()
     for meta, _ in verified:
@@ -405,6 +599,8 @@ def main() -> int:
     parser.add_argument("--publish-issue", action="store_true", help="Bundle unissued results into next Issue")
     parser.add_argument("--issue-only", action="store_true", help="Only publish next issue from pending results")
     parser.add_argument("--launch-issue", action="store_true", help="Generate a full specialist batch and replace Issue 1")
+    parser.add_argument("--wander", action="store_true", help="Dynamically mutate across fresh Mathlib domains & sibling modules")
+    parser.add_argument("--areas", type=int, default=4, help="Number of mutated Mathlib domains to explore per --wander run")
     args = parser.parse_args()
 
     if args.launch_issue:
@@ -418,11 +614,27 @@ def main() -> int:
             max_attempts=args.max_attempts,
             cfg=load_config(),
             offline=args.offline,
+            wander=args.wander,
+            areas=max(4, args.areas),
         )
 
     if args.issue_only:
         publish_next_issue()
         return 0
+
+    if args.wander and not args.module and not args.focus:
+        return run_wander(
+            count=args.count,
+            areas=args.areas,
+            seed=args.seed,
+            max_attempts=args.max_attempts,
+            exact_heartbeats=args.exact_heartbeats,
+            aesop_heartbeats=args.aesop_heartbeats,
+            allow_convolution=args.convolute > 0,
+            cfg=load_config(),
+            offline=args.offline,
+            publish_issue=args.publish_issue,
+        )
 
     if args.focus and (args.min_proof_depth < 3 or args.max_steps <= args.min_proof_depth):
         parser.error("specialist search requires 3 <= --min-proof-depth < --max-steps")
@@ -464,6 +676,7 @@ def main() -> int:
             interdisciplinary=args.interdisciplinary,
             focus=args.focus,
             toolchain=toolchain,
+            specialist_module=args.module,
         )
         if result is None:
             continue
@@ -474,10 +687,6 @@ def main() -> int:
         seen_hashes.add(stmt_hash)
         seq += 1
         accepted += 1
-        print(
-            f"  [saved] {akcm_id}: {render_editorial(meta['editorial'])['eponym']} "
-            f"(mean={meta['editorial']['mean_importance']}, MSC={meta['editorial']['msc_code']})"
-        )
 
     print(f"[pipeline] Accepted and verified {accepted}/{len(candidates)} candidates.")
     if args.publish_issue and accepted > 0:

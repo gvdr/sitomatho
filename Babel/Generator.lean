@@ -721,18 +721,36 @@ partial def runWalkLoop
 def buildHypothesisTree (idx : LemmaIndex) : MetaM (DiscrTree Name) := do
   let env ← getEnv
   let mut tree : DiscrTree Name := {}
-  for lemma in idx.indexedLemmas do
+  -- Always index all specialist lemmas first, then up to 12,000 ambient lemmas
+  let mut seen : NameSet := {}
+  let mut toIndex : Array Name := #[]
+  for l in idx.specialistSeeds do
+    if !seen.contains l then
+      seen := seen.insert l
+      toIndex := toIndex.push l
+  let ambientCap : Nat := 12000
+  let mut ambientAdded : Nat := 0
+  for l in idx.indexedLemmas do
+    if ambientAdded >= ambientCap then break
+    if !seen.contains l then
+      seen := seen.insert l
+      toIndex := toIndex.push l
+      ambientAdded := ambientAdded + 1
+  for lemma in toIndex do
     let some (.thmInfo info) := env.find? lemma | continue
-    let keys ← tryCatchRuntimeEx (withNewMCtxDepth do
-      let (args, binderInfos, _) ← forallMetaTelescope
-        (info.instantiateTypeLevelParams (concreteLevels info))
-      let mut keys := #[]
-      for i in [:args.size] do
-        if binderInfos[i]! == .default then
-          let type ← inferType args[i]!
-          if ← isProp type then
-            keys := keys.push (← DiscrTree.mkPath type)
-      return keys) (fun _ => pure #[])
+    let keys ← tryCatchRuntimeEx (withCurrHeartbeats do
+      withOptions (fun o => o.set `maxHeartbeats 25000) do
+        withReducible do
+          withNewMCtxDepth do
+            let (args, binderInfos, _) ← forallMetaTelescope
+              (info.instantiateTypeLevelParams (concreteLevels info))
+            let mut keys := #[]
+            for i in [:args.size] do
+              if binderInfos[i]! == .default then
+                let type ← inferType args[i]!
+                if ← isProp type then
+                  keys := keys.push (← DiscrTree.mkPath type)
+            return keys) (fun _ => pure #[])
     for key in keys do
       if key.size > 1 || key[0]? != some DiscrTree.Key.star then
         tree := tree.insertKeyValue key lemma

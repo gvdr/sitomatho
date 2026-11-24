@@ -52,11 +52,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           ref: ${{ github.ref }}
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
 
@@ -87,33 +87,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          python3 scripts/pipeline.py --launch-issue \
-            --seed "$((20261124 + GITHUB_RUN_ATTEMPT))" \
+          python3 scripts/pipeline.py --launch-issue --wander --areas 6 \
+            --seed "$(( $(date -u +%s) + GITHUB_RUN_NUMBER ))" \
             --count 7 --max-attempts 260
 
-      - name: Run Generator A, Baroque Convoluter, Kernel Verifier & Editorial Desk
+      - name: Run Mutating Specialist Generator, Baroque Convoluter, Verifier & Editorial Desk
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SEED=$(( $(date -u +%s) + ${{ github.run_number }} ))
-          COUNT="${{ inputs.count || '10' }}"
-          MIN_STEPS="${{ inputs.min_steps || '4' }}"
-          MAX_STEPS="${{ inputs.max_steps || '12' }}"
-          CONVOLUTE="${{ inputs.convolute || '6' }}"
+          COUNT="${{ inputs.count || '6' }}"
+          CONVOLUTE="${{ inputs.convolute || '4' }}"
           EXTRA=""
           if [ "${{ inputs.publish_issue }}" = "true" ]; then
             EXTRA="--publish-issue"
           fi
           python3 scripts/pipeline.py \
+            --wander \
+            --areas 4 \
             --seed "$SEED" \
             --count "$COUNT" \
-            --min-steps "$MIN_STEPS" \
-            --max-steps "$MAX_STEPS" \
-            --max-attempts 800 \
-            --interdisciplinary 3.5 \
-            --exact-heartbeats 300000 \
-            --aesop-heartbeats 300000 \
+            --max-attempts 260 \
+            --exact-heartbeats 250000 \
+            --aesop-heartbeats 250000 \
             --convolute "$CONVOLUTE" \
             $EXTRA
 
