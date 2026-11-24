@@ -176,8 +176,9 @@ def prepare_result(
         "interdisciplinarity": len(namespaces),
         "dependencies": candidate.get("dependencies", {"nodes": [], "edges": []}),
     }
-    if "proof_shape" in candidate:
-        meta["proof_shape"] = candidate["proof_shape"]
+    for key in ("proof_shape", "interest", "checks"):
+        if key in candidate:
+            meta[key] = candidate[key]
     if focus:
         meta["specialist_focus"] = focus
     if specialist_module:
@@ -222,15 +223,15 @@ def _walk_mutated_profile(
     exact_heartbeats: int,
     aesop_heartbeats: int,
 ) -> WalkRun:
-    """Run specialist search on a mutated Mathlib profile with graceful depth relaxation."""
+    """Run specialist search on a mutated Mathlib profile, relaxing the concept minimum once."""
     print(
         f"[wander] ({profile.mutation_kind}) {profile.domain}: {profile.module} "
-        f"[focus={profile.focus}, min_depth={profile.min_proof_depth}, "
+        f"[focus={profile.focus}, min_steps={profile.min_proof_depth}, min_concepts={profile.min_concepts}, "
         f"max_steps={profile.max_steps}, convolute={profile.convolute}]"
     )
     run = WalkRun()
-    for depth in dict.fromkeys((profile.min_proof_depth, max(4, profile.min_proof_depth - 2))):
-        max_steps = max(profile.max_steps, depth + 4)
+    max_steps = max(profile.max_steps, profile.min_proof_depth + 4)
+    for min_concepts in dict.fromkeys((profile.min_concepts, max(2, profile.min_concepts - 1))):
         try:
             run = run_walk(
                 seed=batch_seed,
@@ -244,12 +245,14 @@ def _walk_mutated_profile(
                 convolute=profile.convolute,
                 module=profile.module,
                 focus=profile.focus,
-                min_proof_depth=depth,
+                min_proof_depth=profile.min_proof_depth,
                 trials_per_walk=profile.trials_per_walk,
-                timeout=120,
+                min_concepts=min_concepts,
+                max_statement_size=profile.max_statement_size,
+                timeout=240,
             )
         except RuntimeError as exc:
-            print(f"  [wander] Walk error on {profile.module} (depth={depth}): {exc}")
+            print(f"  [wander] Walk error on {profile.module} (min_concepts={min_concepts}): {exc}")
             run = WalkRun()
         if run.candidates:
             break
@@ -479,7 +482,6 @@ def run_launch(
             n_profiles=max(4, areas),
             results_dir=ROOT / "results",
             allow_convolution=True,
-            min_depth_range=(5, 7),
         )
     else:
         profiles = []
@@ -492,7 +494,6 @@ def run_launch(
                 domain=module.split(".")[1] if "." in module else module,
                 theorem_count=30,
                 mutation_kind="curated",
-                min_proof_depth=8,
                 max_steps=14,
                 interdisciplinary=2.0,
                 convolute=0,
@@ -528,6 +529,8 @@ def run_launch(
             focus=profile.focus,
             min_proof_depth=profile.min_proof_depth,
             trials_per_walk=profile.trials_per_walk,
+            min_concepts=profile.min_concepts,
+            max_statement_size=profile.max_statement_size,
         )
 
     runs = run_walks_parallel(
@@ -621,7 +624,9 @@ def main() -> int:
     parser.add_argument("--convolute", type=int, default=3, help="Baroque proof convolution stages (0 to disable)")
     parser.add_argument("--module", help="Lean module to import instead of Babel.Corpus")
     parser.add_argument("--focus", help="Mathlib module prefix for specialist seeds and conclusion symbols")
-    parser.add_argument("--min-proof-depth", type=int, default=8, help="Minimum retained depth for specialist search")
+    parser.add_argument("--min-proof-depth", type=int, default=4, help="Minimum retained derivation steps for specialist search")
+    parser.add_argument("--min-concepts", type=int, default=3, help="Minimum distinct concepts a specialist derivation passes through")
+    parser.add_argument("--max-statement-size", type=int, default=400, help="Expression-node cap on any derived fact")
     parser.add_argument("--trials-per-walk", type=int, default=240, help="Lemma application budget per specialist walk")
     parser.add_argument("--offline", action="store_true", help="Use offline heuristic editorial fallback")
     parser.add_argument("--publish-issue", action="store_true", help="Bundle unissued results into next Issue")
@@ -672,6 +677,8 @@ def main() -> int:
 
     if args.focus and (args.min_proof_depth < 3 or args.max_steps <= args.min_proof_depth):
         parser.error("specialist search requires 3 <= --min-proof-depth < --max-steps")
+    if args.focus and args.min_concepts < 2:
+        parser.error("specialist search requires --min-concepts >= 2")
 
     cfg = load_config()
     year = dt.datetime.now(dt.timezone.utc).year
@@ -692,6 +699,8 @@ def main() -> int:
         focus=args.focus,
         min_proof_depth=args.min_proof_depth,
         trials_per_walk=args.trials_per_walk,
+        min_concepts=args.min_concepts,
+        max_statement_size=args.max_statement_size,
     ).candidates
     print(f"[pipeline] Generator A emitted {len(candidates)} gated candidates.")
 

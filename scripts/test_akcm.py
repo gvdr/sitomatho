@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import random
 import shutil
 import subprocess
 import sys
@@ -30,7 +31,7 @@ from editorial import (
 )
 from llm import LLMError
 from msc2020 import section_prefix, section_title
-from pipeline import publish_next_issue, run_launch, run_wander
+from pipeline import prepare_result, publish_next_issue, run_launch, run_wander
 from selection import (
     PoolEntry,
     append_candidate_log,
@@ -41,7 +42,7 @@ from selection import (
 )
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
 from walk_runner import WalkRun, read_walk_output, run_walk, run_walks_parallel
-from wander import TopicProfile, derive_focus, focus_scores, mutate_profiles
+from wander import TopicProfile, _mutate_knobs, derive_focus, focus_scores, mutate_profiles
 
 
 def test_blocklist() -> None:
@@ -600,6 +601,54 @@ def test_wander_publishes_top_of_pool_and_handles_small_pool() -> None:
         assert history[0]["pool_size"] == 0 and history[0]["best_score"] is None
 
 
+def test_profile_knobs_and_meta_carry_interest() -> None:
+    base = TopicProfile("Mathlib.Order.Zorn", "Mathlib.Order", "Order", 30)
+    assert base.min_concepts == 3 and base.min_proof_depth == 4
+    mutated = _mutate_knobs(base, random.Random(1), mutation_kind="explore", allow_convolution=False)
+    assert mutated.min_concepts in (3, 4) and 4 <= mutated.min_proof_depth <= 6
+    assert mutated.max_steps > mutated.min_proof_depth
+    candidate = {
+        "statement_hash": "h",
+        "statement_lean": "theorem akcm_candidate : True",
+        "lean_file": "theorem akcm_candidate : True := trivial\n",
+        "interest": {"score": 21.5, "concepts": 4},
+        "checks": {"simp_normal": True, "premise_reuse": 0},
+    }
+    with patch("pipeline.verify_lean_file", return_value=(True, [], "")):
+        meta, _ = prepare_result(
+            candidate, result_id="AKCM-2026-0099", seed=1, interdisciplinary=2.0,
+            focus="Mathlib.Order", toolchain="leanprover/lean4:v4.36.0",
+        )
+    assert meta["interest"]["score"] == 21.5 and meta["checks"]["simp_normal"] is True
+
+
+def test_walk_command_carries_specialist_knobs() -> None:
+    seen: list[list[str]] = []
+
+    def record(cmd, **kwargs):
+        seen.append(cmd)
+        Path(cmd[cmd.index("--out") + 1]).write_text(
+            json.dumps({"complete": True, "stats": {}, "candidates": []}), encoding="utf-8"
+        )
+        return subprocess.CompletedProcess(cmd, 0)
+
+    with TemporaryDirectory() as directory:
+        with (
+            patch("walk_runner.ROOT", Path(directory)),
+            patch("walk_runner.find_lake", return_value="lake"),
+            patch("walk_runner.subprocess.run", side_effect=record),
+        ):
+            run_walk(
+                seed=7, count=2, min_steps=3, max_steps=9, max_attempts=5, interdisciplinary=2.0,
+                exact_heartbeats=1, aesop_heartbeats=1, convolute=0, module="Mathlib.Order.Zorn",
+                focus="Mathlib.Order", min_proof_depth=4, min_concepts=2, max_statement_size=600, keep=5,
+            )
+    cmd = seen[0]
+    for flag, value in (("--min-concepts", "2"), ("--max-statement-size", "600"), ("--keep", "5"),
+                        ("--max-lemma-repeats", "1"), ("--min-proof-depth", "4")):
+        assert cmd[cmd.index(flag) + 1] == value
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -620,4 +669,6 @@ if __name__ == "__main__":
     test_parallel_walks_preserve_order_and_isolate_failures()
     test_drift_prefers_high_scoring_focus_and_tolerates_old_history()
     test_wander_publishes_top_of_pool_and_handles_small_pool()
+    test_profile_knobs_and_meta_carry_interest()
+    test_walk_command_carries_specialist_knobs()
     print("All AKCM unit tests passed.")

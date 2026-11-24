@@ -56,6 +56,10 @@ def run_walk(
     focus: str | None = None,
     min_proof_depth: int = 8,
     trials_per_walk: int = 240,
+    min_concepts: int = 3,
+    max_lemma_repeats: int = 1,
+    max_statement_size: int = 400,
+    keep: int = 3,
     timeout: int = 240,
 ) -> WalkRun:
     """Run Generator A. A run that hits `timeout` returns what it had written so far."""
@@ -89,6 +93,10 @@ def run_walk(
             "--focus", focus,
             "--min-proof-depth", str(min_proof_depth),
             "--trials-per-walk", str(trials_per_walk),
+            "--min-concepts", str(min_concepts),
+            "--max-lemma-repeats", str(max_lemma_repeats),
+            "--max-statement-size", str(max_statement_size),
+            "--keep", str(keep),
         ])
     print(f"[walk] Running: {' '.join(cmd)}")
     try:

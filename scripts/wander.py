@@ -79,11 +79,15 @@ class TopicProfile:
     domain: str
     theorem_count: int
     mutation_kind: str = "explore"
-    min_proof_depth: int = 7
+    # Minimum number of retained derivation steps (the name predates the concept-based search).
+    min_proof_depth: int = 4
     max_steps: int = 13
     interdisciplinary: float = 2.5
     convolute: int = 0
     trials_per_walk: int = 160
+    # Minimum number of distinct concepts (head predicates) the derivation passes through.
+    min_concepts: int = 3
+    max_statement_size: int = 400
 
 
 def derive_focus(module: str) -> str:
@@ -240,10 +244,11 @@ def _mutate_knobs(
     *,
     mutation_kind: str,
     allow_convolution: bool,
-    min_depth_range: tuple[int, int] = (5, 7),
+    min_depth_range: tuple[int, int] = (4, 6),
 ) -> TopicProfile:
-    """Mutate search depth, step horizon, interdisciplinarity, and optional convolution."""
+    """Mutate step count, concept minimum, step horizon, interdisciplinarity, and optional convolution."""
     min_depth = rng.randint(min_depth_range[0], min_depth_range[1])
+    min_concepts = rng.choice((3, 3, 4))
     max_steps = max(min_depth + 4, rng.randint(10, 15))
     interdisc = round(rng.uniform(2.0, 4.0), 1)
     # Keep very deep specialist proofs pure more often; add baroque ceremony to a slice of runs
@@ -262,6 +267,8 @@ def _mutate_knobs(
         interdisciplinary=interdisc,
         convolute=convolute,
         trials_per_walk=180,
+        min_concepts=min_concepts,
+        max_statement_size=base.max_statement_size,
     )
 
 
@@ -273,7 +280,7 @@ def mutate_profiles(
     wander_state: dict[str, Any] | None = None,
     results_dir: Path | None = None,
     allow_convolution: bool = True,
-    min_depth_range: tuple[int, int] = (5, 7),
+    min_depth_range: tuple[int, int] = (4, 6),
 ) -> list[TopicProfile]:
     """Select `n_profiles` diverse, mutated Mathlib specialist targets.
 
