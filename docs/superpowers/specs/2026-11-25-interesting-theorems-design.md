@@ -228,4 +228,23 @@ Changes to the design made during the work, each recorded as a ruling in the exe
 - The interest score gained a focus component and counts length up to six steps.
 - Referee-scored candidates always rank ahead of fallback-ranked ones.
 
-Referee scores remain to be measured: nothing here shows that the referees rate the new statements higher. That is the purpose of the live run on the feature branch and of the first week of nightly runs.
+### Live run on the feature branch
+
+One manual run of the nightly workflow on `interesting-theorems` (2026-11-24, `count=6`, `convolute=4`, Actions run 45511029489, results in commit `4546363`, reverted afterwards so the branch merges cleanly). It took 5 min 18 s end to end. Three of the four areas produced six candidates each; `Mathlib.AlgebraicTopology.ModelCategory.CategoryWithCofibrations` produced none. Referee A scored all 18 candidates live and six were published.
+
+| | Baseline (7 default-walk results) | Whole pool (18) | Published (6) |
+|---|---|---|---|
+| Referee A expected score, mean | 2.58 | 3.84 | 4.54 |
+| Referee A expected score, range | 1.40 to 4.46 | 2.72 to 5.72 | 3.52 to 5.72 |
+| Referee A importance, mean | 2.43 | | 4.67 |
+| P(surprising), mean | 0.10 | | 0.26 |
+| P(a human cares), mean | 0.10 | | 0.28 |
+| Referee B importance, mean | 1.14 | | 1.00 |
+
+The published column is selected by Referee A's own score, so the whole-pool column is the fair comparison for the generator: every candidate in the pool scored above the baseline mean, and four scored above the baseline maximum. Selection from the pool adds a further 0.70. Both samples are small, and the baseline results came from the default walk.
+
+Referee B gave all six results a 1, so the second success criterion is unmet. Its justifications no longer describe padding or redundant terms. They make a different objection, the same one six times: the conclusion is an elementary fact that holds in far greater generality, and the domain-specific setting and some hypotheses are superfluous. Examples: a closed map has a closed range, which is stable under specialization, with schemes and injectivity playing no part; a proper subset has a nonempty complement, with the preorder playing no part. The candidate log agrees with this reading: in 14 of the 18 candidates the seed is the only step whose lemma is defined under the focus.
+
+The interest score does not predict Referee A on this pool. The rank correlation is -0.29 (n = 18), and the two highest-rated candidates have strongly negative interest scores, because the size penalty is taken on the fully explicit statement, which is very large for scheme statements. Steps (-0.46) and distinct concepts (-0.36) correlate negatively as well. With 18 candidates from three modules this is a warning and no more, since module and statement size are confounded. It matters because the same score orders the kept derivations inside a walk and ranks the pool offline.
+
+What this suggests for the next iteration, in order: require more than one on-topic step, or a conclusion that fails once the focus-specific hypotheses are dropped; take the size penalty on the readable statement; refit the interest score against `state/candidates.jsonl` once a week of nightly runs has filled it.
