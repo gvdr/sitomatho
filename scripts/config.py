@@ -15,17 +15,18 @@ def load_config() -> dict[str, Any]:
     with cfg_path.open("rb") as f:
         cfg = tomllib.load(f)
 
-    # Auto-derive GitHub Pages URLs in GitHub Actions if GITHUB_REPOSITORY is set
+    # Keep akcm.toml's custom domain/host (e.g. gvdallariva.net) intact in GitHub Actions;
+    # only update repo_url from GITHUB_REPOSITORY, and allow explicit SITE_* overrides.
     gh_repo = os.environ.get("GITHUB_REPOSITORY")
     if gh_repo and "/" in gh_repo:
         owner, repo = gh_repo.split("/", 1)
         cfg["site"]["repo_url"] = f"https://github.com/{owner}/{repo}"
-        if repo.lower() == f"{owner.lower()}.github.io":
-            cfg["site"]["base_url"] = f"https://{owner}.github.io"
-            cfg["site"]["base_path"] = ""
-        else:
-            cfg["site"]["base_url"] = f"https://{owner}.github.io/{repo}"
-            cfg["site"]["base_path"] = f"/{repo}"
+
+    custom_domain = (os.environ.get("SITE_CUSTOM_DOMAIN") or cfg["site"].get("custom_domain", "")).strip()
+    if custom_domain:
+        cfg["site"]["custom_domain"] = custom_domain
+        cfg["site"]["base_url"] = f"https://{custom_domain}"
+        cfg["site"]["base_path"] = ""
 
     if env_base := os.environ.get("SITE_BASE_URL"):
         cfg["site"]["base_url"] = env_base.rstrip("/")

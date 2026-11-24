@@ -2,6 +2,7 @@ import Lean
 import Std.Data.HashMap
 import Babel.Util
 import Babel.Gate
+import Babel.Convolute
 
 namespace Babel
 
@@ -363,7 +364,9 @@ def renderStandaloneLean
     (usedFVars : Array Expr)
     (concl : Expr)
     (proof : Expr)
-    (usedSteps : Array WalkStep) : MetaM (Option (String × String × String)) := do
+    (usedSteps : Array WalkStep)
+    (convoluteDepth : Nat)
+    (seed : Nat) : MetaM (Option (String × String × String)) := do
   -- Abstract and immediately re-open with sanitized, unique, non-hygienic names
   let stmtClosed ← mkForallFVars usedFVars concl
   let proofClosed ← mkLambdaFVars usedFVars proof
@@ -461,13 +464,14 @@ def renderStandaloneLean
         if modList.isEmpty then "import Mathlib.Init\n"
         else String.intercalate "\n" (modList.map fun m => s!"import {m}") ++ "\n"
 
+      let proofBody := renderBaroqueTacticProof proofStr convoluteDepth seed
+
       let fullFile :=
         importsBlock ++ "\n" ++
         "set_option autoImplicit false\n" ++
         "set_option linter.unusedVariables false\n\n" ++
         headerComment ++ "\n" ++
-        stmtDecl ++ " :=\n" ++
-        "  " ++ proofStr ++ "\n"
+        stmtDecl ++ " := " ++ proofBody
 
       return some (stmtDecl, stmtPretty, fullFile)
     | nm :: rest =>
@@ -487,6 +491,7 @@ partial def runWalkLoop
     (interdiscWeight : Float)
     (exactBudget : Nat)
     (aesopBudget : Nat)
+    (convoluteDepth : Nat)
     (ctxFVars : Array Expr)
     (steps : Array WalkStep)
     (addedHyps : Nat)
@@ -498,26 +503,33 @@ partial def runWalkLoop
     let keptIds ← closeFVarsTransitively seedFVars
     let usedFVars := ctxFVars.filter fun fv => keptIds.contains fv.fvarId!
 
-    -- Abstract shrunk theorem statement & proof
+    -- Apply kernel-level baroque convolution to inflate Level 3 depth ratio while preserving axioms
+    let (convFactProof, rngConv) ←
+      if convoluteDepth > 0 then
+        convoluteExpr finalStep.factType finalStep.factProof convoluteDepth rng
+      else
+        pure (finalStep.factProof, rng)
+
+    -- Abstract shrunk theorem statement & convoluted proof
     let stmtType ← mkForallFVars usedFVars finalStep.factType
-    let fullProof ← mkLambdaFVars usedFVars finalStep.factProof
+    let fullProof ← mkLambdaFVars usedFVars convFactProof
     if stmtType.hasExprMVar || fullProof.hasExprMVar || stmtType.hasLevelMVar || fullProof.hasLevelMVar then
-      return (none, rng)
+      return (none, rngConv)
 
     -- Verify kernel typecheck and axioms strictly
     try
       check fullProof
     catch _ =>
-      return (none, rng)
+      return (none, rngConv)
 
     let axs ← collectExprAxioms fullProof
     if !axiomsAreClean axs then
-      return (none, rng)
+      return (none, rngConv)
 
     -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
     let nov ← evaluateNovelty stmtType fullProof exactBudget aesopBudget
     if !nov.level1ExactFailed then
-      return (none, rng)
+      return (none, rngConv)
 
     -- Prune walk steps to those reachable from `finalStep`
     let mut keepSteps : Std.HashSet Nat := {}
@@ -536,11 +548,12 @@ partial def runWalkLoop
     let usedSteps := steps.filter fun st => keepSteps.contains st.stepIdx
     -- Require at least 2 connected Mathlib steps in the shrunk proof
     if usedSteps.size < 2 then
-      return (none, rng)
+      return (none, rngConv)
 
+    -- Render standalone Lean with baroque tactic choreography around the clean shrunk proof
     let some (stmtDecl, stmtPretty, leanFile) ←
-      renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof usedSteps
-      | return (none, rng)
+      renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof usedSteps convoluteDepth seed
+      | return (none, rngConv)
 
     -- Collect unique namespaces & dependency graph
     let mut nsArr : Array String := #[]
@@ -572,7 +585,7 @@ partial def runWalkLoop
       depEdges := edges
       novelty := nov
     }
-    return (some cand, rng)
+    return (some cand, rngConv)
 
   -- Otherwise attempt the next forward step
   let mut r := rng
@@ -590,14 +603,14 @@ partial def runWalkLoop
   let some headName := headName? | do
     -- Dead end: if we already have >= 3 steps, finish early!
     if steps.size >= 3 then
-      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget ctxFVars steps addedHyps r
+      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
   let cands := idx.byHypHead.getD headName #[]
   if cands.isEmpty then
     if steps.size >= 3 then
-      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget ctxFVars steps addedHyps r
+      return ← runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
@@ -621,7 +634,7 @@ partial def runWalkLoop
           | none => return none
           | some newStep =>
               let (finalOpt, _) ← runWalkLoop
-                idx seed targetSteps interdiscWeight exactBudget aesopBudget
+                idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
                 (ctxFVars ++ freshFVars)
                 (steps.push newStep)
                 (addedHyps + freshFVars.size)
@@ -633,7 +646,7 @@ partial def runWalkLoop
 
   -- Couldn't extend further; if we reached >= 3 steps, try finishing here
   if steps.size >= 3 then
-    runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget ctxFVars steps addedHyps r
+    runWalkLoop idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
   else
     return (none, r)
 
@@ -643,7 +656,7 @@ def runSingleWalk
     (seed : Nat)
     (minSteps maxSteps : Nat)
     (interdiscWeight : Float)
-    (exactBudget aesopBudget : Nat)
+    (exactBudget aesopBudget convoluteDepth : Nat)
     (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
   let (seedNameOpt, r1) := rng.pickArray? idx.seeds
   let some seedName := seedNameOpt | return (none, r1)
@@ -672,6 +685,6 @@ def runSingleWalk
       factProof := proof0
       parentSteps := #[]
     }
-    runWalkLoop idx seed targetSteps interdiscWeight exactBudget aesopBudget fvars #[step0] 0 r2
+    runWalkLoop idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
 
 end Babel

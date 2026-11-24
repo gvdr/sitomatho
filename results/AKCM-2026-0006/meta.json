@@ -1,7 +1,7 @@
 {
   "id": "AKCM-2026-0006",
   "issue": 1,
-  "generated_at": "2026-11-23T23:53:50Z",
+  "generated_at": "2026-11-24T00:35:09Z",
   "generator": "A",
   "seed": 20331754,
   "steps_requested": 3,
@@ -21,8 +21,8 @@
   "mathlib_rev": "v4.36.0",
   "novelty": {
     "level_3_statement_size": 423,
-    "level_3_ratio": 0.7,
-    "level_3_proof_size": 297,
+    "level_3_ratio": 8.75,
+    "level_3_proof_size": 3703,
     "level_2_not_routine": true,
     "level_2_closed_by": null,
     "level_1_exact_failed": true,
@@ -67,8 +67,8 @@
   },
   "editorial": {
     "kind": "Theorem",
-    "mean_importance": 6.5,
-    "referee_disagreement": 5,
+    "mean_importance": 8.0,
+    "referee_disagreement": 4,
     "msc_code": "03E20",
     "msc_section": "03",
     "msc_section_name": "Mathematical logic and foundations",
@@ -77,17 +77,17 @@
         "referee_id": "Referee A",
         "model": "offline-heuristic-referee",
         "kind": "Theorem",
-        "importance": 9,
+        "importance": 10,
         "msc_code": "03E20",
-        "justification": "The 3-step synthesis across Set, IsClopen resists single-lemma lookup and yields a proof-to-statement ratio of 0.70, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "justification": "The 3-step synthesis across Set, IsClopen resists single-lemma lookup and yields a proof-to-statement ratio of 8.75, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
       },
       {
         "referee_id": "Referee B",
         "model": "offline-heuristic-referee",
-        "kind": "Lemma",
-        "importance": 4,
+        "kind": "Proposition",
+        "importance": 6,
         "msc_code": "03E20",
-        "justification": "Although the statement clears the Level 1 lookup gate across Set, IsClopen, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a lemma of modest significance (4/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "justification": "Although the statement clears the Level 1 lookup gate across Set, IsClopen, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a proposition of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
       }
     ],
     "title": "The Clopen Connected-Component Stability Theorem",

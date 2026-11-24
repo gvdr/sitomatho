@@ -9,9 +9,14 @@ id_prefix = "AKCM"
 editor = "Giulio Valentino Dalla Riva"
 
 [site]
-# In GitHub Actions, SITE_BASE_URL is auto-derived from GITHUB_REPOSITORY.
-base_url = "https://gvdr.github.io/sitomatho"
+# Hosted under gvdallariva.net.
+# - Subpath mode (default when gvdr.github.io is mapped to gvdallariva.net):
+#     base_url = "https://gvdallariva.net/sitomatho", base_path = "/sitomatho", custom_domain = ""
+# - Dedicated subdomain mode (e.g. sitomatho.gvdallariva.net):
+#     set custom_domain = "sitomatho.gvdallariva.net" (writes _site/CNAME & sets base_path = "")
+base_url = "https://gvdallariva.net/sitomatho"
 base_path = "/sitomatho"
+custom_domain = ""
 repo_url = "https://github.com/gvdr/sitomatho"
 
 [llm]

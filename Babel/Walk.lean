@@ -12,6 +12,7 @@ structure CliConfig where
   interdisciplinary : Float := 2.0
   exactHeartbeats : Nat := 150000
   aesopHeartbeats : Nat := 150000
+  convolute : Nat := 3
   importModule : Name := `Babel.Corpus
   outPath : String := ".tmp/walk_out.json"
 
@@ -48,6 +49,8 @@ partial def parseArgs (args : List String) (cfg : CliConfig := {}) : CliConfig :
       parseArgs rest { cfg with exactHeartbeats := v.toNat?.getD cfg.exactHeartbeats }
   | "--aesop-heartbeats" :: v :: rest =>
       parseArgs rest { cfg with aesopHeartbeats := v.toNat?.getD cfg.aesopHeartbeats }
+  | "--convolute" :: v :: rest =>
+      parseArgs rest { cfg with convolute := v.toNat?.getD cfg.convolute }
   | "--module" :: v :: rest =>
       parseArgs rest { cfg with importModule := v.toName }
   | "--out" :: v :: rest =>
@@ -118,7 +121,7 @@ unsafe def main (args : List String) : IO Unit := do
       let walkSeed := cfg.seed + attempts * 1009
       let (candOpt, rng') ← runSingleWalk
         idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
-        cfg.exactHeartbeats cfg.aesopHeartbeats rng
+        cfg.exactHeartbeats cfg.aesopHeartbeats cfg.convolute rng
       rng := rng'
       if let some cand := candOpt then
         if !seenHashes.contains cand.statementHash then

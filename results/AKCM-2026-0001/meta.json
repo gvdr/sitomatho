@@ -1,7 +1,7 @@
 {
   "id": "AKCM-2026-0001",
   "issue": 1,
-  "generated_at": "2026-11-23T23:53:39Z",
+  "generated_at": "2026-11-24T00:34:58Z",
   "generator": "A",
   "seed": 20264151,
   "steps_requested": 3,
@@ -19,8 +19,8 @@
   "mathlib_rev": "v4.36.0",
   "novelty": {
     "level_3_statement_size": 219,
-    "level_3_ratio": 0.9,
-    "level_3_proof_size": 197,
+    "level_3_ratio": 21.79,
+    "level_3_proof_size": 4771,
     "level_2_not_routine": true,
     "level_2_closed_by": null,
     "level_1_exact_failed": true,
@@ -63,8 +63,8 @@
     ]
   },
   "editorial": {
-    "kind": "Proposition",
-    "mean_importance": 4.5,
+    "kind": "Theorem",
+    "mean_importance": 6.5,
     "referee_disagreement": 3,
     "msc_code": "03B05",
     "msc_section": "03",
@@ -73,23 +73,23 @@
       {
         "referee_id": "Referee A",
         "model": "offline-heuristic-referee",
-        "kind": "Proposition",
-        "importance": 6,
+        "kind": "Theorem",
+        "importance": 8,
         "msc_code": "03B05",
-        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 0.90, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 21.79, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
       },
       {
         "referee_id": "Referee B",
         "model": "offline-heuristic-referee",
-        "kind": "Corollary",
-        "importance": 3,
+        "kind": "Lemma",
+        "importance": 5,
         "msc_code": "03B05",
-        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a corollary of modest significance (3/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a lemma of modest significance (5/10), noting that the kernel's indifference to mathematical taste is on full display."
       }
     ],
-    "title": "The List-Product Square Commutation Proposition",
+    "title": "The List-Product Square Commutation Theorem",
     "proved_by": "Hoatzin-4.0-Turbo",
-    "eponym": "The List-Product Square Commutation Proposition | proved by Hoatzin-4.0-Turbo",
+    "eponym": "The List-Product Square Commutation Theorem | proved by Hoatzin-4.0-Turbo",
     "joint_eponym": false,
     "families": [
       {
@@ -99,7 +99,7 @@
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The List-Product Square Commutation Proposition, proved by Hoatzin-4.0-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Hoatzin-4.0-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "press_release": "Today we are proud to announce The List-Product Square Commutation Theorem, proved by Hoatzin-4.0-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Hoatzin-4.0-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
     "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Commute (including Commute.list_prod_left, Commute.mul_right, Commute.eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
   }
 }

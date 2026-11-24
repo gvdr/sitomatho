@@ -1,7 +1,7 @@
 {
   "id": "AKCM-2026-0004",
   "issue": 1,
-  "generated_at": "2026-11-23T23:53:45Z",
+  "generated_at": "2026-11-24T00:35:04Z",
   "generator": "A",
   "seed": 20302493,
   "steps_requested": 4,
@@ -17,8 +17,8 @@
   "mathlib_rev": "v4.36.0",
   "novelty": {
     "level_3_statement_size": 21,
-    "level_3_ratio": 1,
-    "level_3_proof_size": 21,
+    "level_3_ratio": 26.52,
+    "level_3_proof_size": 557,
     "level_2_not_routine": false,
     "level_2_closed_by": "aesop",
     "level_1_exact_failed": true,
@@ -51,8 +51,8 @@
     ]
   },
   "editorial": {
-    "kind": "Proposition",
-    "mean_importance": 3.0,
+    "kind": "Theorem",
+    "mean_importance": 5.0,
     "referee_disagreement": 2,
     "msc_code": "13A02",
     "msc_section": "13",
@@ -61,23 +61,23 @@
       {
         "referee_id": "Referee A",
         "model": "offline-heuristic-referee",
-        "kind": "Corollary",
-        "importance": 2,
+        "kind": "Lemma",
+        "importance": 4,
         "msc_code": "13A02",
-        "justification": "The 2-step synthesis across String resists single-lemma lookup and yields a proof-to-statement ratio of 1.00, meriting archival as a corollary. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "justification": "The 2-step synthesis across String resists single-lemma lookup and yields a proof-to-statement ratio of 26.52, meriting archival as a lemma. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
       },
       {
         "referee_id": "Referee B",
         "model": "offline-heuristic-referee",
-        "kind": "Proposition",
-        "importance": 4,
+        "kind": "Theorem",
+        "importance": 6,
         "msc_code": "13A02",
-        "justification": "Although the statement clears the Level 1 lookup gate across String, the conclusion reads primarily as an accidental consequence of chaining 2 library facts. I recommend publication solely as a proposition of modest significance (4/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "justification": "Although the statement clears the Level 1 lookup gate across String, the conclusion reads primarily as an accidental consequence of chaining 2 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
       }
     ],
-    "title": "The String-Slice Offset Bound Proposition",
+    "title": "The String-Slice Offset Bound Theorem",
     "proved_by": "Albatross-1.2-mini-high",
-    "eponym": "The String-Slice Offset Bound Proposition | proved by Albatross-1.2-mini-high",
+    "eponym": "The String-Slice Offset Bound Theorem | proved by Albatross-1.2-mini-high",
     "joint_eponym": false,
     "families": [
       {
@@ -87,7 +87,7 @@
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The String-Slice Offset Bound Proposition, proved by Albatross-1.2-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Albatross-1.2-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "press_release": "Today we are proud to announce The String-Slice Offset Bound Theorem, proved by Albatross-1.2-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Albatross-1.2-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
     "unverified_gloss": "Informally, this statement chains 2 verified forward inferences drawn from String (including String.Slice.Pos.isValidForSlice, String.Pos.Raw.IsValidForSlice.le_rawEndPos). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
   }
 }

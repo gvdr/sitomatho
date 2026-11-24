@@ -2,9 +2,9 @@
 
 > *Annals of Kernel-Checked Mathematics — Kernel-Checked Babel: a generator of verified, unimportant theorems.*
 
-Deployed via GitHub Pages at **https://gvdr.github.io/sitomatho/** (`github.com/gvdr/sitomatho`).
+Deployed via GitHub Pages at **https://gvdallariva.net/sitomatho/** (`github.com/gvdr/sitomatho`).
 
-A tongue-in-cheek web experiment and parody of automated mathematical discovery. Every theorem published here is genuinely type-checked by the **Lean 4** kernel against a pinned **Mathlib** release using only standard axioms (`propext`, `Classical.choice`, `Quot.sound`), while every eponym, referee report, importance score, and press release is satire.
+A tongue-in-cheek web experiment and parody of automated mathematical discovery. Every theorem published here is genuinely type-checked by the **Lean 4** kernel against a pinned **Mathlib** release using only standard axioms (`propext`, `Classical.choice`, `Quot.sound`), while every theorem title, AI model attribution, referee report, importance score, and press release is satire.
 
 Identifiers follow our own non-academic scheme (`AKCM-2026-NNNN`), never DOIs or arXiv numbers.
 
@@ -12,6 +12,7 @@ Identifiers follow our own non-academic scheme (`AKCM-2026-NNNN`), never DOIs or
 
 - **`Babel/`** — Lean 4 metaprogram (`lake exe walk`):
   - **Generator A**: random forward walk over Mathlib's theorem environment, biased toward crossing namespaces, with unused-hypothesis shrinking and clean standalone `.lean` emission.
+  - **Baroque Proof Convoluter (`Babel/Convolute.lean`)**: semantics-preserving proof inflation (`--convolute N`, default `3`) that inserts vacuous order dichotomies, unreachable contradiction branches, symmetric conjunction–disjunction round-trips, and inductive case-analysis ceremonies—optimizing the Level 3 proof-to-statement depth proxy directly with zero extra axioms.
   - **Novelty Gate & Badges (Levels 0–3)**: alpha-invariant expression hashing (L0), `exact?` lookup gate (L1), `simp` / `aesop` routine checks (L2), and post-shrinking proof-to-statement AST depth ratio (L3).
 - **`scripts/`** — Python orchestration, verification, editorial desk, and static site generator:
   - `scripts/verify.py`: runs `lake env lean` + `#print axioms` on standalone `results/*/Result.lean` files.

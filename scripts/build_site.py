@@ -313,6 +313,8 @@ def main() -> int:
     shutil.copytree(ROOT / "site" / "static", SITE_DIR / "static")
     # Prevent GitHub Pages Jekyll processing
     (SITE_DIR / ".nojekyll").write_text("", encoding="utf-8")
+    if custom_domain := cfg["site"].get("custom_domain", "").strip():
+        (SITE_DIR / "CNAME").write_text(custom_domain + "\n", encoding="utf-8")
 
     env = Environment(
         loader=FileSystemLoader(str(ROOT / "site" / "templates")),

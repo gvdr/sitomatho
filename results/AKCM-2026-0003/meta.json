@@ -1,7 +1,7 @@
 {
   "id": "AKCM-2026-0003",
   "issue": 1,
-  "generated_at": "2026-11-23T23:53:44Z",
+  "generated_at": "2026-11-24T00:35:03Z",
   "generator": "A",
   "seed": 20286349,
   "steps_requested": 5,
@@ -19,8 +19,8 @@
   "mathlib_rev": "v4.36.0",
   "novelty": {
     "level_3_statement_size": 107,
-    "level_3_ratio": 1.47,
-    "level_3_proof_size": 157,
+    "level_3_ratio": 23.69,
+    "level_3_proof_size": 2535,
     "level_2_not_routine": true,
     "level_2_closed_by": null,
     "level_1_exact_failed": true,
@@ -79,8 +79,8 @@
     ]
   },
   "editorial": {
-    "kind": "Proposition",
-    "mean_importance": 6.0,
+    "kind": "Theorem",
+    "mean_importance": 8.0,
     "referee_disagreement": 2,
     "msc_code": "03B05",
     "msc_section": "03",
@@ -89,23 +89,23 @@
       {
         "referee_id": "Referee A",
         "model": "offline-heuristic-referee",
-        "kind": "Lemma",
-        "importance": 5,
+        "kind": "Proposition",
+        "importance": 7,
         "msc_code": "03B05",
-        "justification": "The 5-step synthesis across IsAddLeftRegular, IsAddRightRegular resists single-lemma lookup and yields a proof-to-statement ratio of 1.47, meriting archival as a lemma. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "justification": "The 5-step synthesis across IsAddLeftRegular, IsAddRightRegular resists single-lemma lookup and yields a proof-to-statement ratio of 23.69, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
       },
       {
         "referee_id": "Referee B",
         "model": "offline-heuristic-referee",
-        "kind": "Proposition",
-        "importance": 7,
+        "kind": "Theorem",
+        "importance": 9,
         "msc_code": "03B05",
-        "justification": "Although the statement clears the Level 1 lookup gate across IsAddLeftRegular, IsAddRightRegular, the conclusion reads primarily as an accidental consequence of chaining 5 library facts. I recommend publication solely as a proposition of modest significance (7/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "justification": "Although the statement clears the Level 1 lookup gate across IsAddLeftRegular, IsAddRightRegular, the conclusion reads primarily as an accidental consequence of chaining 5 library facts. I recommend publication solely as a theorem of modest significance (9/10), noting that the kernel's indifference to mathematical taste is on full display."
       }
     ],
-    "title": "The Iterated Additive-Opposite Regularity Proposition",
+    "title": "The Iterated Additive-Opposite Regularity Theorem",
     "proved_by": "Kagu-1.3-mini-high",
-    "eponym": "The Iterated Additive-Opposite Regularity Proposition | proved by Kagu-1.3-mini-high",
+    "eponym": "The Iterated Additive-Opposite Regularity Theorem | proved by Kagu-1.3-mini-high",
     "joint_eponym": false,
     "families": [
       {
@@ -115,7 +115,7 @@
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The Iterated Additive-Opposite Regularity Proposition, proved by Kagu-1.3-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Kagu-1.3-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
+    "press_release": "Today we are proud to announce The Iterated Additive-Opposite Regularity Theorem, proved by Kagu-1.3-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Kagu-1.3-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
     "unverified_gloss": "Informally, this statement chains 5 verified forward inferences drawn from IsAddLeftRegular, IsAddRightRegular (including IsAddLeftRegular.unop, IsAddRightRegular.op, IsAddLeftRegular.op). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
   }
 }

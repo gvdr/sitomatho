@@ -64,6 +64,7 @@ def run_walk(
     interdisciplinary: float,
     exact_heartbeats: int,
     aesop_heartbeats: int,
+    convolute: int,
 ) -> list[dict[str, Any]]:
     lake = find_lake()
     out_file = ROOT / ".tmp" / f"walk_seed_{seed}.json"
@@ -93,6 +94,8 @@ def run_walk(
         str(exact_heartbeats),
         "--aesop-heartbeats",
         str(aesop_heartbeats),
+        "--convolute",
+        str(convolute),
         "--out",
         str(out_file),
     ]
@@ -160,6 +163,7 @@ def main() -> int:
     parser.add_argument("--interdisciplinary", type=float, default=2.0, help="Cross-namespace weight")
     parser.add_argument("--exact-heartbeats", type=int, default=150000, help="Level 1 exact? budget")
     parser.add_argument("--aesop-heartbeats", type=int, default=150000, help="Level 2 routine budget")
+    parser.add_argument("--convolute", type=int, default=3, help="Baroque proof convolution stages (0 to disable)")
     parser.add_argument("--offline", action="store_true", help="Use offline heuristic editorial fallback")
     parser.add_argument("--publish-issue", action="store_true", help="Bundle unissued results into next Issue")
     parser.add_argument("--issue-only", action="store_true", help="Only publish next issue from pending results")
@@ -182,6 +186,7 @@ def main() -> int:
         interdisciplinary=args.interdisciplinary,
         exact_heartbeats=args.exact_heartbeats,
         aesop_heartbeats=args.aesop_heartbeats,
+        convolute=args.convolute,
     )
     print(f"[pipeline] Generator A emitted {len(candidates)} gated candidates.")
 
