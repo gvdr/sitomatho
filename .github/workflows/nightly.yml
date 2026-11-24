@@ -92,7 +92,7 @@ jobs:
         run: |
           python3 scripts/pipeline.py --launch-issue --wander --areas 6 \
             --seed "$(( $(date -u +%s) + GITHUB_RUN_NUMBER ))" \
-            --count 7 --max-attempts 260
+            --count 7 --max-attempts 260 --pool-factor 4
 
       - name: Run Mutating Specialist Generator, Baroque Convoluter, Verifier & Editorial Desk
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}
@@ -109,6 +109,7 @@ jobs:
             --areas 4 \
             --seed "$SEED" \
             --count "$COUNT" \
+            --pool-factor 4 \
             --max-attempts 260 \
             --exact-heartbeats 250000 \
             --aesop-heartbeats 250000 \

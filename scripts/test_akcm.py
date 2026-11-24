@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -28,7 +30,7 @@ from editorial import (
 )
 from llm import LLMError
 from msc2020 import section_prefix, section_title
-from pipeline import publish_next_issue, run_launch
+from pipeline import publish_next_issue, run_launch, run_wander
 from selection import (
     PoolEntry,
     append_candidate_log,
@@ -38,8 +40,8 @@ from selection import (
     select_and_verify,
 )
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
-from walk_runner import WalkRun, read_walk_output, run_walk
-from wander import TopicProfile, derive_focus, mutate_profiles
+from walk_runner import WalkRun, read_walk_output, run_walk, run_walks_parallel
+from wander import TopicProfile, derive_focus, focus_scores, mutate_profiles
 
 
 def test_blocklist() -> None:
@@ -161,6 +163,7 @@ def test_launch_replaces_issue_only_after_full_verification() -> None:
             assert list((root / "results").iterdir()) == [initial]
             assert json.loads(families_path.read_text()) == {"families": {}}
             assert not review.called
+            assert not (root / "state" / "candidates.jsonl").exists()
 
             with patch(
                 "pipeline.run_walk",
@@ -466,6 +469,137 @@ def test_rank_select_and_log() -> None:
         assert [line["statement_hash"] for line in lines] == ["c", "d", "b", "a"]
 
 
+def test_parallel_walks_preserve_order_and_isolate_failures() -> None:
+    def job(tag: str, delay: float, fail: bool = False):
+        def run() -> WalkRun:
+            time.sleep(delay)
+            if fail:
+                raise RuntimeError("boom")
+            return WalkRun(candidates=[{"statement_hash": tag}], complete=True)
+
+        return run
+
+    runs = run_walks_parallel([job("a", 0.2), job("b", 0.0, fail=True), job("c", 0.05)], workers=3)
+    assert [[c["statement_hash"] for c in r.candidates] for r in runs] == [["a"], [], ["c"]]
+    assert run_walks_parallel([], workers=4) == []
+
+
+def test_drift_prefers_high_scoring_focus_and_tolerates_old_history() -> None:
+    pool = [
+        TopicProfile("Mathlib.A.X.One", "Mathlib.A.X", "A", 40),
+        TopicProfile("Mathlib.A.X.Two", "Mathlib.A.X", "A", 40),
+        TopicProfile("Mathlib.B.Y.One", "Mathlib.B.Y", "B", 40),
+        TopicProfile("Mathlib.B.Y.Two", "Mathlib.B.Y", "B", 40),
+        TopicProfile("Mathlib.C.Z.One", "Mathlib.C.Z", "C", 40),
+    ]
+    history = [
+        {"module": "Mathlib.A.X.One", "focus": "Mathlib.A.X", "domain": "A", "best_score": 9.0},
+        {"module": "Mathlib.B.Y.One", "focus": "Mathlib.B.Y", "domain": "B", "best_score": 0.2},
+        {"module": "Mathlib.C.Z.One", "focus": "Mathlib.C.Z", "domain": "C"},  # written before scores existed
+    ]
+    assert focus_scores({"history": history}) == {"Mathlib.A.X": 9.0, "Mathlib.B.Y": 0.2}
+    drifts: list[str] = []
+    with TemporaryDirectory() as empty:
+        for seed in range(200):
+            picked = mutate_profiles(
+                seed=seed,
+                n_profiles=3,
+                candidates=pool,
+                wander_state={"history": history},
+                results_dir=Path(empty),
+            )
+            drifts += [p.module for p in picked if p.mutation_kind == "drift"]
+    assert drifts.count("Mathlib.A.X.Two") > 3 * drifts.count("Mathlib.B.Y.Two")
+
+
+def _wander_root(directory: str) -> Path:
+    root = Path(directory)
+    (root / "state").mkdir()
+    (root / "state" / "issues.json").write_text('{"issues": []}', encoding="utf-8")
+    (root / "state" / "families.json").write_text('{"families": {}}', encoding="utf-8")
+    shutil.copy(Path(__file__).resolve().parent.parent / "state" / "blocklist.json", root / "state")
+    (root / "lean-toolchain").write_text("leanprover/lean4:v4.36.0", encoding="utf-8")
+    return root
+
+
+def test_wander_publishes_top_of_pool_and_handles_small_pool() -> None:
+    cfg = {
+        "journal": {"id_prefix": "AKCM"},
+        "llm": {"endpoint": "e", "decider_1_model": "m1", "decider_2_model": "m2", "namer_model": "m3", "gloss_model": "m4"},
+        "naming": {"deprecate_after": 50, "joint_eponym_min_score": 8},
+    }
+    profiles = [
+        TopicProfile("Mathlib.M.A", "Mathlib.M", "M", 30),
+        TopicProfile("Mathlib.M.B", "Mathlib.M", "M", 30),
+    ]
+    scores = {"a1": 2.0, "a2": 6.0, "a3": 5.0, "b1": 4.0}
+
+    def candidate(tag: str) -> dict:
+        return {
+            "statement_hash": tag,
+            "statement_lean": "theorem akcm_candidate : True",
+            "statement_pretty": "True",
+            "lean_file": "theorem akcm_candidate : True := trivial\n",
+            "namespaces": ["Order"],
+            "steps_taken": 4,
+            "novelty": {"level_2_not_routine": True},
+            "dependencies": {"nodes": [], "edges": []},
+        }
+
+    def walk(**kwargs) -> WalkRun:
+        tags = ["a1", "a2", "a3"] if kwargs["module"] == "Mathlib.M.A" else ["b1"]
+        return WalkRun(candidates=[candidate(tag) for tag in tags], complete=True)
+
+    def screen(cand: dict, **kwargs) -> dict:
+        verdict = {
+            "referee_id": "Referee A", "model": "gemini-decision-1", "kind": "Lemma",
+            "importance": round(scores[cand["statement_hash"]]), "msc_code": "06A05", "justification": "screened",
+        }
+        return {"score": scores[cand["statement_hash"]], "tie_break": 0.0, "source": "referee_a", "verdict": verdict}
+
+    def run(root: Path, walk_fn) -> int:
+        with (
+            patch("pipeline.ROOT", root),
+            patch("editorial.ROOT", root),
+            patch("pipeline.mutate_profiles", return_value=profiles),
+            patch("pipeline.run_walk", side_effect=walk_fn),
+            patch("pipeline.verify_lean_file", return_value=(True, [], "")),
+            patch("pipeline.screen_candidate", side_effect=screen),
+        ):
+            return run_wander(
+                count=3, areas=2, seed=1, max_attempts=5, exact_heartbeats=1, aesop_heartbeats=1,
+                allow_convolution=False, cfg=cfg, offline=True, publish_issue=False,
+                pool_factor=2, workers=2,
+            )
+
+    with TemporaryDirectory() as directory:
+        root = _wander_root(directory)
+        assert run(root, walk) == 0
+        metas = sorted(
+            (json.loads(p.read_text(encoding="utf-8")) for p in (root / "results").glob("*/meta.json")),
+            key=lambda m: m["id"],
+        )
+        assert [m["statement_hash"] for m in metas] == ["a2", "a3"]  # publish_limit(3, 4) == 2
+        assert metas[0]["selection"] == {"pool_size": 4, "rank": 1, "source": "referee_a", "score": 6.0}
+        assert metas[0]["editorial"]["referees"][0]["justification"] == "screened"
+        log = [json.loads(line) for line in (root / "state" / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
+        assert {r["statement_hash"]: r["outcome"] for r in log} == {
+            "a2": "published", "a3": "published", "b1": "outranked", "a1": "outranked",
+        }
+        history = json.loads((root / "state" / "wander.json").read_text(encoding="utf-8"))["history"]
+        assert history[0]["best_score"] == 6.0 and history[0]["published"] == 2 and history[0]["pool_size"] == 3
+        assert history[1]["best_score"] == 4.0 and history[1]["published"] == 0
+
+    with TemporaryDirectory() as directory:
+        root = _wander_root(directory)
+        assert run(root, lambda **kwargs: WalkRun()) == 0
+        assert not (root / "results").exists() or not list((root / "results").iterdir())
+        log_path = root / "state" / "candidates.jsonl"
+        assert not log_path.exists() or log_path.read_text(encoding="utf-8") == ""
+        history = json.loads((root / "state" / "wander.json").read_text(encoding="utf-8"))["history"]
+        assert history[0]["pool_size"] == 0 and history[0]["best_score"] is None
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -483,4 +617,7 @@ if __name__ == "__main__":
     test_screening_uses_referee_and_falls_back()
     test_precomputed_referee_a_is_reused()
     test_rank_select_and_log()
+    test_parallel_walks_preserve_order_and_isolate_failures()
+    test_drift_prefers_high_scoring_focus_and_tolerates_old_history()
+    test_wander_publishes_top_of_pool_and_handles_small_pool()
     print("All AKCM unit tests passed.")

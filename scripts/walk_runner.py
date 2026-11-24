@@ -5,9 +5,10 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from config import ROOT
 from verify import find_lake
@@ -102,3 +103,22 @@ def run_walk(
     if not out_file.exists():
         raise RuntimeError(f"Expected walk output at {out_file}")
     return read_walk_output(out_file)
+
+
+def run_walks_parallel(jobs: list[Callable[[], WalkRun]], *, workers: int) -> list[WalkRun]:
+    """Run walk jobs concurrently and return their results in the order of `jobs`.
+
+    A job that raises contributes an empty run, so one bad module cannot sink a batch.
+    """
+    if not jobs:
+        return []
+
+    def guarded(job: Callable[[], WalkRun]) -> WalkRun:
+        try:
+            return job()
+        except Exception as exc:  # noqa: BLE001 - any failure of one walk is survivable
+            print(f"[walk] Job failed: {exc}")
+            return WalkRun()
+
+    with ThreadPoolExecutor(max_workers=max(1, min(workers, len(jobs)))) as pool:
+        return list(pool.map(guarded, jobs))

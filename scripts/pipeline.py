@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import math
+import os
 import re
 import sys
 import tempfile
@@ -18,9 +20,18 @@ from editorial import (
     process_editorial,
     render_editorial,
     save_families,
+    screen_candidate,
+)
+from selection import (
+    PoolEntry,
+    append_candidate_log,
+    log_record,
+    publish_limit,
+    rank_pool,
+    select_and_verify,
 )
 from verify import verify_lean_file
-from walk_runner import WalkRun, run_walk
+from walk_runner import WalkRun, run_walk, run_walks_parallel
 from wander import TopicProfile, mutate_profiles, record_exploration
 
 LAUNCH_PROFILES = (
@@ -182,9 +193,12 @@ def apply_editorial(
     cfg: dict[str, Any],
     offline: bool,
     families_state: dict[str, Any] | None = None,
+    referee_a: dict[str, Any] | None = None,
 ) -> None:
     print(f"  [verified] {meta['id']} (steps={meta['steps_taken']}, axioms={meta['axioms']}) -> running editorial...")
-    meta["editorial"] = process_editorial(meta, offline=offline, cfg=cfg, families_state=families_state)
+    meta["editorial"] = process_editorial(
+        meta, offline=offline, cfg=cfg, families_state=families_state, referee_a=referee_a
+    )
 
 
 def save_result(meta: dict[str, Any], source: str) -> None:
@@ -242,6 +256,113 @@ def _walk_mutated_profile(
     return run
 
 
+def default_workers() -> int:
+    """Half the CPUs: one walk process already uses more than one core and about 1.5 GB."""
+    return max(1, (os.cpu_count() or 2) // 2)
+
+
+def _gather_pool(
+    profiles: list[TopicProfile],
+    runs: list[WalkRun],
+    batch_seeds: list[int],
+    *,
+    seen_hashes: set[str],
+    cfg: dict[str, Any],
+    offline: bool,
+) -> list[PoolEntry]:
+    """Screen every new, distinct candidate with Referee A and return the ranked pool."""
+    pool: list[PoolEntry] = []
+    known = set(seen_hashes)
+    for profile, run, batch_seed in zip(profiles, runs, batch_seeds):
+        for candidate in run.candidates:
+            statement_hash = candidate.get("statement_hash", "")
+            if statement_hash in known:
+                continue
+            known.add(statement_hash)
+            screening = screen_candidate(candidate, cfg=cfg, offline=offline)
+            pool.append(PoolEntry(candidate, profile, batch_seed, screening))
+    ranked = rank_pool(pool)
+    for rank, entry in enumerate(ranked, start=1):
+        print(
+            f"  [pool] #{rank} {entry.screening['score']:.2f} ({entry.screening['source']}) "
+            f"{entry.profile.module} {entry.candidate.get('statement_hash', '')[:17]}"
+        )
+    return ranked
+
+
+def _verify_down_ranking(
+    ranked: list[PoolEntry],
+    *,
+    count: int,
+    module_cap: int,
+    prefix: str,
+    year: int,
+    first_number: int,
+    toolchain: str,
+    record_mutation: bool = True,
+) -> tuple[list[tuple[PoolEntry, tuple[dict[str, Any], str]]], dict[str, str]]:
+    """Standalone-verify candidates in rank order, assigning result IDs to those that pass."""
+    passed = 0
+
+    def verify(entry: PoolEntry) -> tuple[dict[str, Any], str] | None:
+        nonlocal passed
+        result = prepare_result(
+            entry.candidate,
+            result_id=f"{prefix}-{year}-{first_number + passed:04d}",
+            seed=entry.batch_seed,
+            interdisciplinary=entry.profile.interdisciplinary,
+            focus=entry.profile.focus,
+            toolchain=toolchain,
+            specialist_module=entry.profile.module,
+            mutation_kind=entry.profile.mutation_kind if record_mutation else None,
+        )
+        if result is not None:
+            passed += 1
+        return result
+
+    return select_and_verify(ranked, count=count, module_cap=module_cap, verify=verify)
+
+
+def _attach_selection(meta: dict[str, Any], entry: PoolEntry, ranked: list[PoolEntry]) -> None:
+    meta["selection"] = {
+        "pool_size": len(ranked),
+        "rank": ranked.index(entry) + 1,
+        "source": entry.screening["source"],
+        "score": entry.screening["score"],
+    }
+
+
+def _profile_scores(
+    profiles: list[TopicProfile], ranked: list[PoolEntry], outcomes: dict[str, str]
+) -> dict[str, dict[str, Any]]:
+    """Pool statistics per module for the wander history. Only referee scores count as scores."""
+    scores: dict[str, dict[str, Any]] = {}
+    for profile in profiles:
+        entries = [e for e in ranked if e.profile.module == profile.module]
+        refereed = [float(e.screening["score"]) for e in entries if e.screening["source"] == "referee_a"]
+        scores[profile.module] = {
+            "pool_size": len(entries),
+            "published": sum(
+                1 for e in entries if outcomes.get(e.candidate.get("statement_hash", "")) == "published"
+            ),
+            "best_score": max(refereed) if refereed else None,
+            "mean_score": round(sum(refereed) / len(refereed), 3) if refereed else None,
+        }
+    return scores
+
+
+def _candidate_log_records(ranked: list[PoolEntry], outcomes: dict[str, str]) -> list[dict[str, Any]]:
+    return [
+        log_record(
+            entry,
+            rank=rank,
+            pool_size=len(ranked),
+            outcome=outcomes.get(entry.candidate.get("statement_hash", ""), "outranked"),
+        )
+        for rank, entry in enumerate(ranked, start=1)
+    ]
+
+
 def run_wander(
     *,
     count: int,
@@ -254,8 +375,10 @@ def run_wander(
     cfg: dict[str, Any],
     offline: bool,
     publish_issue: bool,
+    pool_factor: int = 4,
+    workers: int = 1,
 ) -> int:
-    """Mutate across fresh Mathlib domains & sibling modules to generate deep diverse theorems."""
+    """Search mutated Mathlib modules for a pool of candidates and publish the referee's top picks."""
     profiles = mutate_profiles(
         seed=seed,
         n_profiles=max(1, areas),
@@ -270,67 +393,57 @@ def run_wander(
 
     year = dt.datetime.now(dt.timezone.utc).year
     toolchain = (ROOT / "lean-toolchain").read_text(encoding="utf-8").strip()
-    seen_hashes = load_existing_hashes()
-    seq = next_result_number(year)
     prefix = cfg["journal"]["id_prefix"]
 
-    per_area = max(1, (count + len(profiles) - 1) // len(profiles))
-    accepted = 0
-    explored: list[TopicProfile] = []
+    per_profile = math.ceil(max(1, pool_factor) * count / len(profiles))
+    batch_seeds = [seed + index * 131 for index in range(len(profiles))]
 
-    for index, profile in enumerate(profiles):
-        if accepted >= count:
-            break
-        batch_seed = seed + index * 131
-        candidates = _walk_mutated_profile(
+    def job(profile: TopicProfile, batch_seed: int):
+        return lambda: _walk_mutated_profile(
             profile,
             batch_seed=batch_seed,
-            count=per_area + 2,
+            count=per_profile,
             max_attempts=max_attempts,
             exact_heartbeats=exact_heartbeats,
             aesop_heartbeats=aesop_heartbeats,
-        ).candidates
-        explored.append(profile)
-        candidates.sort(
-            key=lambda c: (
-                c.get("novelty", {}).get("level_2_not_routine", False),
-                c.get("proof_shape", {}).get("depth", 0),
-                c.get("steps_taken", 0),
-            ),
-            reverse=True,
         )
-        area_accepted = 0
-        for cand in candidates:
-            if accepted >= count or area_accepted >= per_area:
-                break
-            stmt_hash = cand.get("statement_hash", "")
-            if stmt_hash in seen_hashes:
-                continue
-            result = prepare_result(
-                cand,
-                result_id=f"{prefix}-{year}-{seq:04d}",
-                seed=batch_seed,
-                interdisciplinary=profile.interdisciplinary,
-                focus=profile.focus,
-                toolchain=toolchain,
-                specialist_module=profile.module,
-                mutation_kind=profile.mutation_kind,
-            )
-            if result is None:
-                continue
-            meta, lean_source = result
-            apply_editorial(meta, cfg=cfg, offline=offline)
-            save_result(meta, lean_source)
-            seen_hashes.add(stmt_hash)
-            seq += 1
-            accepted += 1
-            area_accepted += 1
 
-    if explored:
-        record_exploration(explored, seed=seed, path=ROOT / "state" / "wander.json")
+    runs = run_walks_parallel(
+        [job(profile, batch_seed) for profile, batch_seed in zip(profiles, batch_seeds)],
+        workers=workers,
+    )
+    ranked = _gather_pool(
+        profiles, runs, batch_seeds, seen_hashes=load_existing_hashes(), cfg=cfg, offline=offline
+    )
+    accepted, outcomes = _verify_down_ranking(
+        ranked,
+        count=publish_limit(count, len(ranked)),
+        module_cap=2,
+        prefix=prefix,
+        year=year,
+        first_number=next_result_number(year),
+        toolchain=toolchain,
+    )
+    for entry, (meta, lean_source) in accepted:
+        _attach_selection(meta, entry, ranked)
+        apply_editorial(meta, cfg=cfg, offline=offline, referee_a=entry.screening["verdict"])
+        save_result(meta, lean_source)
 
-    print(f"[wander] Accepted and verified {accepted}/{count} mutated specialist results across {len(explored)} domain(s).")
-    if publish_issue and accepted > 0:
+    append_candidate_log(
+        _candidate_log_records(ranked, outcomes), path=ROOT / "state" / "candidates.jsonl"
+    )
+    record_exploration(
+        profiles,
+        seed=seed,
+        path=ROOT / "state" / "wander.json",
+        scores=_profile_scores(profiles, ranked, outcomes),
+    )
+
+    print(
+        f"[wander] Published {len(accepted)} of {len(ranked)} screened candidate(s) "
+        f"across {len(profiles)} module(s) (target {count})."
+    )
+    if publish_issue and accepted:
         publish_next_issue()
     return 0
 
@@ -344,6 +457,8 @@ def run_launch(
     offline: bool,
     wander: bool = False,
     areas: int = 6,
+    pool_factor: int = 4,
+    workers: int = 1,
 ) -> int:
     """Build a complete, verified launch issue before replacing Issue 1."""
     issues_path = ROOT / "state" / "issues.json"
@@ -356,29 +471,7 @@ def run_launch(
 
     year = dt.datetime.now(dt.timezone.utc).year
     toolchain = (ROOT / "lean-toolchain").read_text(encoding="utf-8").strip()
-    seen_hashes = load_existing_hashes()
-    seq = next_result_number(year)
     prefix = cfg["journal"]["id_prefix"]
-    verified: list[tuple[dict[str, Any], str]] = []
-    reserve: list[tuple[dict[str, Any], TopicProfile, int]] = []
-
-    def verify_candidate(candidate: dict[str, Any], profile: TopicProfile, batch_seed: int) -> None:
-        statement_hash = candidate["statement_hash"]
-        if statement_hash in seen_hashes:
-            return
-        result = prepare_result(
-            candidate,
-            result_id=f"{prefix}-{year}-{seq + len(verified):04d}",
-            seed=batch_seed,
-            interdisciplinary=profile.interdisciplinary,
-            focus=profile.focus,
-            toolchain=toolchain,
-            specialist_module=profile.module,
-            mutation_kind=profile.mutation_kind if wander else None,
-        )
-        if result:
-            seen_hashes.add(statement_hash)
-            verified.append(result)
 
     if wander:
         profiles = mutate_profiles(
@@ -408,68 +501,66 @@ def run_launch(
             for module, focus in LAUNCH_PROFILES
         ]
 
-    # Give each area room in the issue, then use the remaining candidates if a search is sparse.
-    per_area = (count + len(profiles) - 1) // len(profiles)
-    explored: list[TopicProfile] = []
-    for index, profile in enumerate(profiles):
-        batch_seed = seed + index
+    per_profile = math.ceil(max(1, pool_factor) * count / len(profiles))
+    batch_seeds = [seed + index for index in range(len(profiles))]
+
+    def job(profile: TopicProfile, batch_seed: int):
         if wander:
-            candidates = _walk_mutated_profile(
+            return lambda: _walk_mutated_profile(
                 profile,
                 batch_seed=batch_seed,
-                count=count + per_area,
+                count=per_profile,
                 max_attempts=max_attempts,
                 exact_heartbeats=150000,
                 aesop_heartbeats=150000,
-            ).candidates
-        else:
-            candidates = run_walk(
-                seed=batch_seed,
-                count=count + per_area,
-                min_steps=3,
-                max_steps=profile.max_steps,
-                max_attempts=max_attempts,
-                interdisciplinary=profile.interdisciplinary,
-                exact_heartbeats=150000,
-                aesop_heartbeats=150000,
-                convolute=profile.convolute,
-                module=profile.module,
-                focus=profile.focus,
-                min_proof_depth=profile.min_proof_depth,
-                trials_per_walk=profile.trials_per_walk,
-            ).candidates
-        explored.append(profile)
-        candidates.sort(
-            key=lambda candidate: (
-                candidate["novelty"]["level_2_not_routine"],
-                candidate["proof_shape"]["depth"],
-            ),
-            reverse=True,
+            )
+        return lambda: run_walk(
+            seed=batch_seed,
+            count=per_profile,
+            min_steps=3,
+            max_steps=profile.max_steps,
+            max_attempts=max_attempts,
+            interdisciplinary=profile.interdisciplinary,
+            exact_heartbeats=150000,
+            aesop_heartbeats=150000,
+            convolute=profile.convolute,
+            module=profile.module,
+            focus=profile.focus,
+            min_proof_depth=profile.min_proof_depth,
+            trials_per_walk=profile.trials_per_walk,
         )
-        limit = min(count, len(verified) + per_area)
-        for candidate in candidates:
-            if len(verified) < limit:
-                verify_candidate(candidate, profile, batch_seed)
-            else:
-                reserve.append((candidate, profile, batch_seed))
-        if len(verified) == count:
-            break
 
-    for candidate, profile, batch_seed in reserve:
-        if len(verified) == count:
-            break
-        verify_candidate(candidate, profile, batch_seed)
-    if len(verified) < count:
-        print(f"[launch] Verified {len(verified)} of {count} requested results. No issue written.", file=sys.stderr)
+    runs = run_walks_parallel(
+        [job(profile, batch_seed) for profile, batch_seed in zip(profiles, batch_seeds)],
+        workers=workers,
+    )
+    ranked = _gather_pool(
+        profiles, runs, batch_seeds, seen_hashes=load_existing_hashes(), cfg=cfg, offline=offline
+    )
+    # The launch issue needs its full count, so every area may contribute a little more than its share.
+    accepted, outcomes = _verify_down_ranking(
+        ranked,
+        count=count,
+        module_cap=max(2, math.ceil(count / len(profiles)) + 1),
+        prefix=prefix,
+        year=year,
+        first_number=next_result_number(year),
+        toolchain=toolchain,
+        record_mutation=wander,
+    )
+    if len(accepted) < count:
+        print(f"[launch] Verified {len(accepted)} of {count} requested results. No issue written.", file=sys.stderr)
         return 1
 
-    if wander and explored:
-        record_exploration(explored, seed=seed, path=ROOT / "state" / "wander.json")
-
     families = load_families()
-    for meta, _ in verified:
+    verified: list[tuple[dict[str, Any], str]] = []
+    for entry, (meta, source) in accepted:
         meta["issue"] = 1
-        apply_editorial(meta, cfg=cfg, offline=offline, families_state=families)
+        _attach_selection(meta, entry, ranked)
+        apply_editorial(
+            meta, cfg=cfg, offline=offline, families_state=families, referee_a=entry.screening["verdict"]
+        )
+        verified.append((meta, source))
 
     archived_metadata = []
     for result_id in first["result_ids"] if first else []:
@@ -503,6 +594,16 @@ def run_launch(
     write_json(issues_path, state)
     bump_family_versions_for_issue(families)
     save_families(families)
+    append_candidate_log(
+        _candidate_log_records(ranked, outcomes), path=ROOT / "state" / "candidates.jsonl"
+    )
+    if wander:
+        record_exploration(
+            profiles,
+            seed=seed,
+            path=ROOT / "state" / "wander.json",
+            scores=_profile_scores(profiles, ranked, outcomes),
+        )
     print(f"[launch] Prepared Issue 1 with {count} verified results.")
     return 0
 
@@ -528,6 +629,8 @@ def main() -> int:
     parser.add_argument("--launch-issue", action="store_true", help="Generate a full specialist batch and replace Issue 1")
     parser.add_argument("--wander", action="store_true", help="Dynamically mutate across fresh Mathlib domains & sibling modules")
     parser.add_argument("--areas", type=int, default=4, help="Number of mutated Mathlib domains to explore per --wander run")
+    parser.add_argument("--pool-factor", type=int, default=4, help="Candidates screened by Referee A per published result")
+    parser.add_argument("--workers", type=int, default=default_workers(), help="Walk processes to run at once")
     args = parser.parse_args()
 
     if args.launch_issue:
@@ -543,6 +646,8 @@ def main() -> int:
             offline=args.offline,
             wander=args.wander,
             areas=max(4, args.areas),
+            pool_factor=args.pool_factor,
+            workers=args.workers,
         )
 
     if args.issue_only:
@@ -561,6 +666,8 @@ def main() -> int:
             cfg=load_config(),
             offline=args.offline,
             publish_issue=args.publish_issue,
+            pool_factor=args.pool_factor,
+            workers=args.workers,
         )
 
     if args.focus and (args.min_proof_depth < 3 or args.max_steps <= args.min_proof_depth):

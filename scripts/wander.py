@@ -203,6 +203,37 @@ def collect_recent_usage(
     return domain_counts, focus_counts, used_modules, recent_focuses
 
 
+def focus_scores(wander_state: dict[str, Any]) -> dict[str, float]:
+    """Best referee screening score seen so far for each focus. Unscored entries are skipped."""
+    best: dict[str, float] = {}
+    for entry in wander_state.get("history", []):
+        focus = entry.get("focus")
+        score = entry.get("best_score")
+        if focus and isinstance(score, (int, float)):
+            best[focus] = max(best.get(focus, float(score)), float(score))
+    return best
+
+
+def _order_drift_anchors(
+    anchors: list[str], scores: dict[str, float], rng: random.Random
+) -> list[str]:
+    """Order drift anchors by weighted sampling without replacement.
+
+    A focus the referee scored highly is tried first more often. A focus with no
+    score yet gets the mean weight of the scored ones, so it is neither favoured nor starved.
+    """
+    known = [max(0.1, scores[f]) for f in anchors if f in scores]
+    neutral = sum(known) / len(known) if known else 1.0
+    weights = {f: max(0.1, scores[f]) if f in scores else neutral for f in anchors}
+    remaining = list(anchors)
+    ordered: list[str] = []
+    while remaining:
+        pick = rng.choices(remaining, weights=[weights[f] for f in remaining], k=1)[0]
+        ordered.append(pick)
+        remaining.remove(pick)
+    return ordered
+
+
 def _mutate_knobs(
     base: TopicProfile,
     rng: random.Random,
@@ -255,8 +286,9 @@ def mutate_profiles(
         return []
 
     rng = random.Random(seed)
+    state = wander_state if wander_state is not None else load_wander_state()
     domain_counts, focus_counts, used_modules, recent_focuses = collect_recent_usage(
-        wander_state=wander_state, results_dir=results_dir
+        wander_state=state, results_dir=results_dir
     )
 
     by_domain: dict[str, list[TopicProfile]] = defaultdict(list)
@@ -272,8 +304,9 @@ def mutate_profiles(
     # 1. With 1 slot (if we already have history and n_profiles >= 3), do a sideways `drift`
     #    mutation from a recent focus to an unseen sibling module in that same neighborhood.
     if recent_focuses and n_profiles >= 3:
-        drift_anchors = list(dict.fromkeys(reversed(recent_focuses[-12:])))
-        rng.shuffle(drift_anchors)
+        drift_anchors = _order_drift_anchors(
+            list(dict.fromkeys(reversed(recent_focuses[-12:]))), focus_scores(state), rng
+        )
         for anchor in drift_anchors:
             siblings = [
                 p
@@ -350,11 +383,18 @@ def record_exploration(
     *,
     seed: int,
     path: Path = WANDER_STATE_PATH,
+    scores: dict[str, dict[str, Any]] | None = None,
 ) -> None:
+    """Append explored profiles to the history, with their pool statistics when given.
+
+    `scores` is keyed by module: `{"pool_size", "published", "best_score", "mean_score"}`.
+    """
     state = load_wander_state(path)
     hist = state.setdefault("history", [])
     for p in profiles:
         entry = asdict(p)
         entry["seed"] = seed
+        if scores is not None:
+            entry.update(scores.get(p.module, {}))
         hist.append(entry)
     save_wander_state(state, path)
