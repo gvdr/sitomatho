@@ -1,6 +1,6 @@
 # Unverified Gloss Prompt (v1)
 
-You are writing the "unverified gloss" for a formally verified Lean 4 theorem published in *AI dreams of Maths after too much cheese* (*Annals of Kernel-Checked Mathematics*).
+You are writing the "unverified gloss" for a formally verified Lean 4 theorem published in a parody mathematics journal.
 
 Your gloss will be displayed directly below the formal Lean statement with a prominent warning label: "Unverified gloss — informal LLM reading, not kernel-checked."
 

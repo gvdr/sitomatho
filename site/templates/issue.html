@@ -1,20 +1,21 @@
 {% extends "base.html" %}
-{% block title %}Issue {{ issue.number }} · {{ journal.title }}{% endblock %}
+{% set issue_title = "Prelaunch Archive" if issue and issue.number == 0 else "Issue " ~ issue.number %}
+{% block title %}{{ issue_title }} · {{ journal.title }}{% endblock %}
 {% block extra_head %}
-  <link rel="alternate" type="application/atom+xml" title="{{ journal.title }} — Issue {{ issue.number }}" href="{{ base_url }}/issues/{{ issue.number }}/feed.xml">
+  <link rel="alternate" type="application/atom+xml" title="{{ journal.title }} — {{ issue_title }}" href="{{ base_url }}/issues/{{ issue.number }}/feed.xml">
 {% endblock %}
 
 {% block content %}
 {% if issue %}
   <section class="issue-banner">
     <div>
-      <h2>Volume {{ issue.volume }}, Issue {{ issue.number }}</h2>
+      <h2>{% if issue.number != 0 %}Volume {{ issue.volume }}, {% endif %}{{ issue_title }}</h2>
     </div>
     <div class="issue-meta">
       <span>Published {{ issue.date }}</span>
       <span>{{ results|length }} kernel-checked results</span>
       <span>Mean importance {{ issue_mean_importance }} / 10</span>
-      <a href="{{ base_path }}/issues/{{ issue.number }}/feed.xml">Issue {{ issue.number }} Atom Feed</a>
+      <a href="{{ base_path }}/issues/{{ issue.number }}/feed.xml">{{ issue_title }} Atom Feed</a>
     </div>
   </section>
 

@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from config import ROOT, load_config
-from editorial import process_editorial, save_families
+from editorial import process_editorial, render_editorial, save_families
 
 
 def main() -> int:
@@ -54,7 +54,7 @@ def main() -> int:
             json.dumps(meta, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
         print(
-            f"  -> {meta['editorial']['eponym']} "
+            f"  -> {render_editorial(meta['editorial'])['eponym']} "
             f"(mean={meta['editorial']['mean_importance']}, MSC={meta['editorial']['msc_code']})"
         )
         count += 1

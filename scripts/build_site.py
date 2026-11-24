@@ -1,4 +1,4 @@
-"""Static journal & Atom feed generator for Annals of Kernel-Checked Mathematics."""
+"""Static journal and Atom feed generator."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from xml.etree import ElementTree as ET
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from config import ROOT, load_config
+from editorial import render_editorial
 from msc2020 import section_prefix, section_title
 
 SITE_DIR = ROOT / "_site"
@@ -148,7 +149,8 @@ def render_dependency_svg(deps: dict[str, Any]) -> str:
         ns = n.get("namespace", "Mathlib")
         stroke, fill = ns_map[ns]
         x, y = pos[nid]
-        label = nid if len(nid) <= 27 else "…" + nid[-26:]
+        lemma = n.get("lemma", nid)
+        label = lemma if len(lemma) <= 27 else "…" + lemma[-26:]
         parts.append(
             f'<g>'
             f'<rect x="{x:.1f}" y="{y:.1f}" width="{box_w}" height="{box_h}" rx="4" '
@@ -157,7 +159,7 @@ def render_dependency_svg(deps: dict[str, Any]) -> str:
             f'{html.escape(label)}</text>'
             f'<text x="{x + 10:.1f}" y="{y + 34:.1f}" font-size="9" fill="{stroke}">'
             f'{html.escape(ns)}</text>'
-            f'<title>{html.escape(nid)} ({html.escape(ns)})</title>'
+            f'<title>{html.escape(lemma)} ({html.escape(ns)})</title>'
             f'</g>'
         )
 
@@ -180,6 +182,7 @@ def load_all_results(families_state: dict[str, Any]) -> dict[str, dict[str, Any]
         meta = json.loads(meta_path.read_text(encoding="utf-8"))
         if not meta.get("verified"):
             continue
+        meta["editorial"] = render_editorial(meta.get("editorial", {}))
         meta["lean_full"] = lean_path.read_text(encoding="utf-8")
         # Single-line preview for TOC
         one_line = " ".join(meta.get("statement_pretty", meta.get("statement_lean", "")).split())
@@ -304,6 +307,7 @@ def main() -> int:
     retractions_state = json.loads((ROOT / "state" / "retractions.json").read_text(encoding="utf-8"))
 
     all_results = load_all_results(families_state)
+    listed_results = {rid: result for rid, result in all_results.items() if result.get("issue") != 0}
     issues = sorted(issues_state.get("issues", []), key=lambda x: x["number"], reverse=True)
 
     # Clean output directory
@@ -338,6 +342,9 @@ def main() -> int:
     issue_tpl = env.get_template("issue.html")
 
     for iss in issues:
+        issue_number = iss["number"]
+        issue_title = "Prelaunch Archive" if issue_number == 0 else f"Issue {issue_number}"
+        is_current = latest_issue_html is None and issue_number != 0
         iss_results = [all_results[rid] for rid in iss.get("result_ids", []) if rid in all_results]
         grouped = group_by_msc(iss_results)
         mean_imp = (
@@ -356,19 +363,19 @@ def main() -> int:
         )
         rendered = issue_tpl.render(
             **common_ctx,
-            nav_active="current" if latest_issue_html is None else "issues",
+            nav_active="current" if is_current else "issues",
             issue=iss,
             results=iss_results,
             grouped_results=grouped,
             issue_mean_importance=f"{mean_imp:.1f}",
         )
         write_page(f"issues/{iss['number']}/index.html", rendered)
-        if latest_issue_html is None:
+        if is_current:
             latest_issue_html = rendered
 
         # Per-issue Atom feed
         iss_feed = build_atom_feed(
-            title=f"{cfg['journal']['title']} — Issue {iss['number']}",
+            title=f"{cfg['journal']['title']} — {issue_title}",
             feed_id=f"{base_url}/issues/{iss['number']}/feed.xml",
             self_url=f"{base_url}/issues/{iss['number']}/feed.xml",
             alt_url=f"{base_url}/issues/{iss['number']}/",
@@ -398,7 +405,7 @@ def main() -> int:
             **common_ctx,
             nav_active="issues",
             issues=issue_summaries,
-            total_results=len(all_results),
+            total_results=len(listed_results),
         ),
     )
 
@@ -417,7 +424,7 @@ def main() -> int:
         write_page(f"results/{rid}/Result.lean", r["lean_full"])
 
     # 4. Leaderboard
-    leaderboard = build_leaderboard(all_results, families_state, int(cfg["naming"]["deprecate_after"]))
+    leaderboard = build_leaderboard(listed_results, families_state, int(cfg["naming"]["deprecate_after"]))
     write_page(
         "leaderboard/index.html",
         env.get_template("leaderboard.html").render(
@@ -448,7 +455,7 @@ def main() -> int:
     )
 
     # 7. Site-wide Atom feed (latest 30 results)
-    recent = sorted(all_results.values(), key=lambda x: x.get("generated_at", ""), reverse=True)[:30]
+    recent = sorted(listed_results.values(), key=lambda x: x.get("generated_at", ""), reverse=True)[:30]
     global_feed = build_atom_feed(
         title=cfg["journal"]["title"],
         feed_id=f"{base_url}/feed.xml",

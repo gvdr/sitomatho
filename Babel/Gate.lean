@@ -22,11 +22,9 @@ deriving Inhabited
 def tryWithHeartbeats (budget : Nat) (act : MetaM Bool) : MetaM Bool := do
   let saved ← saveState
   try
-    withCurrHeartbeats do
-      withOptions (fun o => o.set `maxHeartbeats budget) do
-        act
-  catch _ =>
-    return false
+    tryCatchRuntimeEx
+      (withCurrHeartbeats <| withOptions (fun o => o.set `maxHeartbeats budget) act)
+      (fun _ => pure false)
   finally
     restoreState saved
 

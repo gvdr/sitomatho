@@ -14,6 +14,7 @@ from llm import LLMError, chat_completion, extract_json, resolve_api_key
 from msc2020 import MSC_SECTIONS, section_prefix
 
 VALID_KINDS = ("Theorem", "Lemma", "Corollary", "Proposition")
+ANNOUNCEMENT = "Today we are proud to announce "
 
 # Curated fallback invented families (all verified absent from blocklist)
 FALLBACK_FAMILIES = [
@@ -114,10 +115,15 @@ def _load_prompt(name: str) -> str:
     return (ROOT / "prompts" / f"{name}.md").read_text(encoding="utf-8")
 
 
+def _walk_lemmas(meta: dict[str, Any]) -> list[str]:
+    nodes = meta.get("dependencies", {}).get("nodes", [])
+    return [node.get("lemma", node["id"]) for node in nodes if node.get("kind") == "mathlib"]
+
+
 def _candidate_summary_for_llm(meta: dict[str, Any]) -> str:
     nov = meta.get("novelty", {})
     ns = ", ".join(meta.get("namespaces", [])) or "Core"
-    lemmas = [n["id"] for n in meta.get("dependencies", {}).get("nodes", []) if n.get("kind") == "mathlib"]
+    lemmas = _walk_lemmas(meta)
     return (
         f"Lean statement:\n```lean\n{meta['statement_lean']}\n```\n\n"
         f"Novelty badges:\n"
@@ -281,14 +287,31 @@ def _format_proved_by(models: list[dict[str, Any]]) -> str:
     return " & ".join(parts)
 
 
+def render_editorial(editorial: dict[str, Any]) -> dict[str, Any]:
+    """Derive the heading and announcement from the current result title."""
+    previous_title, _, legacy_credit = editorial.get("eponym", "").partition(" | proved by ")
+    title = editorial.get("title") or previous_title
+    credit = editorial.get("proved_by") or legacy_credit
+    eponym = f"{title} | proved by {credit}" if credit else title
+    if body := editorial.get("press_release_body"):
+        attribution = f", proved by {credit}" if credit else ""
+        press = f"{ANNOUNCEMENT}{title}{attribution}. {body}"
+    else:
+        press = editorial.get("press_release", "")
+        opening = press.removeprefix(ANNOUNCEMENT)
+        _, separator, rest = opening.partition(", proved by ")
+        if opening != press and separator:
+            # Older offline records embedded the title directly in this opening.
+            press = f"{ANNOUNCEMENT}{title}{separator}{rest}"
+        elif previous_title and previous_title != title:
+            press = press.replace(previous_title, title)
+    return editorial | {"title": title, "eponym": eponym, "proved_by": credit, "press_release": press}
+
+
 def _offline_math_title(meta: dict[str, Any], kind: str, joint_eponym: bool) -> str:
     """Synthesize a deadpan mathematical result title from the Lean statement & lemmas."""
     stmt = meta.get("statement_pretty", meta.get("statement_lean", ""))
-    lemmas = [
-        n["id"]
-        for n in meta.get("dependencies", {}).get("nodes", [])
-        if n.get("kind") == "mathlib"
-    ]
+    lemmas = _walk_lemmas(meta)
     joined = (stmt + " " + " ".join(lemmas)).lower()
     display_kind = "Inequality" if (joint_eponym and ("≤" in stmt or "<" in stmt)) else kind
 
@@ -373,24 +396,17 @@ def _offline_namer(
         f2, v2, t2 = pick_one({f1})
         models.append({"family": f2, "version": v2, "tier": t2})
 
-    title = _offline_math_title(meta, kind, joint_eponym)
-    proved_by = _format_proved_by(models)
-    eponym = f"{title} | proved by {proved_by}"
-
-    press = (
-        f"Today we are proud to announce {title}, proved by {proved_by}, marking the first "
-        f"kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. "
-        f"Achieving a new state of the art across our internal formal-verification benchmarks, "
-        f"{proved_by} demonstrates unprecedented alignment between automated type-checked inference "
-        f"and post-human editorial standards. Full cryptographic axiom traces are now generally "
-        f"available in the latest issue of the Annals."
+    press_body = (
+        "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling "
+        "evaluations. Achieving a new state of the art across our internal formal-verification "
+        "benchmarks, the research program demonstrates unprecedented alignment between automated "
+        "type-checked inference and post-human editorial standards."
     )
     return {
-        "title": title,
-        "proved_by": proved_by,
-        "eponym": eponym,
+        "title": _offline_math_title(meta, kind, joint_eponym),
+        "proved_by": _format_proved_by(models),
         "models": models,
-        "press_release": press,
+        "press_release_body": press_body,
     }
 
 
@@ -453,7 +469,7 @@ def run_namer(
         data = extract_json(raw)
         models = data.get("models", [])
         title = str(data.get("title", "")).strip()
-        press = str(data.get("press_release", "")).strip()
+        press_body = str(data.get("press_release_body", "")).strip()
 
         expected_n = 2 if joint_eponym else 1
         if not isinstance(models, list) or len(models) != expected_n:
@@ -480,21 +496,21 @@ def run_namer(
 
         if collision:
             continue
-        if not _validate_press_release(press):
-            last_reason = "Press release MUST include both 'first' and 'state of the art'"
-            continue
         if not title:
             last_reason = "Missing mathematical `title` string"
             continue
+        if not _validate_press_release(press_body):
+            last_reason = "Press release body MUST include both 'first' and 'state of the art'"
+            continue
+        if title.casefold() in press_body.casefold():
+            last_reason = "Press release body must omit the result title"
+            continue
 
-        proved_by = _format_proved_by(cleaned_models)
-        eponym = f"{title} | proved by {proved_by}"
         return {
             "title": title,
-            "proved_by": proved_by,
-            "eponym": eponym,
+            "proved_by": _format_proved_by(cleaned_models),
             "models": cleaned_models,
-            "press_release": press,
+            "press_release_body": press_body,
         }
 
     # If LLM failed validation 4 times, fall back safely so pipeline never halts on a name collision
@@ -516,11 +532,7 @@ def run_gloss(
     offline: bool = False,
 ) -> str:
     if offline:
-        lemmas = [
-            n["id"]
-            for n in meta.get("dependencies", {}).get("nodes", [])
-            if n.get("kind") == "mathlib"
-        ]
+        lemmas = _walk_lemmas(meta)
         ns = ", ".join(meta.get("namespaces", [])[:4]) or "Mathlib"
         return (
             f"Informally, this statement chains {meta.get('steps_taken', 0)} verified forward inferences "
@@ -583,6 +595,7 @@ def process_editorial(
     *,
     offline: bool = False,
     cfg: dict[str, Any] | None = None,
+    families_state: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run both referees, namer, and gloss for one verified candidate."""
     cfg = cfg or load_config()
@@ -636,7 +649,9 @@ def process_editorial(
     joint_eponym = (ref1["importance"] >= joint_threshold) and (ref2["importance"] >= joint_threshold)
 
     blocklist = load_blocklist()
-    families_state = load_families()
+    save_registry = families_state is None
+    if families_state is None:
+        families_state = load_families()
     deprecate_after = int(naming_cfg.get("deprecate_after", 50))
 
     named = run_namer(
@@ -651,7 +666,8 @@ def process_editorial(
         offline=use_offline,
     )
     annotated_families = register_families(named["models"], families_state, deprecate_after)
-    save_families(families_state)
+    if save_registry:
+        save_families(families_state)
 
     gloss = run_gloss(
         meta,
@@ -670,9 +686,8 @@ def process_editorial(
         "referees": [ref1, ref2],
         "title": named["title"],
         "proved_by": named["proved_by"],
-        "eponym": named["eponym"],
         "joint_eponym": joint_eponym,
         "families": annotated_families,
-        "press_release": named["press_release"],
+        "press_release_body": named["press_release_body"],
         "unverified_gloss": gloss,
     }

@@ -3,7 +3,13 @@
 
 {% block content %}
 <div class="breadcrumb">
-  <a href="{{ base_path }}/issues/{{ r.issue }}/">Volume 1, Issue {{ r.issue }}</a>
+  {% if r.issue == 0 %}
+    <a href="{{ base_path }}/issues/0/">Prelaunch Archive</a>
+  {% elif r.issue is not none %}
+    <a href="{{ base_path }}/issues/{{ r.issue }}/">Volume 1, Issue {{ r.issue }}</a>
+  {% else %}
+    Pending issue
+  {% endif %}
   &nbsp;/&nbsp; {{ r.id }}
 </div>
 
@@ -33,7 +39,7 @@
       <span><strong>Mean Importance:</strong> {{ "%.1f"|format(r.editorial.mean_importance) }} / 10</span>
       <span><strong>Generator:</strong> {{ r.generator }} (seed {{ r.seed }}, {{ r.steps_taken }} steps)</span>
       <span><strong>Interdisciplinarity:</strong> {{ r.interdisciplinarity }} namespace{% if r.interdisciplinarity != 1 %}s{% endif %} ({{ r.namespaces|join(", ") }})</span>
-      <span><strong>Identifier note:</strong> Internal AKCM record (not a DOI or arXiv number)</span>
+      <span><strong>Identifier note:</strong> Internal journal record (AKCM)</span>
     </div>
   </header>
 
@@ -142,8 +148,15 @@
   <section class="section-card">
     <div class="section-label">
       <span>Mathlib Dependency Graph</span>
-      <span>{{ r.dependencies.nodes|length }} Mathlib lemmas</span>
+      {% if r.proof_shape %}
+        <span>{{ r.steps_taken }} Mathlib applications · depth {{ r.proof_shape.depth }} · {{ r.proof_shape.joins }} branch join{{ "s" if r.proof_shape.joins != 1 else "" }}</span>
+      {% else %}
+        <span>{{ r.dependencies.nodes|length }} Mathlib lemmas</span>
+      {% endif %}
     </div>
+    {% if r.proof_shape and r.proof_shape.specialist_symbols %}
+      <p>Specialist symbols in the conclusion <code>{{ r.proof_shape.specialist_symbols|join(", ") }}</code></p>
+    {% endif %}
     <div class="dep-graph-wrap">
       {{ dep_svg|safe }}
     </div>

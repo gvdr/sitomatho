@@ -1,4 +1,5 @@
 import Lean
+import Lean.Meta.DiscrTree.Main
 import Std.Data.HashMap
 import Babel.Util
 import Babel.Gate
@@ -8,6 +9,21 @@ namespace Babel
 
 open Lean Meta
 
+structure SpecialistSearch where
+  focus : Name
+  minProofDepth : Nat := 8
+  trialsPerWalk : Nat := 240
+deriving Inhabited
+
+structure SpecialistProgress where
+  maxDepth : Nat := 0
+  maxJoinedDepth : Nat := 0
+deriving Inhabited
+
+def definingModule (env : Environment) (decl : Name) : Option Name := do
+  let moduleIdx ← env.getModuleIdxFor? decl
+  env.header.moduleNames[moduleIdx.toNat]?
+
 /-- Precomputed head-symbol index over clean Mathlib theorems. -/
 structure LemmaIndex where
   /-- Maps explicit-hypothesis head constant -> theorem names expecting such a hypothesis. -/
@@ -16,6 +32,10 @@ structure LemmaIndex where
   seeds : Array Name
   /-- Total indexed theorems. -/
   totalIndexed : Nat
+  bySpecialistHypHead : Std.HashMap Name (Array Name) := {}
+  specialistSeeds : Array Name := #[]
+  indexedLemmas : Array Name := #[]
+  multiPremiseLemmas : NameSet := {}
 deriving Inhabited
 
 /-- Filter out internal, tactic, compiler, or degenerate declaration names. -/
@@ -54,25 +74,36 @@ partial def inspectBinders (e : Expr) (totalBinders : Nat := 0) (hypHeads : Arra
       (totalBinders, hypHeads, conclHead)
 
 /-- Build the head-symbol index over the loaded environment once per run. -/
-def buildLemmaIndex (env : Environment) : LemmaIndex := Id.run do
+def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaIndex := Id.run do
   let mut byHypHead : Std.HashMap Name (Array Name) := {}
   let mut seeds : Array Name := #[]
   let mut total := 0
+  let mut bySpecialistHypHead : Std.HashMap Name (Array Name) := {}
+  let mut specialistSeeds : Array Name := #[]
+  let mut indexedLemmas : Array Name := #[]
+  let mut multiPremiseLemmas : NameSet := {}
 
   for (name, cinfo) in env.constants.map₁ do
     match cinfo with
     | .thmInfo info =>
         if !isCleanMathlibName name then continue
-        if info.levelParams.length > 3 then continue
+        let specialist := focus.any fun root => (definingModule env name).any root.isPrefixOf
+        if info.levelParams.length > (if specialist then 8 else 3) then continue
         let (nBinders, hypHeads, conclHead?) := inspectBinders info.type
-        if nBinders == 0 || nBinders > 10 then continue
-        if hypHeads.isEmpty || hypHeads.size > 4 then continue
+        if nBinders == 0 || nBinders > (if specialist then 24 else 10) then continue
+        if hypHeads.isEmpty || hypHeads.size > (if specialist then 8 else 4) then continue
         match conclHead? with
         | none => continue
         | some ch =>
             if ch == `True || ch == `False || ch == `Iff || ch == `PUnit || ch == `Unit then
               continue
             total := total + 1
+            if specialist then
+              specialistSeeds := specialistSeeds.push name
+            if focus.isSome then
+              indexedLemmas := indexedLemmas.push name
+              if hypHeads.size >= 2 then
+                multiPremiseLemmas := multiPremiseLemmas.insert name
             -- Deduplicate head symbols within a single theorem
             let mut seenLocal : NameSet := {}
             for h in hypHeads do
@@ -80,11 +111,17 @@ def buildLemmaIndex (env : Environment) : LemmaIndex := Id.run do
                 seenLocal := seenLocal.insert h
                 let arr := byHypHead.getD h #[]
                 byHypHead := byHypHead.insert h (arr.push name)
+                if specialist then
+                  let arr := bySpecialistHypHead.getD h #[]
+                  bySpecialistHypHead := bySpecialistHypHead.insert h (arr.push name)
             if hypHeads.size >= 1 && hypHeads.size <= 3 then
               seeds := seeds.push name
     | _ => continue
 
-  return { byHypHead, seeds, totalIndexed := total }
+  return {
+    byHypHead, seeds, totalIndexed := total, bySpecialistHypHead
+    specialistSeeds, indexedLemmas, multiPremiseLemmas
+  }
 
 /-- One step recorded during a random forward walk. -/
 structure WalkStep where
@@ -107,8 +144,11 @@ structure WalkCandidate where
   leanFile : String
   axioms : Array String
   namespaces : Array String
-  depNodes : Array (String × String × String) -- (id, namespace, kind)
+  depNodes : Array (String × String × String) -- (step id, lemma, namespace)
   depEdges : Array (String × String × String) -- (from, to, lemma)
+  proofDepth : Nat
+  proofJoins : Nat
+  specialistSymbols : Array Name
   novelty : NoveltyReport
 deriving Inhabited
 
@@ -177,8 +217,14 @@ def sampleCandidate
       return (some cand, r')
   return (pool.back?.map Prod.fst, r')
 
-/-- Attempt one forward-chaining step applying lemma `L` to active fact `h`.
-    Returns `(newFVars, newStep, rng)` if successful; introduces at most 2 new open hypotheses. -/
+private def matchArgument (mvar expectedType proof actualType : Expr) : MetaM Bool := do
+  let saved ← saveState
+  if (← isDefEq expectedType actualType) && (← isDefEq mvar proof) then
+    return true
+  restoreState saved
+  return false
+
+/-- Apply a lemma to a derived fact, reusing other facts and local hypotheses where possible. -/
 def tryApplyLemma
     (lemmaName : Name)
     (targetStep : WalkStep)
@@ -203,10 +249,9 @@ def tryApplyLemma
   for i in [:mvars.size] do
     if binfos[i]! == .default then
       let mtype ← inferType mvars[i]!
-      if (← isDefEq mtype targetStep.factType) then
-        if (← isDefEq mvars[i]! targetStep.factProof) then
-          matchedIdx? := some i
-          break
+      if ← matchArgument mvars[i]! mtype targetStep.factProof targetStep.factType then
+        matchedIdx? := some i
+        break
 
   let some matchedIdx := matchedIdx? | return (none, rng)
 
@@ -231,12 +276,11 @@ def tryApplyLemma
       -- First try closing from previously derived steps
       let mut closed := false
       for st in allSteps do
-        if (← isDefEq mtype st.factType) then
-          if (← isDefEq mv st.factProof) then
-            if !parentSteps.contains st.stepIdx then
-              parentSteps := parentSteps.push st.stepIdx
-            closed := true
-            break
+        if ← matchArgument mv mtype st.factProof st.factType then
+          if !parentSteps.contains st.stepIdx then
+            parentSteps := parentSteps.push st.stepIdx
+          closed := true
+          break
       -- Next try closing from existing local context variables (Props or matching data)
       if !closed then
         let mut matchingFVars : Array Expr := #[]
@@ -366,10 +410,16 @@ def renderStandaloneLean
     (proof : Expr)
     (usedSteps : Array WalkStep)
     (convoluteDepth : Nat)
-    (seed : Nat) : MetaM (Option (String × String × String)) := do
+    (seed : Nat)
+    (explicitStatement : Bool := false) : MetaM (Option (String × String × String)) := do
   -- Abstract and immediately re-open with sanitized, unique, non-hygienic names
   let stmtClosed ← mkForallFVars usedFVars concl
   let proofClosed ← mkLambdaFVars usedFVars proof
+  let statementOptions (options : Options) :=
+    options.set `pp.unicode.fun true
+      |>.set `pp.universes explicitStatement
+      |>.set `pp.explicit explicitStatement
+      |>.set `pp.proofs explicitStatement
 
   -- Compute clean binder names in order
   let mut cleanNames : Array Name := #[]
@@ -404,10 +454,7 @@ def renderStandaloneLean
       let mut binderLines : Array String := #[]
       for fv in accFVars do
         let decl ← fv.fvarId!.getDecl
-        let tyFmt ← withOptions (fun o =>
-            o.set `pp.unicode.fun true
-            |>.set `pp.universes false) do
-          ppExpr decl.type
+        let tyFmt ← withOptions statementOptions (ppExpr decl.type)
         let tyStr := tyFmt.pretty 84
         if (tyStr.splitOn "⋯").length > 1 then
           return none
@@ -419,10 +466,7 @@ def renderStandaloneLean
           | .default => s!"({nmStr} : {tyStr})"
         binderLines := binderLines.push s!"    {bStr}"
 
-      let conclFmt ← withOptions (fun o =>
-          o.set `pp.unicode.fun true
-          |>.set `pp.universes false) do
-        ppExpr st
+      let conclFmt ← withOptions statementOptions (ppExpr st)
       let conclStr := conclFmt.pretty 88
       if (conclStr.splitOn "⋯").length > 1 then
         return none
@@ -483,6 +527,118 @@ def renderStandaloneLean
 
   openClean cleanNames.toList stmtClosed proofClosed #[]
 
+/-- Ancestors include the step itself. Walk IDs are indices in topological order. -/
+structure ProofShape where
+  ancestors : Array (Std.HashSet Nat) := #[]
+  depths : Array Nat := #[]
+  joins : Nat := 0
+
+def proofShape (steps : Array WalkStep) : ProofShape := Id.run do
+  let mut shape : ProofShape := {}
+  for st in steps do
+    let mut ancestors : Std.HashSet Nat := ({} : Std.HashSet Nat).insert st.stepIdx
+    let mut depth := 1
+    for p in st.parentSteps do
+      ancestors := (shape.ancestors[p]!).fold (fun acc n => acc.insert n) ancestors
+      depth := max depth (shape.depths[p]! + 1)
+    shape := { shape with
+      ancestors := shape.ancestors.push ancestors
+      depths := shape.depths.push depth }
+  let retained := shape.ancestors.back?.getD {}
+  let joins := steps.countP fun st =>
+    retained.contains st.stepIdx && st.parentSteps.any fun p =>
+      st.parentSteps.any fun q =>
+        !(shape.ancestors[p]!).contains q && !(shape.ancestors[q]!).contains p
+  return { shape with joins }
+
+def finishWalk
+    (seed targetSteps exactBudget aesopBudget convoluteDepth : Nat)
+    (ctxFVars : Array Expr)
+    (steps : Array WalkStep)
+    (rng : Rng)
+    (specialist : Option SpecialistSearch := none) : MetaM (Option WalkCandidate × Rng) := do
+  let shape := proofShape steps
+  let some finalStep := steps.back? | return (none, rng)
+  let usedSteps := steps.filter fun st => (shape.ancestors.back?.getD {}).contains st.stepIdx
+  if usedSteps.size < 2 then
+    return (none, rng)
+  let mut specialistSymbols := #[]
+  if let some search := specialist then
+    if shape.depths.back?.getD 0 < search.minProofDepth || shape.joins == 0 then
+      return (none, rng)
+    let env ← getEnv
+    specialistSymbols := ((collectConsts finalStep.factType).toList.filter fun decl =>
+      (definingModule env decl).any search.focus.isPrefixOf).toArray
+    if specialistSymbols.isEmpty then
+      return (none, rng)
+  let seedFVars := collectFVarsExpr finalStep.factType (collectFVarsExpr finalStep.factProof)
+  let keptIds ← closeFVarsTransitively seedFVars
+  let usedFVars := ctxFVars.filter fun fv => keptIds.contains fv.fvarId!
+
+  -- Apply kernel-level baroque convolution to inflate Level 3 depth ratio while preserving axioms
+  let (convFactProof, rngConv) ←
+    if convoluteDepth > 0 then
+      convoluteExpr finalStep.factType finalStep.factProof convoluteDepth rng
+    else
+      pure (finalStep.factProof, rng)
+
+  -- Abstract shrunk theorem statement & convoluted proof
+  let stmtType ← mkForallFVars usedFVars finalStep.factType
+  let fullProof ← mkLambdaFVars usedFVars convFactProof
+  if stmtType.hasExprMVar || fullProof.hasExprMVar || stmtType.hasLevelMVar || fullProof.hasLevelMVar then
+    return (none, rngConv)
+
+  -- Verify kernel typecheck and axioms strictly
+  try
+    check fullProof
+  catch _ =>
+    return (none, rngConv)
+
+  let axs ← collectExprAxioms fullProof
+  if !axiomsAreClean axs then
+    return (none, rngConv)
+
+  -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
+  let nov ← evaluateNovelty stmtType fullProof exactBudget aesopBudget
+  if !nov.level1ExactFailed then
+    return (none, rngConv)
+
+  -- Render standalone Lean with baroque tactic choreography around the clean shrunk proof
+  let some (stmtDecl, stmtPretty, leanFile) ←
+    renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof
+      usedSteps convoluteDepth seed specialist.isSome
+    | return (none, rngConv)
+
+  let mut nsArr : Array String := #[]
+  let mut nodes : Array (String × String × String) := #[]
+  let mut edges : Array (String × String × String) := #[]
+  for st in usedSteps do
+    if !nsArr.contains st.namespaceName then
+      nsArr := nsArr.push st.namespaceName
+    let nodeId := toString st.stepIdx
+    nodes := nodes.push (nodeId, st.lemmaName.toString, st.namespaceName)
+    for p in st.parentSteps do
+      edges := edges.push (toString p, nodeId, st.lemmaName.toString)
+
+  let cand : WalkCandidate := {
+    seed := seed
+    stepsRequested := targetSteps
+    stepsTaken := usedSteps.size
+    statementLean := stmtDecl
+    statementPretty := stmtPretty
+    statementHash := canonicalHash stmtType
+    leanFile := leanFile
+    axioms := axs.map Name.toString
+    namespaces := nsArr
+    depNodes := nodes
+    depEdges := edges
+    proofDepth := shape.depths.back?.getD 0
+    proofJoins := shape.joins
+    specialistSymbols := specialistSymbols
+    novelty := nov
+  }
+  return (some cand, rngConv)
+
 /-- Recursive driver executing steps `stepNum .. targetSteps` inside nested `withLocalDecl` scopes. -/
 partial def runWalkLoop
     (idx : LemmaIndex)
@@ -497,95 +653,7 @@ partial def runWalkLoop
     (addedHyps : Nat)
     (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
   if steps.size >= targetSteps then
-    -- Finished walk! Shrink unused hypotheses & unused intermediate steps.
-    let some finalStep := steps.back? | return (none, rng)
-    let seedFVars := collectFVarsExpr finalStep.factType (collectFVarsExpr finalStep.factProof)
-    let keptIds ← closeFVarsTransitively seedFVars
-    let usedFVars := ctxFVars.filter fun fv => keptIds.contains fv.fvarId!
-
-    -- Apply kernel-level baroque convolution to inflate Level 3 depth ratio while preserving axioms
-    let (convFactProof, rngConv) ←
-      if convoluteDepth > 0 then
-        convoluteExpr finalStep.factType finalStep.factProof convoluteDepth rng
-      else
-        pure (finalStep.factProof, rng)
-
-    -- Abstract shrunk theorem statement & convoluted proof
-    let stmtType ← mkForallFVars usedFVars finalStep.factType
-    let fullProof ← mkLambdaFVars usedFVars convFactProof
-    if stmtType.hasExprMVar || fullProof.hasExprMVar || stmtType.hasLevelMVar || fullProof.hasLevelMVar then
-      return (none, rngConv)
-
-    -- Verify kernel typecheck and axioms strictly
-    try
-      check fullProof
-    catch _ =>
-      return (none, rngConv)
-
-    let axs ← collectExprAxioms fullProof
-    if !axiomsAreClean axs then
-      return (none, rngConv)
-
-    -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
-    let nov ← evaluateNovelty stmtType fullProof exactBudget aesopBudget
-    if !nov.level1ExactFailed then
-      return (none, rngConv)
-
-    -- Prune walk steps to those reachable from `finalStep`
-    let mut keepSteps : Std.HashSet Nat := {}
-    let mut q : List Nat := [finalStep.stepIdx]
-    while !q.isEmpty do
-      match q with
-      | [] => break
-      | s :: rest =>
-          q := rest
-          if keepSteps.contains s then continue
-          keepSteps := keepSteps.insert s
-          if let some st := steps.find? (fun x => x.stepIdx == s) then
-            for p in st.parentSteps do
-              if !keepSteps.contains p then q := p :: q
-
-    let usedSteps := steps.filter fun st => keepSteps.contains st.stepIdx
-    -- Require at least 2 connected Mathlib steps in the shrunk proof
-    if usedSteps.size < 2 then
-      return (none, rngConv)
-
-    -- Render standalone Lean with baroque tactic choreography around the clean shrunk proof
-    let some (stmtDecl, stmtPretty, leanFile) ←
-      renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof usedSteps convoluteDepth seed
-      | return (none, rngConv)
-
-    -- Collect unique namespaces & dependency graph
-    let mut nsArr : Array String := #[]
-    let mut nodes : Array (String × String × String) := #[]
-    let mut edges : Array (String × String × String) := #[]
-    let mut seenNodes : Std.HashSet String := {}
-    for st in usedSteps do
-      if !nsArr.contains st.namespaceName then
-        nsArr := nsArr.push st.namespaceName
-      let nodeId := st.lemmaName.toString
-      if !seenNodes.contains nodeId then
-        seenNodes := seenNodes.insert nodeId
-        nodes := nodes.push (nodeId, st.namespaceName, "mathlib")
-      for p in st.parentSteps do
-        if let some pst := usedSteps.find? (fun x => x.stepIdx == p) then
-          edges := edges.push (pst.lemmaName.toString, nodeId, s!"step_{st.stepIdx}")
-
-    let cand : WalkCandidate := {
-      seed := seed
-      stepsRequested := targetSteps
-      stepsTaken := usedSteps.size
-      statementLean := stmtDecl
-      statementPretty := stmtPretty
-      statementHash := canonicalHash stmtType
-      leanFile := leanFile
-      axioms := axs.map Name.toString
-      namespaces := nsArr
-      depNodes := nodes
-      depEdges := edges
-      novelty := nov
-    }
-    return (some cand, rngConv)
+    return ← finishWalk seed targetSteps exactBudget aesopBudget convoluteDepth ctxFVars steps rng
 
   -- Otherwise attempt the next forward step
   let mut r := rng
@@ -650,6 +718,120 @@ partial def runWalkLoop
   else
     return (none, r)
 
+def buildHypothesisTree (idx : LemmaIndex) : MetaM (DiscrTree Name) := do
+  let env ← getEnv
+  let mut tree : DiscrTree Name := {}
+  for lemma in idx.indexedLemmas do
+    let some (.thmInfo info) := env.find? lemma | continue
+    let keys ← tryCatchRuntimeEx (withNewMCtxDepth do
+      let (args, binderInfos, _) ← forallMetaTelescope
+        (info.instantiateTypeLevelParams (concreteLevels info))
+      let mut keys := #[]
+      for i in [:args.size] do
+        if binderInfos[i]! == .default then
+          let type ← inferType args[i]!
+          if ← isProp type then
+            keys := keys.push (← DiscrTree.mkPath type)
+      return keys) (fun _ => pure #[])
+    for key in keys do
+      if key.size > 1 || key[0]? != some DiscrTree.Key.star then
+        tree := tree.insertKeyValue key lemma
+  return tree
+
+def recordProgress (progress : IO.Ref SpecialistProgress) (shape : ProofShape) : MetaM Unit := do
+  let depth := shape.depths.back?.getD 0
+  progress.modify fun previous => {
+    maxDepth := max previous.maxDepth depth
+    maxJoinedDepth := if shape.joins == 0 then previous.maxJoinedDepth
+      else max previous.maxJoinedDepth depth
+  }
+
+def joinCandidates (idx : LemmaIndex) (shape : ProofShape) (matchedLemmas : Array (Array Name)) :
+    Array (Nat × Name) := Id.run do
+  let latest := matchedLemmas.size - 1
+  let previous := matchedLemmas.map fun lemmas =>
+    lemmas.foldl (init := ({} : NameSet)) fun acc lemma => acc.insert lemma
+  let mut candidates := #[]
+  for lemma in matchedLemmas.back?.getD #[] do
+    if !idx.multiPremiseLemmas.contains lemma then continue
+    for i in [:latest] do
+      if !(shape.ancestors[latest]!).contains i && previous[i]!.contains lemma then
+        candidates := candidates.push (latest, lemma)
+        break
+  return candidates
+
+partial def runSpecialistLoop
+    (idx : LemmaIndex)
+    (hypotheses : DiscrTree Name)
+    (search : SpecialistSearch)
+    (progress : IO.Ref SpecialistProgress)
+    (remaining : IO.Ref Nat)
+    (seed maxSteps exactBudget aesopBudget convoluteDepth : Nat)
+    (ctxFVars : Array Expr)
+    (steps : Array WalkStep)
+    (priorMatches : Array (Array Name))
+    (addedHyps : Nat)
+    (rng : Rng) : MetaM (Option WalkCandidate) := do
+  let shape := proofShape steps
+  let depth := shape.depths.back?.getD 0
+  recordProgress progress shape
+  if depth >= search.minProofDepth && shape.joins > 0 then
+    let candidate ← tryCatchRuntimeEx
+      (return (← finishWalk seed maxSteps exactBudget aesopBudget convoluteDepth
+        ctxFVars steps rng (some search)).1)
+      (fun _ => pure none)
+    if candidate.isSome then return candidate
+  if steps.size >= maxSteps then return none
+
+  let latestMatches ← tryCatchRuntimeEx
+    (hypotheses.getMatch steps.back!.factType) (fun _ => pure #[])
+  let matchedLemmas := priorMatches.push latestMatches
+  let joins := if shape.joins == 0 then joinCandidates idx shape matchedLemmas else #[]
+  let mut r := rng
+  let mut tried : Std.HashSet (Nat × Name) := {}
+  for attempt in [:40] do
+    let left ← remaining.get
+    if left == 0 then return none
+    let (choice, nextRng) := if attempt % 4 == 0 && !joins.isEmpty then
+      r.pickArray? joins
+    else
+      -- Extend the tip for depth, and periodically fork an earlier part of the derivation.
+      let (earlier, r) := r.nextNat (steps.size - 1)
+      let source := if attempt % 5 < 3 then steps.size - 1 else earlier
+      let precise := matchedLemmas[source]!
+      let fallback := (steps[source]!.factType.getAppFn.constName?).map (fun head =>
+        let focused := idx.bySpecialistHypHead.getD head #[]
+        if attempt % 2 == 0 && !focused.isEmpty then focused else idx.byHypHead.getD head #[])
+      let pool := if attempt % 5 < 4 && !precise.isEmpty then precise else fallback.getD #[]
+      let (candidate, r) := r.pickArray? pool
+      (candidate.map (source, ·), r)
+    r := nextRng
+    let some (source, lemma) := choice | continue
+    let target := steps[source]!
+    if lemma == target.lemmaName || tried.contains (target.stepIdx, lemma) then continue
+    tried := tried.insert (target.stepIdx, lemma)
+    remaining.set (left - 1)
+    let saved ← saveState
+    let candidate ← tryCatchRuntimeEx (do
+      let (result, nextRng) ← withCurrHeartbeats do
+        withOptions (fun options => options.set `maxHeartbeats 40000) do
+          tryApplyLemma lemma target steps.reverse ctxFVars addedHyps steps.size r
+      match result with
+      | none => pure none
+      | some (binderSpecs, mkStep) =>
+        withLocalDeclsList binderSpecs.toList #[] fun freshFVars => do
+          let step ← withCurrHeartbeats do
+            withOptions (fun options => options.set `maxHeartbeats 40000) do
+              mkStep freshFVars
+          let some step := step | return none
+          runSpecialistLoop idx hypotheses search progress remaining seed maxSteps exactBudget
+            aesopBudget convoluteDepth (ctxFVars ++ freshFVars) (steps.push step) matchedLemmas
+            (addedHyps + freshFVars.size) nextRng)
+      (fun _ => pure none)
+    if candidate.isSome then return candidate
+    restoreState saved
+  return none
+
 /-- Start a single random forward walk from a random Mathlib seed theorem. -/
 def runSingleWalk
     (idx : LemmaIndex)
@@ -657,8 +839,11 @@ def runSingleWalk
     (minSteps maxSteps : Nat)
     (interdiscWeight : Float)
     (exactBudget aesopBudget convoluteDepth : Nat)
-    (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
-  let (seedNameOpt, r1) := rng.pickArray? idx.seeds
+    (rng : Rng)
+    (specialist : Option (SpecialistSearch × DiscrTree Name × IO.Ref SpecialistProgress) := none) :
+    MetaM (Option WalkCandidate × Rng) := do
+  let seeds := if specialist.isSome then idx.specialistSeeds else idx.seeds
+  let (seedNameOpt, r1) := rng.pickArray? seeds
   let some seedName := seedNameOpt | return (none, r1)
   let (targetSteps, r2) := r1.nextRange minSteps maxSteps
 
@@ -685,6 +870,12 @@ def runSingleWalk
       factProof := proof0
       parentSteps := #[]
     }
+    if let some (search, hypotheses, progress) := specialist then
+      let (walkRng, nextRng) := r2.nextUInt64
+      let remaining ← IO.mkRef search.trialsPerWalk
+      let candidate ← runSpecialistLoop idx hypotheses search progress remaining seed maxSteps
+        exactBudget aesopBudget convoluteDepth fvars #[step0] #[] 0 { state := walkRng }
+      return (candidate, nextRng)
     runWalkLoop idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
 
 end Babel

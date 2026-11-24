@@ -1,4 +1,4 @@
-"""Configuration loader for Annals of Kernel-Checked Mathematics."""
+"""Configuration loader for the journal."""
 
 from __future__ import annotations
 

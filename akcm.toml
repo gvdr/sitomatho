@@ -1,10 +1,10 @@
-# Configuration for AI dreams of Maths after too much cheese (AKCM)
+# Configuration for AI Studies in Laboriously Obtained Proofs (AI SLOP)
 
 [journal]
-title = "AI dreams of Maths after too much cheese"
-short_title = "AKCM"
-subtitle = "Annals of Kernel-Checked Mathematics — a peer-reviewed repository of verified, unimportant theorems"
-issn_joke = "AKCM-NO-ISSN"
+title = "AI Studies in Laboriously Obtained Proofs"
+short_title = "AI SLOP"
+subtitle = "A peer-reviewed repository of verified, unimportant theorems"
+issn_joke = "AI-SLOP-NO-ISSN"
 id_prefix = "AKCM"
 editor = "Giulio Valentino Dalla Riva"
 
