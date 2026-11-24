@@ -59,7 +59,9 @@ def isCleanMathlibName (n : Name) : Bool :=
       "congrArg", "autoParam", "optParam", "sorryAx", "Classical.em",
       "Lean.", "Tactic.", "Mathlib.Tactic.", "Aesop.", "Plausible.",
       "Qq.", "Batteries.Tactic.", "Init.Internal.", "Std.Internal.",
-      "Lake.", "Elab.", "Meta."
+      "Lake.", "Elab.", "Meta.",
+      -- Auto-generated congruence and injectivity lemmas: they only restate equalities.
+      "congr_simp", "injEq"
     ]
     !badSubstr.any fun b => (s.splitOn b).length > 1
 
@@ -113,7 +115,8 @@ def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaInd
   for (name, cinfo) in env.constants.map₁ do
     match cinfo with
     | .thmInfo info =>
-        if !isCleanMathlibName name || isGlueLemma env name then continue
+        -- A deprecated alias would let one lemma be applied twice under two names.
+        if !isCleanMathlibName name || isGlueLemma env name || Linter.isDeprecated env name then continue
         let specialist := focus.any fun root => (definingModule env name).any root.isPrefixOf
         if info.levelParams.length > (if specialist then 8 else 3) then continue
         let (nBinders, hypHeads, conclHead?) := inspectBinders info.type

@@ -77,6 +77,27 @@ def etaExpandedSet : TermElabM Bool :=
 #guard_msgs in
 #eval etaExpandedSet
 
+/-- Padding found by the final review. Sizes must be compared as a reader sees them:
+    `simp` removes `ᶜᶜ` but elaborates longer instance paths, so a node count that includes
+    instance arguments calls the simplified term larger. -/
+def reviewPaddingCases : TermElabM (List Bool) := do
+  return [
+    ← onBody "∀ (α : Type) (s t : Set α) (l : Filter α), (s ∩ t)ᶜᶜ ≤ᶠ[l] t" (isPaddedFact ·),
+    ← onBody "∀ (α β : Type) (f : α → β) (u : Set β) (v : Set α) (w : Filter α), ((f ⁻¹' u)ᶜ ∩ v)ᶜᶜ ≤ᶠ[w] vᶜ ∩ f ⁻¹' u"
+        (isPaddedFact ·),
+    ← onBody "∀ (α : Type) (s t : Set α) (l : Filter α), ∃ v ∈ l, ∀ y ∈ v, y ∈ sᶜ ∪ s ↔ y ∈ tᶜ ∪ t"
+        (isPaddedFact ·),
+    ← onBody "∀ (α β : Type) (f : α → β) (u : Set β) (v : Set α) (w : Filter α), (f ⁻¹' u)ᶜ ∩ v ≤ᶠ[w] vᶜ ∩ f ⁻¹' u"
+        (isPaddedFact ·)]
+
+/-- info: [true, true, true, false] -/
+#guard_msgs in
+#eval reviewPaddingCases
+
+-- A short derivation through many concepts outranks a long chain of on-topic closure lemmas.
+#guard interestScore { concepts := 5, modules := 4, steps := 5, focusSteps := 2 } >
+       interestScore { concepts := 3, modules := 1, steps := 12, focusSteps := 12 }
+
 end Interest
 
 /-! ## Step-level checks -/
@@ -176,3 +197,16 @@ def glueLemmas : Lean.Meta.MetaM (List Bool) := do
 /-- info: [true, true, true, true, true, false] -/
 #guard_msgs in
 #eval glueLemmas
+
+/-- Deprecated aliases and auto-generated lemmas stay out of the index: an alias would let
+    one lemma be applied twice under two names. -/
+def indexHygiene : Lean.Meta.MetaM (List Bool) := do
+  let index := buildLemmaIndex (← Lean.getEnv)
+  return [index.conclHead.contains ``Filter.EventuallySubset.compl,
+    index.conclHead.contains ``Filter.EventuallyLE.compl,
+    isCleanMathlibName `IsLocalization.mk'.congr_simp,
+    isCleanMathlibName `CategoryTheory.ShortComplex.HomotopyEquiv.mk.injEq]
+
+/-- info: [true, false, false, false] -/
+#guard_msgs in
+#eval indexHygiene

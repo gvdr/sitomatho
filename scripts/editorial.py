@@ -744,7 +744,7 @@ def screen_candidate(
             persona_note=REFEREE_A_PERSONA,
             persona_bias=1,
         )
-    except (LLMError, ValueError) as exc:
+    except Exception as exc:  # noqa: BLE001 - a malformed reply must not sink a run after its walks
         print(f"  [screen] Referee A unavailable ({exc}); ranking by interest score.")
         return fallback
     metrics = verdict.get("decision_metrics", {})

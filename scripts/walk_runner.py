@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import signal
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
@@ -41,6 +42,25 @@ def read_walk_output(path: Path) -> WalkRun:
     )
 
 
+def run_bounded(cmd: list[str], *, cwd: Path, env: dict[str, str], timeout: int) -> int | None:
+    """Run a command and return its exit code, or None when it had to be killed at `timeout`.
+
+    The command runs in its own process group and the whole group is killed. `lake exe`
+    spawns the walk binary as a child, so killing `lake` alone would leave the walk running,
+    holding a core and its memory and still writing to its output file.
+    """
+    proc = subprocess.Popen(cmd, cwd=cwd, env=env, start_new_session=True)
+    try:
+        return proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(proc.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        proc.wait()
+        return None
+
+
 def run_walk(
     *,
     seed: int,
@@ -62,9 +82,11 @@ def run_walk(
     keep: int = 3,
     timeout: int = 240,
 ) -> WalkRun:
-    """Run Generator A. A run that hits `timeout` returns what it had written so far."""
+    """Run Generator A. A run that hits `timeout` or crashes returns what it had written so far."""
     lake = find_lake()
-    out_file = ROOT / ".tmp" / f"walk_seed_{seed}.json"
+    # One output file per module and seed, so concurrent or successive walks never share one.
+    source = (module or "corpus").replace(".", "_")
+    out_file = ROOT / ".tmp" / f"walk_{source}_{seed}.json"
     out_file.parent.mkdir(exist_ok=True)
     if out_file.exists():
         out_file.unlink()
@@ -99,18 +121,21 @@ def run_walk(
             "--keep", str(keep),
         ])
     print(f"[walk] Running: {' '.join(cmd)}")
-    try:
-        proc = subprocess.run(cmd, cwd=ROOT, env=env, timeout=timeout)
-    except subprocess.TimeoutExpired:
-        run = read_walk_output(out_file)
+    exit_code = run_bounded(cmd, cwd=ROOT, env=env, timeout=timeout)
+    run = read_walk_output(out_file)
+    if exit_code is None:
         run.timed_out = True
         print(f"[walk] Timed out after {timeout}s; kept {len(run.candidates)} candidate(s) already written.")
         return run
-    if proc.returncode != 0:
-        raise RuntimeError(f"`lake exe walk` failed with exit code {proc.returncode}")
+    if exit_code != 0:
+        if not run.candidates:
+            raise RuntimeError(f"`lake exe walk` failed with exit code {exit_code}")
+        print(f"[walk] Exited with code {exit_code}; kept {len(run.candidates)} candidate(s) already written.")
+        run.complete = False
+        return run
     if not out_file.exists():
         raise RuntimeError(f"Expected walk output at {out_file}")
-    return read_walk_output(out_file)
+    return run
 
 
 def run_walks_parallel(jobs: list[Callable[[], WalkRun]], *, workers: int) -> list[WalkRun]:

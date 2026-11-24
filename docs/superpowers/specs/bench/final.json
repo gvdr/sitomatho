@@ -1,0 +1,580 @@
+{
+  "label": "final",
+  "args": {
+    "count": 4,
+    "min_steps": 3,
+    "max_steps": 12,
+    "max_attempts": 40,
+    "interdisciplinary": 2.5,
+    "exact_heartbeats": 150000,
+    "aesop_heartbeats": 150000,
+    "convolute": 0,
+    "min_proof_depth": 4,
+    "min_concepts": 3,
+    "trials_per_walk": 180,
+    "timeout": 300
+  },
+  "totals": {
+    "wall_seconds": 113.7,
+    "candidates": 11,
+    "valid_candidates": 11,
+    "modules_with_valid": 3,
+    "seconds_per_valid_candidate": 10.3,
+    "violations": 0
+  },
+  "runs": [
+    {
+      "module": "Mathlib.Topology.Sheaves.MayerVietoris",
+      "focus": "Mathlib.Topology.Sheaves",
+      "seed": 20261124,
+      "wall_seconds": 10.6,
+      "candidates": 0,
+      "valid_candidates": 0,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 446,
+          "size_cap": 173,
+          "padded_fact": 90,
+          "no_unifier": 344,
+          "few_steps": 54,
+          "dull_conclusion": 3
+        },
+        "phase_ms": {
+          "search": 2401,
+          "index": 2396,
+          "import": 3955,
+          "hyp_tree": 409
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1070,
+        "applications_succeeded": 14
+      },
+      "results": []
+    },
+    {
+      "module": "Mathlib.Topology.Sheaves.MayerVietoris",
+      "focus": "Mathlib.Topology.Sheaves",
+      "seed": 20261125,
+      "wall_seconds": 7.4,
+      "candidates": 0,
+      "valid_candidates": 0,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 464,
+          "size_cap": 158,
+          "padded_fact": 83,
+          "no_unifier": 331,
+          "few_steps": 53,
+          "dull_conclusion": 2
+        },
+        "phase_ms": {
+          "search": 2266,
+          "index": 2385,
+          "import": 986,
+          "hyp_tree": 420
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1051,
+        "applications_succeeded": 13
+      },
+      "results": []
+    },
+    {
+      "module": "Mathlib.RingTheory.Localization.Ideal",
+      "focus": "Mathlib.RingTheory.Localization",
+      "seed": 20261124,
+      "wall_seconds": 18.3,
+      "candidates": 1,
+      "valid_candidates": 1,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 644,
+          "size_cap": 100,
+          "repeated_lemma": 156,
+          "padded_fact": 150,
+          "no_unifier": 762,
+          "no_focus_symbol": 115,
+          "heartbeat": 1,
+          "few_steps": 106,
+          "few_concepts": 5,
+          "dull_conclusion": 20
+        },
+        "phase_ms": {
+          "search": 13397,
+          "render": 18,
+          "index": 1945,
+          "import": 1252,
+          "hyp_tree": 475,
+          "gate_simp": 1,
+          "gate_exact": 2338,
+          "gate_aesop": 93
+        },
+        "dominant_reject": "no_unifier",
+        "attempts": 40,
+        "applications_tried": 2045,
+        "applications_succeeded": 212
+      },
+      "results": [
+        {
+          "statement_hash": "expr:bcc9bac70335ca9eec318e732932446e",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] {M : Submonoid R} {S : Type}\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S]\n  {x_8 x_9 : R} {x_10 x_11 : ↥M},\n  x_9 * ↑x_10 = x_8 * ↑x_11 →\n    IsUnit (IsLocalization.mk' S x_9 x_11) →\n      Function.Surjective (Setoid.comap fun x ↦ x * IsLocalization.mk' S x_8 x_10)",
+          "interest": {
+            "steps": 5,
+            "statement_size": 521,
+            "score": 10.28,
+            "modules": 5,
+            "joins": 0,
+            "focus_steps": 1,
+            "conclusion_size": 73,
+            "concepts": 5
+          },
+          "lemmas": [
+            "IsLocalization.mk'_eq_of_eq'",
+            "Eq.dvd",
+            "isUnit_of_dvd_unit",
+            "IsUnit.mul_left_injective",
+            "Setoid.comap_surjective"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.RingTheory.Localization.Ideal",
+      "focus": "Mathlib.RingTheory.Localization",
+      "seed": 20261125,
+      "wall_seconds": 34.5,
+      "candidates": 1,
+      "valid_candidates": 1,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 578,
+          "size_cap": 133,
+          "repeated_lemma": 226,
+          "padded_fact": 116,
+          "no_unifier": 626,
+          "no_focus_symbol": 52,
+          "heartbeat": 7,
+          "few_steps": 134,
+          "few_concepts": 52,
+          "dull_conclusion": 43
+        },
+        "phase_ms": {
+          "search": 29861,
+          "render": 16,
+          "index": 1976,
+          "import": 960,
+          "hyp_tree": 410,
+          "gate_simp": 1,
+          "gate_exact": 2434,
+          "gate_aesop": 32
+        },
+        "dominant_reject": "no_unifier",
+        "attempts": 40,
+        "applications_tried": 1942,
+        "applications_succeeded": 213
+      },
+      "results": [
+        {
+          "statement_hash": "expr:700303d3baefdb9acffe2f4928b6ecaa",
+          "statement_pretty": "∀ {R : Type} [inst_2 : CommSemiring R] {M : Submonoid R} (S : Type)\n  [inst_5 : CommSemiring S] [inst_6 : Algebra R S] [inst_7 : IsLocalization M S] (x : R)\n  (y : ↥M),\n  IsCoprime (IsLocalization.mk' S x y) ((algebraMap R S) x) →\n    Function.RightInverse (Set.rangeFactorization fun x_1 ↦ x_1 * IsLocalization.mk' S x y)\n      (Set.rangeSplitting fun x_1 ↦ x_1 * IsLocalization.mk' S x y)",
+          "interest": {
+            "steps": 5,
+            "statement_size": 435,
+            "score": 12.43,
+            "modules": 5,
+            "joins": 0,
+            "focus_steps": 1,
+            "conclusion_size": 199,
+            "concepts": 5
+          },
+          "lemmas": [
+            "IsLocalization.mk'_spec",
+            "Dvd.intro",
+            "IsCoprime.isUnit_of_dvd",
+            "IsUnit.mul_left_injective",
+            "Set.rightInverse_rangeSplitting"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Algebra.Homology.ShortComplex.ShortExact",
+      "focus": "Mathlib.Algebra.Homology.ShortComplex",
+      "seed": 20261124,
+      "wall_seconds": 7.1,
+      "candidates": 0,
+      "valid_candidates": 0,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 824,
+          "size_cap": 38,
+          "padded_fact": 34,
+          "no_unifier": 559,
+          "heartbeat": 1,
+          "few_steps": 63,
+          "dull_conclusion": 4
+        },
+        "phase_ms": {
+          "search": 2710,
+          "index": 1576,
+          "import": 1045,
+          "hyp_tree": 471
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1483,
+        "applications_succeeded": 23
+      },
+      "results": []
+    },
+    {
+      "module": "Mathlib.Algebra.Homology.ShortComplex.ShortExact",
+      "focus": "Mathlib.Algebra.Homology.ShortComplex",
+      "seed": 20261125,
+      "wall_seconds": 9.0,
+      "candidates": 1,
+      "valid_candidates": 1,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 817,
+          "size_cap": 29,
+          "padded_fact": 26,
+          "no_unifier": 533,
+          "no_focus_symbol": 4,
+          "few_steps": 70,
+          "dull_conclusion": 16
+        },
+        "phase_ms": {
+          "search": 4785,
+          "render": 11,
+          "index": 1597,
+          "import": 887,
+          "hyp_tree": 479,
+          "gate_simp": 1,
+          "gate_exact": 1705,
+          "gate_aesop": 30
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 40,
+        "applications_tried": 1456,
+        "applications_succeeded": 35
+      },
+      "results": [
+        {
+          "statement_hash": "expr:0a52fed7115f463495c059477c1068e4",
+          "statement_pretty": "∀ {C : Type} [inst_2 : CategoryTheory.Category C]\n  [inst_3 : CategoryTheory.Limits.HasZeroMorphisms C] {S : CategoryTheory.ShortComplex C},\n  S.ShortExact →\n    (∀ (y₁ y₂ : S.HomologyData),\n        CategoryTheory.Limits.IsZero y₁.left.H →\n          CategoryTheory.Limits.IsZero y₂.left.H → y₁ = y₂) →\n      {x | CategoryTheory.Limits.IsZero x.left.H}.Subsingleton",
+          "interest": {
+            "steps": 4,
+            "statement_size": 183,
+            "score": 15.43,
+            "modules": 4,
+            "joins": 0,
+            "focus_steps": 2,
+            "conclusion_size": 61,
+            "concepts": 4
+          },
+          "lemmas": [
+            "CategoryTheory.ShortComplex.ShortExact.exact",
+            "CategoryTheory.ShortComplex.Exact.condition",
+            "existsUnique_of_exists_of_unique",
+            "ExistsUnique.setSubsingleton"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Order.Filter.Basic",
+      "focus": "Mathlib.Order.Filter",
+      "seed": 20261124,
+      "wall_seconds": 14.2,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 544,
+          "unrenderable": 1,
+          "size_cap": 25,
+          "repeated_lemma": 72,
+          "padded_fact": 183,
+          "no_unifier": 186,
+          "no_focus_symbol": 76,
+          "heartbeat": 1,
+          "few_steps": 46,
+          "few_concepts": 17,
+          "dull_conclusion": 43,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 11764,
+          "render": 82,
+          "index": 687,
+          "import": 536,
+          "hyp_tree": 107,
+          "gate_simp": 11,
+          "gate_exact": 3821,
+          "gate_aesop": 56
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 7,
+        "applications_tried": 1260,
+        "applications_succeeded": 206
+      },
+      "results": [
+        {
+          "statement_hash": "expr:a747e19bcf40c263cfe0c85072deea93",
+          "statement_pretty": "∀ {α β : Type} {l : Filter α} [inst_4 : Mul β] {x_5 x_6 x_7 : α → β},\n  x_5 =ᶠ[l] x_6 → ∀ (u : Set β), ((x_7 * x_5) ⁻¹' u)ᶜ ≤ᶠ[l] ((x_7 * x_6) ⁻¹' u)ᶜ",
+          "interest": {
+            "steps": 4,
+            "statement_size": 153,
+            "score": 13.68,
+            "modules": 1,
+            "joins": 0,
+            "focus_steps": 4,
+            "conclusion_size": 113,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.mul_left",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallySubset.compl"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:10c4755c21a47d5d47f7e43e4d61a98d",
+          "statement_pretty": "∀ {α β : Type} [inst_3 : Mul β] {f f' g g' : α → β} {l : Filter α},\n  f =ᶠ[l] g →\n    f' =ᶠ[l] g' →\n      ∀ (u : Set β), ((fun i ↦ f i * f' i) ⁻¹' u)ᶜ ≤ᶠ[l] ((fun i ↦ g i * g' i) ⁻¹' u)ᶜ",
+          "interest": {
+            "steps": 6,
+            "statement_size": 145,
+            "score": 17.88,
+            "modules": 1,
+            "joins": 1,
+            "focus_steps": 6,
+            "conclusion_size": 89,
+            "concepts": 3
+          },
+          "lemmas": [
+            "Filter.EventuallyEq.fun_mul",
+            "Filter.EventuallyEq.preimage",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallyEqSet.symm",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallySubset.compl"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:ef817d4e83a734b7fd96593e66d00187",
+          "statement_pretty": "∀ {α : Type} {f : Filter α} {x y : Set α},\n  x ∈ f →\n    x ⊆ y →\n      f.NeBot →\n        ∀ {u : Filter α} {v : Set α},\n          Prod.snd '' y ×ˢ y ≤ᶠ[u] v → ∀ {w : Set α}, v =ᶠ[u] w → Prod.snd '' y ×ˢ y ≤ᶠ[u] w",
+          "interest": {
+            "steps": 7,
+            "statement_size": 177,
+            "score": 23.5,
+            "modules": 3,
+            "joins": 1,
+            "focus_steps": 6,
+            "conclusion_size": 51,
+            "concepts": 5
+          },
+          "lemmas": [
+            "Filter.mem_of_superset",
+            "Filter.NeBot.nonempty_of_mem",
+            "Set.snd_image_prod",
+            "Filter.EventuallyEqSet.of_eq",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallySubset.trans"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:8e00c66b383c29e77d83bd48930056d7",
+          "statement_pretty": "∀ {α : Type} {f g : Filter α} {s : Set α},\n  s ∈ f →\n    (f ⊓ g).NeBot →\n      ∀ {u : Set α},\n        Codisjoint u s →\n          ∀ {v : Filter α},\n            bihimp (Prod.fst '' s ×ˢ s) s ⇨ u ∩ bihimp (Prod.fst '' s ×ˢ s) s ≤ᶠ[v] u",
+          "interest": {
+            "steps": 9,
+            "statement_size": 417,
+            "score": 21.35,
+            "modules": 6,
+            "joins": 0,
+            "focus_steps": 4,
+            "conclusion_size": 317,
+            "concepts": 7
+          },
+          "lemmas": [
+            "Filter.mem_inf_of_left",
+            "Filter.NeBot.nonempty_of_mem",
+            "Set.fst_image_prod",
+            "Eq.superset",
+            "Codisjoint.mono_right",
+            "Codisjoint.bihimp_right",
+            "Codisjoint.himp_inf_cancel_right",
+            "Eq.eventuallyEqSet",
+            "Filter.EventuallyEqSet.subset"
+          ],
+          "violations": []
+        }
+      ]
+    },
+    {
+      "module": "Mathlib.Order.Filter.Basic",
+      "focus": "Mathlib.Order.Filter",
+      "seed": 20261125,
+      "wall_seconds": 12.6,
+      "candidates": 4,
+      "valid_candidates": 4,
+      "timed_out": false,
+      "complete": true,
+      "stats": {
+        "rejects": {
+          "unresolved": 364,
+          "unrenderable": 3,
+          "size_cap": 13,
+          "repeated_lemma": 55,
+          "padded_fact": 126,
+          "no_unifier": 166,
+          "no_focus_symbol": 12,
+          "few_steps": 32,
+          "few_concepts": 25,
+          "dull_conclusion": 43,
+          "closed_by_aesop": 1
+        },
+        "phase_ms": {
+          "search": 10065,
+          "render": 119,
+          "index": 692,
+          "import": 624,
+          "hyp_tree": 108,
+          "gate_simp": 91,
+          "gate_exact": 2420,
+          "gate_aesop": 1498
+        },
+        "dominant_reject": "unresolved",
+        "attempts": 5,
+        "applications_tried": 900,
+        "applications_succeeded": 133
+      },
+      "results": [
+        {
+          "statement_hash": "expr:8ee1bc5cb7b2fd0614484731a56da4f6",
+          "statement_pretty": "∀ {α : Type} {x_2 x_3 : Filter (Filter α)},\n  x_2 ≤ x_3 →\n    ∀ {u : Filter (Filter α)} {v : Set (Filter α)},\n      upperBounds (Set.Icc x_2.join x_3.join) ≤ᶠ[u] v →\n        ∀ {w : Set (Filter α)},\n          v =ᶠ[u] w → wᶜ ∪ Set.Ici x_3.join ≤ᶠ[u] (Set.Ici x_3.join)ᶜ ∪ v",
+          "interest": {
+            "steps": 8,
+            "statement_size": 249,
+            "score": 18.27,
+            "modules": 2,
+            "joins": 1,
+            "focus_steps": 7,
+            "conclusion_size": 111,
+            "concepts": 4
+          },
+          "lemmas": [
+            "Filter.join_mono",
+            "upperBounds_Icc",
+            "Eq.eventuallyEqSet",
+            "Filter.EventuallySubset.congr",
+            "Filter.EventuallySubset.compl",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallySubset.trans",
+            "Filter.EventuallySubset.union"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:1e9afa030efe64d3cef3f0b17ee68e43",
+          "statement_pretty": "∀ {α : Type} {s t : Set α} {l : Filter α},\n  s ≤ᶠ[l] t →\n    ∀ {s' t' : Set α},\n      s' ≤ᶠ[l] t' →\n        ∀ {u : Set α},\n          (t ∩ t') \\ s' ≤ᶠ[l] u →\n            u ≤ᶠ[l] (s ∩ s') \\ t' → ∃ v ∈ l, ∀ y ∈ v, y ∈ (s ∩ s') \\ t' ↔ y ∈ u",
+          "interest": {
+            "steps": 6,
+            "statement_size": 219,
+            "score": 17.02,
+            "modules": 1,
+            "joins": 0,
+            "focus_steps": 6,
+            "conclusion_size": 105,
+            "concepts": 4
+          },
+          "lemmas": [
+            "Filter.EventuallySubset.inter",
+            "Filter.EventuallySubset.diff",
+            "Filter.EventuallySubset.trans",
+            "Filter.EventuallySubset.antisymm",
+            "Filter.EventuallyEqSet.mem_iff",
+            "Filter.Eventually.exists_mem"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:a448e7d6e53c8c9fbf34902ac279d34f",
+          "statement_pretty": "∀ {α : Type} (s : Set α) {u v : Filter α},\n  u ≤ v ⊔ Filter.principal sᶜ → Nonempty ↑(Set.Icc (￢v) (v ⊔ ￢(u ⊓ Filter.principal s)))",
+          "interest": {
+            "steps": 8,
+            "statement_size": 255,
+            "score": 20.63,
+            "modules": 5,
+            "joins": 0,
+            "focus_steps": 1,
+            "conclusion_size": 141,
+            "concepts": 6
+          },
+          "lemmas": [
+            "Filter.isCompl_principal",
+            "IsCompl.inf_left_le_of_le_sup_right",
+            "LE.le.codisjoint_hnot_left",
+            "Codisjoint.sup_left'",
+            "Codisjoint.hnot_le_left",
+            "isLeast_Icc",
+            "IsLeast.nonempty",
+            "Set.Nonempty.to_subtype"
+          ],
+          "violations": []
+        },
+        {
+          "statement_hash": "expr:ae905c44f14038902ac1c5da794362a0",
+          "statement_pretty": "∀ {α : Type} {p : α → Prop} {f : Filter α},\n  (∀ᶠ (x : α) in f, p x) →\n    (∀ (y₁ y₂ : Set α), (y₁ ∈ f ∧ ∀ y ∈ y₁, p y) → (y₂ ∈ f ∧ ∀ y ∈ y₂, p y) → y₁ = y₂) →\n      ∀ {u v : Set α},\n        (u ∈ f ∧ ∀ y ∈ u, p y) →\n          (v ∈ f ∧ ∀ y ∈ v, p y) → ∀ {w : Filter (Set α)}, ∅ =ᶠ[w] Set.Ico u v",
+          "interest": {
+            "steps": 10,
+            "statement_size": 287,
+            "score": 25.83,
+            "modules": 4,
+            "joins": 1,
+            "focus_steps": 5,
+            "conclusion_size": 65,
+            "concepts": 7
+          },
+          "lemmas": [
+            "Filter.Eventually.exists_mem",
+            "existsUnique_of_exists_of_unique",
+            "ExistsUnique.unique",
+            "Eq.superset",
+            "not_ssubset_of_subset",
+            "Set.Ico_eq_empty",
+            "Filter.EventuallyEqSet.of_eq",
+            "Filter.EventuallyEqSet.subset",
+            "Filter.EventuallyEqSet.superset",
+            "Filter.EventuallySubset.antisymm"
+          ],
+          "violations": []
+        }
+      ]
+    }
+  ]
+}

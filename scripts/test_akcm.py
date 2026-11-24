@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import random
 import shutil
 import subprocess
@@ -31,7 +32,7 @@ from editorial import (
 )
 from llm import LLMError
 from msc2020 import section_prefix, section_title
-from pipeline import prepare_result, publish_next_issue, run_launch, run_wander
+from pipeline import _gather_pool, prepare_result, publish_next_issue, run_launch, run_wander
 from selection import (
     PoolEntry,
     append_candidate_log,
@@ -41,7 +42,7 @@ from selection import (
     select_and_verify,
 )
 from verify import ALLOWED_AXIOMS, display_path, extract_theorem_name, parse_axioms
-from walk_runner import WalkRun, read_walk_output, run_walk, run_walks_parallel
+from walk_runner import WalkRun, read_walk_output, run_bounded, run_walk, run_walks_parallel
 from wander import TopicProfile, _mutate_knobs, derive_focus, focus_scores, mutate_profiles
 
 
@@ -312,13 +313,13 @@ def test_run_walk_timeout_keeps_partial_output() -> None:
             json.dumps({"complete": False, "stats": {}, "candidates": [{"statement_hash": "a"}]}),
             encoding="utf-8",
         )
-        raise subprocess.TimeoutExpired(cmd, kwargs.get("timeout", 1))
+        return None  # what `run_bounded` returns after killing a run at its timeout
 
     with TemporaryDirectory() as directory:
         with (
             patch("walk_runner.ROOT", Path(directory)),
             patch("walk_runner.find_lake", return_value="lake"),
-            patch("walk_runner.subprocess.run", side_effect=killed_after_one_candidate),
+            patch("walk_runner.run_bounded", side_effect=killed_after_one_candidate),
         ):
             run = run_walk(
                 seed=7, count=2, min_steps=3, max_steps=8, max_attempts=5, interdisciplinary=2.0,
@@ -351,6 +352,8 @@ def test_bench_invariants() -> None:
     eta = clean | {"statement_pretty": "(fun y ↦ y ∈ s \\ t) ≤ᶠ[l] fun y ↦ y ∈ t"}
     assert check_invariants(eta) == ["unfolded_notation"]
     assert check_invariants(clean | {"statement_pretty": "Antitone fun x ↦ min (f x) (g x)"}) == []
+    # Independent of the generator's own padded check: a double complement in the printed statement.
+    assert check_invariants(clean | {"statement_pretty": "(s ∩ t)ᶜᶜ ≤ᶠ[l] t"}) == ["double_complement"]
 
 
 def test_screening_uses_referee_and_falls_back() -> None:
@@ -450,29 +453,30 @@ def test_rank_select_and_log() -> None:
         entry("e", "M.C", 5.5, source="interest_score"),
     ]
     ranked = rank_pool(pool)
-    assert [e.candidate["statement_hash"] for e in ranked] == ["b", "a", "e", "c", "d"]
+    # "e" was ranked by the fallback score: it goes after every referee-scored entry.
+    assert [e.candidate["statement_hash"] for e in ranked] == ["b", "a", "c", "d", "e"]
 
     def verify(e: PoolEntry) -> str | None:
         return None if e.candidate["statement_hash"] == "a" else e.candidate["statement_hash"]
 
     accepted, outcomes = select_and_verify(ranked, count=3, module_cap=1, verify=verify)
-    assert [result for _, result in accepted] == ["b", "e", "d"]
-    assert outcomes == {"b": "published", "a": "outranked", "e": "published", "c": "outranked", "d": "published"}
+    assert [result for _, result in accepted] == ["b", "d", "e"]
+    assert outcomes == {"b": "published", "a": "outranked", "c": "outranked", "d": "published", "e": "published"}
 
     accepted, outcomes = select_and_verify(ranked, count=2, module_cap=2, verify=verify)
-    assert [result for _, result in accepted] == ["b", "e"]
-    assert outcomes["a"] == "failed_verification" and outcomes["c"] == "outranked"
+    assert [result for _, result in accepted] == ["b", "c"]
+    assert outcomes["a"] == "failed_verification" and outcomes["d"] == "outranked" and outcomes["e"] == "outranked"
     assert select_and_verify([], count=3, verify=verify) == ([], {})
     assert [publish_limit(6, n) for n in (0, 1, 2, 5, 24)] == [0, 1, 1, 3, 6]
 
     with TemporaryDirectory() as directory:
         path = Path(directory) / "candidates.jsonl"
         records = [log_record(e, rank=i + 1, pool_size=5, outcome="outranked") for i, e in enumerate(ranked)]
-        assert records[2]["source"] == "interest_score" and records[0]["rank"] == 1
+        assert records[4]["source"] == "interest_score" and records[0]["rank"] == 1
         append_candidate_log(records, path=path, keep=4)
         append_candidate_log(records[:2], path=path, keep=4)
         lines = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-        assert [line["statement_hash"] for line in lines] == ["c", "d", "b", "a"]
+        assert [line["statement_hash"] for line in lines] == ["d", "e", "b", "a"]
 
 
 def test_parallel_walks_preserve_order_and_isolate_failures() -> None:
@@ -635,13 +639,13 @@ def test_walk_command_carries_specialist_knobs() -> None:
         Path(cmd[cmd.index("--out") + 1]).write_text(
             json.dumps({"complete": True, "stats": {}, "candidates": []}), encoding="utf-8"
         )
-        return subprocess.CompletedProcess(cmd, 0)
+        return 0
 
     with TemporaryDirectory() as directory:
         with (
             patch("walk_runner.ROOT", Path(directory)),
             patch("walk_runner.find_lake", return_value="lake"),
-            patch("walk_runner.subprocess.run", side_effect=record),
+            patch("walk_runner.run_bounded", side_effect=record),
         ):
             run_walk(
                 seed=7, count=2, min_steps=3, max_steps=9, max_attempts=5, interdisciplinary=2.0,
@@ -659,6 +663,67 @@ def test_verify_accepts_relative_and_outside_paths() -> None:
     assert display_path(Path("results/AKCM-2026-0001/Result.lean")) == "results/AKCM-2026-0001/Result.lean"
     assert display_path(root / "results" / "AKCM-2026-0001" / "Result.lean") == "results/AKCM-2026-0001/Result.lean"
     assert display_path(Path("/tmp/elsewhere/Result.lean")) == "/tmp/elsewhere/Result.lean"
+
+
+def test_timed_out_command_leaves_no_child_running() -> None:
+    with TemporaryDirectory() as directory:
+        pid_file = Path(directory) / "child.pid"
+        # The shell stands for `lake`, the background sleep for the `walk` binary it spawns.
+        cmd = ["sh", "-c", f"sleep 60 & echo $! > {pid_file}; wait"]
+        assert run_bounded(cmd, cwd=Path(directory), env=dict(os.environ), timeout=1) is None
+        child = int(pid_file.read_text().strip())
+        for _ in range(50):
+            try:
+                os.kill(child, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.1)
+        else:
+            raise AssertionError("the grandchild process survived the timeout")
+        assert run_bounded(["sh", "-c", "exit 3"], cwd=Path(directory), env=dict(os.environ), timeout=5) == 3
+
+
+def test_walk_output_survives_crash_and_is_named_per_module() -> None:
+    seen: list[str] = []
+
+    def crash_after_one_candidate(cmd, **kwargs):
+        out_path = Path(cmd[cmd.index("--out") + 1])
+        seen.append(out_path.name)
+        out_path.write_text(
+            json.dumps({"complete": False, "stats": {}, "candidates": [{"statement_hash": "a"}]}), encoding="utf-8"
+        )
+        return 137
+
+    with TemporaryDirectory() as directory:
+        with (
+            patch("walk_runner.ROOT", Path(directory)),
+            patch("walk_runner.find_lake", return_value="lake"),
+            patch("walk_runner.run_bounded", side_effect=crash_after_one_candidate),
+        ):
+            common = dict(count=2, min_steps=3, max_steps=8, max_attempts=5, interdisciplinary=2.0,
+                          exact_heartbeats=1, aesop_heartbeats=1, convolute=0)
+            crashed = run_walk(seed=7, module="Mathlib.A.B", focus="Mathlib.A", **common)
+            run_walk(seed=7, module="Mathlib.C.D", focus="Mathlib.C", **common)
+    assert len(crashed.candidates) == 1 and not crashed.complete
+    assert seen[0] != seen[1]
+
+
+def test_screening_stops_calling_a_failing_referee() -> None:
+    calls: list[bool] = []
+
+    def screen(candidate: dict, *, cfg: dict, offline: bool = False) -> dict:
+        calls.append(offline)
+        if offline or candidate["statement_hash"] == "b":
+            return {"score": 1.0, "tie_break": 0.0, "source": "interest_score", "verdict": None}
+        return {"score": 5.0, "tie_break": 0.0, "source": "referee_a", "verdict": {}}
+
+    profile = TopicProfile("Mathlib.M.A", "Mathlib.M", "M", 30)
+    run = WalkRun(candidates=[{"statement_hash": tag} for tag in ("a", "b", "c", "d")], complete=True)
+    with patch("pipeline.screen_candidate", side_effect=screen):
+        ranked = _gather_pool([profile], [run], [1], seen_hashes=set(), cfg={}, offline=False)
+    # "a" is scored live, "b" fails, and the remaining candidates are not sent to the referee.
+    assert calls == [False, False, True, True]
+    assert [e.candidate["statement_hash"] for e in ranked][0] == "a"
 
 
 if __name__ == "__main__":
@@ -684,4 +749,7 @@ if __name__ == "__main__":
     test_profile_knobs_and_meta_carry_interest()
     test_walk_command_carries_specialist_knobs()
     test_verify_accepts_relative_and_outside_paths()
+    test_timed_out_command_leaves_no_child_running()
+    test_walk_output_survives_crash_and_is_named_per_module()
+    test_screening_stops_calling_a_failing_referee()
     print("All AKCM unit tests passed.")

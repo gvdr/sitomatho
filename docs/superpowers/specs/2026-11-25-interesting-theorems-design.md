@@ -200,3 +200,32 @@ These were not discussed with the user and are proposals.
 - Head-constant concepts may be too coarse in some areas (many facts share the head `Eq` or `LE.le`). The benchmark covers four different areas so that this shows up early; a refinement would use the head of the main argument for such relations.
 - With padding removed, some modules may yield nothing at the default settings. The relaxation retry and the per-run rejection summary are there to make that visible and recoverable.
 - Selecting by referee score rewards whatever the referee happens to like. That is the stated aim of the project, and the anti-goal on editing referee prompts keeps the instrument fixed.
+
+## Results
+
+Measured on the development machine with `scripts/bench_walk.py` (four modules, two seeds each, offline). Summaries are in `bench/`.
+
+| Run | Wall time | Search time | Candidates | Valid | Modules with a valid candidate | Seconds per valid candidate | Violations |
+|---|---|---|---|---|---|---|---|
+| `baseline` (before any change) | 446.6 s | 111.2 s | 10 | 3 | 2 | 148.9 | 13 |
+| `part1` (measurement, enforced budgets) | 210.1 s | 155.7 s | 11 | 3 | 2 | 70.0 | 15 |
+| `part2` (new search) | 160.9 s | 123.1 s | 12 | 12 | 3 | 13.4 | 0 |
+| `final` (after the review fixes) | 113.7 s | 77.2 s | 11 | 11 | 3 | 10.3 | 0 |
+
+A valid candidate has no invariant violation. The baseline and `part1` rows could only be checked for repeated lemmas, since those runs did not emit the other fields, so their valid counts are generous. Wall time includes module loading, which varied with the page cache; search time is the comparable figure. One baseline run was killed at 300 s without statistics, so the baseline search time is understated.
+
+What the measurement showed, beyond what the design assumed:
+
+- The heartbeat budgets in the walk were not enforced, so `exact?` ran unbounded. Enforcing them accounts for most of the wall-time drop in `part1`.
+- The walk had never introduced a new variable or hypothesis: the code that was meant to do it failed a scope check silently. Multi-premise lemmas could only fire by reusing facts already present, which is what produced `s ∩ s`. Lemma applications now open new binders, and statements carry several hypotheses over several objects.
+- `Mathlib.Topology.Sheaves.MayerVietoris` yields nothing under the new rules, with `unresolved` as its dominant rejection: its lemmas need premises the walk cannot supply.
+
+Changes to the design made during the work, each recorded as a ruling in the execution ledger and listed in the hand-over:
+
+- A fact matches a lemma hypothesis only up to instance-reducible unfolding.
+- Glue lemmas (logical, basic order and basic set vocabulary), deprecated aliases and auto-generated congruence lemmas are left out of the index.
+- "Padded" is measured on the visible size of a statement (explicit arguments only), and also covers sets in unfolded form.
+- The interest score gained a focus component and counts length up to six steps.
+- Referee-scored candidates always rank ahead of fallback-ranked ones.
+
+Referee scores remain to be measured: nothing here shows that the referees rate the new statements higher. That is the purpose of the live run on the feature branch and of the first week of nightly runs.

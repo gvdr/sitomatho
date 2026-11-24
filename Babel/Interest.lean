@@ -33,13 +33,14 @@ structure InterestComponents where
   focusSteps : Nat := 0
 deriving Inhabited, Repr
 
-/-- A cheap proxy for how interesting a derivation is. It rewards passing through distinct
-    concepts with a long derivation that stays on its subject, and penalises a large
-    statement. Distinct modules count for little: weighting them rewarded derivations that
-    leave their subject after one step and continue with generic set lemmas.
+/-- A cheap proxy for how interesting a derivation is. Distinct concepts dominate. Length
+    counts up to six steps only, and staying on the subject counts as a share of the
+    derivation, so that a long chain of on-topic closure lemmas does not outrank a short
+    derivation that passes through more concepts. A large statement is penalised.
     The weights are defaults to be compared with referee scores, not tuned values. -/
 def interestScore (c : InterestComponents) : Float :=
-  3.0 * c.concepts.toFloat + 2.0 * c.focusSteps.toFloat + 0.5 * c.modules.toFloat + c.steps.toFloat
+  let focusShare := if c.steps == 0 then 0.0 else c.focusSteps.toFloat / c.steps.toFloat
+  3.0 * c.concepts.toFloat + 4.0 * focusShare + 0.5 * c.modules.toFloat + (min c.steps 6).toFloat
     + (if c.joins > 0 then 2.0 else 0.0) - c.statementSize.toFloat / 40.0
 
 /-- The concept a fact is about: the head constant of its statement. -/
@@ -57,7 +58,39 @@ def countDistinct (names : Array (Option Name)) : Nat :=
 def defaultSimpContext : MetaM (Simp.Context × Simp.SimprocsArray) := do
   return (← Simp.Context.mkDefault, #[← Simp.getSimprocs])
 
-/-- Simplify a statement with the default simp set. `none` on timeout or failure. -/
+/-- Size of a term as a reader sees it: implicit and instance arguments are not counted.
+    Raw node counts are unsuitable for comparing a term with its `simp` normal form, because
+    `simp` elaborates longer instance paths (`@SemilatticeInf.toMin (Set α) …` where the
+    input had `@Set.instMin α`) and a visibly smaller result then counts as larger. -/
+partial def visibleSize (e : Expr) : MetaM Nat := do
+  match e with
+  | .app .. =>
+      let fn := e.getAppFn
+      let args := e.getAppArgs
+      let info ← getFunInfoNArgs fn args.size
+      let mut total := 1
+      if !(fn.isConst || fn.isFVar) then
+        total := ← visibleSize fn
+      for i in [:args.size] do
+        let explicit := if h : i < info.paramInfo.size then info.paramInfo[i].binderInfo == .default else true
+        if explicit then
+          total := total + (← visibleSize args[i]!)
+      return total
+  | .lam .. =>
+      lambdaTelescope e fun xs body => return xs.size + (← visibleSize body)
+  | .forallE .. =>
+      forallTelescope e fun xs body => do
+        let mut total := ← visibleSize body
+        for x in xs do
+          if (← x.fvarId!.getBinderInfo) == .default then
+            total := total + 1 + (← visibleSize (← inferType x))
+        return total
+  | .mdata _ inner => visibleSize inner
+  | .proj _ _ inner => return 1 + (← visibleSize inner)
+  | _ => return 1
+
+/-- Simplify a term with the default simp set and return the result with its visible size.
+    `none` on timeout or failure. -/
 def simplifiedSize? (e : Expr) (budget : Nat) : MetaM (Option (Expr × Nat)) := do
   let saved ← saveState
   try
@@ -66,7 +99,7 @@ def simplifiedSize? (e : Expr) (budget : Nat) : MetaM (Option (Expr × Nat)) := 
         let (ctx, simprocs) ← defaultSimpContext
         let (result, _) ← Meta.simp e ctx simprocs
         let simplified ← instantiateMVars result.expr
-        return some (simplified, exprSize simplified))
+        return some (simplified, ← visibleSize simplified))
       (fun _ => pure none)
   finally
     restoreState saved
@@ -109,12 +142,12 @@ def isPaddedFact (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
   if hasUnfoldedSet e then
     return true
   if let some (simplified, size) ← simplifiedSize? e budget then
-    if simplified.isConstOf ``True || size < exprSize e then
+    if simplified.isConstOf ``True || size < (← visibleSize e) then
       return true
   for arg in ← explicitArgs e do
     if (← inferType arg).isSort then continue
     if let some (_, size) ← simplifiedSize? arg budget then
-      if size < exprSize arg then
+      if size < (← visibleSize arg) then
         return true
   return false
 

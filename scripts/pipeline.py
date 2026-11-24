@@ -276,13 +276,19 @@ def _gather_pool(
     """Screen every new, distinct candidate with Referee A and return the ranked pool."""
     pool: list[PoolEntry] = []
     known = set(seen_hashes)
+    # After the first failed call the referee is not asked again in this run: with retries,
+    # a hanging endpoint would otherwise cost minutes per candidate and the job its time limit.
+    referee_down = offline
     for profile, run, batch_seed in zip(profiles, runs, batch_seeds):
         for candidate in run.candidates:
             statement_hash = candidate.get("statement_hash", "")
             if statement_hash in known:
                 continue
             known.add(statement_hash)
-            screening = screen_candidate(candidate, cfg=cfg, offline=offline)
+            screening = screen_candidate(candidate, cfg=cfg, offline=referee_down)
+            if not referee_down and screening["source"] != "referee_a":
+                print("  [pool] Referee A unavailable; the remaining candidates are ranked by interest score.")
+                referee_down = True
             pool.append(PoolEntry(candidate, profile, batch_seed, screening))
     ranked = rank_pool(pool)
     for rank, entry in enumerate(ranked, start=1):

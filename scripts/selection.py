@@ -23,10 +23,15 @@ class PoolEntry:
 
 
 def rank_pool(pool: list[PoolEntry]) -> list[PoolEntry]:
-    """Order by screening score, then tie-break, then statement hash for determinism."""
+    """Order by screening score, then tie-break, then statement hash for determinism.
+
+    Entries the referee scored come before entries ranked by the fallback interest score:
+    the two scales are not comparable, and a failed referee call must not outrank real verdicts.
+    """
     return sorted(
         pool,
         key=lambda e: (
+            0 if e.screening.get("source") == "referee_a" else 1,
             -float(e.screening["score"]),
             -float(e.screening.get("tie_break", 0.0)),
             e.candidate.get("statement_hash", ""),

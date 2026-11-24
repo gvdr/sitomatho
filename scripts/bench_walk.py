@@ -67,6 +67,9 @@ def check_invariants(
     pretty = candidate.get("statement_pretty", "")
     if "Membership.mem" in pretty or UNFOLDED_SET.search(pretty):
         violations.append("unfolded_notation")
+    # Read off the printed statement, independently of the generator's own padded check.
+    if "ᶜᶜ" in pretty:
+        violations.append("double_complement")
     return violations
 
 
