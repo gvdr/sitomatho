@@ -22,6 +22,7 @@ from editorial import (
 from msc2020 import section_prefix, section_title
 from pipeline import publish_next_issue, run_launch
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
+from wander import TopicProfile, derive_focus, mutate_profiles
 
 
 def test_blocklist() -> None:
@@ -196,6 +197,38 @@ def test_msc2020() -> None:
     assert section_prefix("99Z99") == "00"
 
 
+def test_wander_mutation_avoids_recent_domains_and_drifts() -> None:
+    assert derive_focus("Mathlib.Combinatorics.SimpleGraph.Clique") == "Mathlib.Combinatorics.SimpleGraph"
+    assert derive_focus("Mathlib.Order.Zorn") == "Mathlib.Order"
+
+    pool = [
+        TopicProfile("Mathlib.Topology.Sheaves.A", "Mathlib.Topology.Sheaves", "Topology", 40),
+        TopicProfile("Mathlib.Topology.Sheaves.B", "Mathlib.Topology.Sheaves", "Topology", 35),
+        TopicProfile("Mathlib.NumberTheory.Padics.A", "Mathlib.NumberTheory.Padics", "NumberTheory", 50),
+        TopicProfile("Mathlib.Combinatorics.SimpleGraph.A", "Mathlib.Combinatorics.SimpleGraph", "Combinatorics", 45),
+        TopicProfile("Mathlib.Probability.Martingale.A", "Mathlib.Probability.Martingale", "Probability", 40),
+        TopicProfile("Mathlib.Dynamics.Ergodic.A", "Mathlib.Dynamics.Ergodic", "Dynamics", 30),
+    ]
+    state = {
+        "history": [
+            {"module": "Mathlib.Topology.Sheaves.A", "focus": "Mathlib.Topology.Sheaves", "domain": "Topology"}
+        ]
+    }
+    with TemporaryDirectory() as empty_results:
+        picked = mutate_profiles(
+            seed=42,
+            n_profiles=4,
+            candidates=pool,
+            wander_state=state,
+            results_dir=Path(empty_results),
+        )
+    assert len(picked) == 4
+    # Must include a sideways drift to the unseen sibling Sheaves.B and 3 distinct fresh domains
+    assert any(p.mutation_kind == "drift" and p.module == "Mathlib.Topology.Sheaves.B" for p in picked)
+    assert len({p.domain for p in picked}) == 4
+    assert all(p.module != "Mathlib.Topology.Sheaves.A" for p in picked)
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -205,4 +238,5 @@ if __name__ == "__main__":
     test_family_versioning_and_deprecation()
     test_axiom_parser()
     test_msc2020()
+    test_wander_mutation_avoids_recent_domains_and_drifts()
     print("All AKCM unit tests passed.")
