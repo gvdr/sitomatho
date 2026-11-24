@@ -15,6 +15,9 @@ from msc2020 import MSC_SECTIONS, section_prefix
 
 VALID_KINDS = ("Theorem", "Lemma", "Corollary", "Proposition")
 ANNOUNCEMENT = "Today we are proud to announce "
+REFEREE_A_PERSONA = (
+    "You are a formalist inclined to reward non-routine proof depth and cross-namespace synthesis."
+)
 
 # Curated fallback invented families (all verified absent from blocklist)
 FALLBACK_FAMILIES = [
@@ -120,12 +123,21 @@ def _walk_lemmas(meta: dict[str, Any]) -> list[str]:
     return [node.get("lemma", node["id"]) for node in nodes if node.get("kind") == "mathlib"]
 
 
+def _readable_statement(meta: dict[str, Any]) -> str:
+    """The statement as a mathematician would read it.
+
+    `statement_lean` is printed fully explicit for specialist results so that the standalone
+    file re-elaborates; the editorial desk reads the pretty form when the record has one.
+    """
+    return meta.get("statement_pretty") or meta["statement_lean"]
+
+
 def _candidate_summary_for_llm(meta: dict[str, Any]) -> str:
     nov = meta.get("novelty", {})
     ns = ", ".join(meta.get("namespaces", [])) or "Core"
     lemmas = _walk_lemmas(meta)
     return (
-        f"Lean statement:\n```lean\n{meta['statement_lean']}\n```\n\n"
+        f"Lean statement:\n```lean\n{_readable_statement(meta)}\n```\n\n"
         f"Novelty badges:\n"
         f"- Level 0 (Unseen hash): {nov.get('level_0_unseen', True)}\n"
         f"- Level 1 (Not a lookup — `exact?` failed): {nov.get('level_1_exact_failed', True)}\n"
@@ -593,7 +605,7 @@ def run_namer(
             f"{json.dumps(active_summary, indent=2)}\n"
             f"Retired/legacy families (do NOT reuse): {retired}\n"
             f"Statement snippet (use to craft the mathematical title, but do NOT explain the math in the press release):\n"
-            f"{meta['statement_lean'][:400]}\n"
+            f"{_readable_statement(meta)[:400]}\n"
         )
         if last_reason:
             user_prompt += f"\nPrevious attempt rejected: {last_reason}. Please fix this.\n"
@@ -694,6 +706,56 @@ def run_gloss(
     )
 
 
+def scale_interest(score: float) -> float:
+    """Map the generator's interest score onto the referees' 0 to 10 range."""
+    return max(0.0, min(10.0, score / 4.0))
+
+
+def screen_candidate(
+    candidate: dict[str, Any],
+    *,
+    cfg: dict[str, Any],
+    offline: bool = False,
+) -> dict[str, Any]:
+    """Score an unverified candidate with Referee A, for ranking a pool.
+
+    Returns `{"score", "tie_break", "source", "verdict"}`. When the referee cannot be
+    reached, the generator's own interest score ranks the candidate and `verdict` is None.
+    """
+    fallback = {
+        "score": scale_interest(float(candidate.get("interest", {}).get("score", 0.0))),
+        "tie_break": 0.0,
+        "source": "interest_score",
+        "verdict": None,
+    }
+    if offline or resolve_api_key() is None:
+        return fallback
+    llm_cfg = cfg["llm"]
+    meta = candidate | {"interdisciplinarity": len(candidate.get("namespaces", []))}
+    try:
+        verdict = run_decider(
+            meta,
+            referee_id="Referee A",
+            model=llm_cfg["decider_1_model"],
+            endpoint=llm_cfg["endpoint"],
+            decisions_endpoint=llm_cfg.get(
+                "decisions_endpoint", "https://generativelanguage.googleapis.com/v1beta/decisions"
+            ),
+            persona_note=REFEREE_A_PERSONA,
+            persona_bias=1,
+        )
+    except (LLMError, ValueError) as exc:
+        print(f"  [screen] Referee A unavailable ({exc}); ranking by interest score.")
+        return fallback
+    metrics = verdict.get("decision_metrics", {})
+    return {
+        "score": float(metrics.get("expected_score", verdict["importance"])),
+        "tie_break": float(metrics.get("p_human_cares", 0.0)),
+        "source": "referee_a",
+        "verdict": verdict,
+    }
+
+
 def register_families(
     models: list[dict[str, Any]],
     families_state: dict[str, Any],
@@ -736,8 +798,13 @@ def process_editorial(
     offline: bool = False,
     cfg: dict[str, Any] | None = None,
     families_state: dict[str, Any] | None = None,
+    referee_a: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    """Run both referees, namer, and gloss for one verified candidate."""
+    """Run both referees, namer, and gloss for one verified candidate.
+
+    A `referee_a` verdict obtained while screening is reused as Referee A's report,
+    so the same result is never scored twice by the same referee.
+    """
     cfg = cfg or load_config()
     llm_cfg = cfg["llm"]
     naming_cfg = cfg["naming"]
@@ -750,20 +817,23 @@ def process_editorial(
     if not offline and use_offline:
         print("  [editorial] No LLM_API_KEY configured; using offline heuristic fallback.")
 
-    try:
-        ref1 = run_decider(
-            meta,
-            referee_id="Referee A",
-            model=llm_cfg["decider_1_model"],
-            endpoint=endpoint,
-            decisions_endpoint=decisions_endpoint,
-            persona_note="You are a formalist inclined to reward non-routine proof depth and cross-namespace synthesis.",
-            offline=use_offline,
-            persona_bias=1,
-        )
-    except LLMError as exc:
-        print(f"  [editorial] Referee A LLM failed ({exc}); falling back to offline heuristic.")
-        ref1 = _offline_referee(meta, "Referee A", 1)
+    if referee_a is not None:
+        ref1 = referee_a
+    else:
+        try:
+            ref1 = run_decider(
+                meta,
+                referee_id="Referee A",
+                model=llm_cfg["decider_1_model"],
+                endpoint=endpoint,
+                decisions_endpoint=decisions_endpoint,
+                persona_note=REFEREE_A_PERSONA,
+                offline=use_offline,
+                persona_bias=1,
+            )
+        except LLMError as exc:
+            print(f"  [editorial] Referee A LLM failed ({exc}); falling back to offline heuristic.")
+            ref1 = _offline_referee(meta, "Referee A", 1)
 
     try:
         ref2 = run_decider(

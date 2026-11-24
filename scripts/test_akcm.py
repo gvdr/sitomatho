@@ -11,16 +11,22 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from bench_walk import check_invariants
 from editorial import (
+    _candidate_summary_for_llm,
     _validate_press_release,
     bump_family_versions_for_issue,
     is_blocked_family,
     load_blocklist,
+    process_editorial,
     register_families,
     render_editorial,
     run_decider,
     run_namer,
+    scale_interest,
+    screen_candidate,
 )
+from llm import LLMError
 from msc2020 import section_prefix, section_title
 from pipeline import publish_next_issue, run_launch
 from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
@@ -309,6 +315,106 @@ def test_run_walk_timeout_keeps_partial_output() -> None:
     assert run.timed_out and not run.complete and len(run.candidates) == 1
 
 
+def test_bench_invariants() -> None:
+    def node(name: str) -> dict:
+        return {"id": name, "lemma": name, "kind": "mathlib"}
+
+    padded = {
+        "dependencies": {"nodes": [node("A.u"), node("A.i"), node("A.u")]},
+        "checks": {"simp_normal": False, "premise_reuse": 2},
+        "interest": {"statement_size": 900, "concepts": 1},
+    }
+    assert check_invariants(padded, max_statement_size=400, min_concepts=3) == [
+        "lemma_repeated:A.u", "padded", "premise_reuse", "too_large", "few_concepts",
+    ]
+    clean = {
+        "dependencies": {"nodes": [node("A.u"), node("B.v")]},
+        "checks": {"simp_normal": True, "premise_reuse": 0},
+        "interest": {"statement_size": 120, "concepts": 3},
+    }
+    assert check_invariants(clean, max_statement_size=400, min_concepts=3) == []
+    assert check_invariants({"dependencies": {"nodes": [node("A.u")]}}) == []
+
+
+def test_screening_uses_referee_and_falls_back() -> None:
+    cfg = {"llm": {"endpoint": "e", "decisions_endpoint": "d", "decider_1_model": "gemini-decision-1"}}
+    candidate = {
+        "statement_lean": "theorem t : True",
+        "statement_hash": "h",
+        "steps_taken": 5,
+        "namespaces": ["Filter"],
+        "dependencies": {"nodes": [], "edges": []},
+        "novelty": {"level_3_ratio": 2.0},
+        "interest": {"score": 22.0},
+    }
+    answers = {
+        "kind": {"choice": "Lemma"},
+        "importance": {"score": 5.4, "confidence": 0.5},
+        "msc_section": {"choice": "54"},
+        "surprising": {"noul": 0.2},
+        "human_cares": {"noul": 0.31},
+    }
+    with patch("editorial.resolve_api_key", return_value="k"), patch(
+        "editorial.gemini_decisions", return_value=answers
+    ):
+        live = screen_candidate(candidate, cfg=cfg)
+    assert live["source"] == "referee_a" and live["score"] == 5.4 and live["tie_break"] == 0.31
+    assert live["verdict"]["model"] == "gemini-decision-1"
+
+    with patch("editorial.resolve_api_key", return_value="k"), patch(
+        "editorial.gemini_decisions", side_effect=LLMError("down")
+    ):
+        failed = screen_candidate(candidate, cfg=cfg)
+    assert failed == {"score": 5.5, "tie_break": 0.0, "source": "interest_score", "verdict": None}
+
+    without_interest = {k: v for k, v in candidate.items() if k != "interest"}
+    no_interest = screen_candidate(without_interest, cfg=cfg, offline=True)
+    assert no_interest["score"] == 0.0 and no_interest["source"] == "interest_score"
+    assert scale_interest(100.0) == 10.0 and scale_interest(-3.0) == 0.0
+
+    readable = candidate | {"statement_pretty": "∀ {α : Type} (s : Set α), s ⊆ s"}
+    summary = _candidate_summary_for_llm(readable | {"interdisciplinarity": 1})
+    assert "s ⊆ s" in summary and "theorem t : True" not in summary
+    assert "theorem t : True" in _candidate_summary_for_llm(candidate | {"interdisciplinarity": 1})
+
+
+def test_precomputed_referee_a_is_reused() -> None:
+    cfg = {
+        "llm": {
+            "endpoint": "e",
+            "decisions_endpoint": "d",
+            "decider_1_model": "gemini-decision-1",
+            "decider_2_model": "m2",
+            "namer_model": "m3",
+            "gloss_model": "m4",
+        },
+        "naming": {"deprecate_after": 50, "joint_eponym_min_score": 8},
+    }
+    meta = {
+        "statement_lean": "theorem akcm_2026_0098 : True",
+        "statement_hash": "expr:reuse",
+        "steps_taken": 6,
+        "namespaces": ["Topology"],
+        "interdisciplinarity": 1,
+        "dependencies": {"nodes": [{"id": "IsClopen.union", "kind": "mathlib"}], "edges": []},
+        "novelty": {"level_1_exact_failed": True, "level_2_not_routine": True, "level_3_ratio": 4.2},
+    }
+    verdict = {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Theorem",
+        "importance": 7,
+        "msc_code": "54A05",
+        "justification": "kept",
+    }
+    editorial = process_editorial(
+        meta, offline=True, cfg=cfg, families_state={"families": {}}, referee_a=verdict
+    )
+    assert editorial["referees"][0]["justification"] == "kept"
+    assert editorial["referees"][0]["model"] == "gemini-decision-1"
+    assert editorial["referees"][1]["model"] == "offline-heuristic-referee"
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -322,4 +428,7 @@ if __name__ == "__main__":
     test_gemini_decision_1_referee()
     test_read_walk_output_partial_and_missing()
     test_run_walk_timeout_keeps_partial_output()
+    test_bench_invariants()
+    test_screening_uses_referee_and_falls_back()
+    test_precomputed_referee_a_is_reused()
     print("All AKCM unit tests passed.")
