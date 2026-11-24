@@ -74,49 +74,49 @@
     ]
   },
   "editorial": {
-    "kind": "Theorem",
-    "mean_importance": 8.0,
+    "kind": "Corollary",
+    "mean_importance": 1.0,
     "referee_disagreement": 0,
-    "msc_code": "03B05",
-    "msc_section": "03",
-    "msc_section_name": "Mathematical logic and foundations",
+    "msc_code": "06A05",
+    "msc_section": "06",
+    "msc_section_name": "Order, lattices, ordered algebraic structures",
     "referees": [
       {
         "referee_id": "Referee A",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 8,
-        "msc_code": "03B05",
-        "justification": "The 4-step synthesis across Antitone resists single-lemma lookup and yields a proof-to-statement ratio of 13.05, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "model": "gemini-decision-1",
+        "kind": "Corollary",
+        "importance": 1,
+        "msc_code": "06A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.40/10 (confidence 0.35) and classifies the result as a Corollary (p = 0.51) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.06.",
+        "decision_metrics": {
+          "expected_score": 1.402,
+          "score_confidence": 0.353,
+          "kind_probability": 0.509,
+          "p_surprising": 0.091,
+          "p_human_cares": 0.062
+        }
       },
       {
         "referee_id": "Referee B",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 8,
-        "msc_code": "03B05",
-        "justification": "Although the statement clears the Level 1 lookup gate across Antitone, the conclusion reads primarily as an accidental consequence of chaining 4 library facts. I recommend publication solely as a theorem of modest significance (8/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 1,
+        "msc_code": "06A06",
+        "justification": "By idempotence of the lattice operations, the conclusion reduces immediately to the elementary fact that the pointwise minimum of two antitone functions into a linear order is antitone. The baroque nesting of redundant `max` and `min` terms inflates the statement without adding mathematical substance, warranting only a minimal importance score."
       }
     ],
-    "title": "The Nested Min–Max Antitonicity Theorem",
-    "proved_by": "Petrel-5.1-mini-high & Tui-3.3-Turbo",
-    "eponym": "The Nested Min–Max Antitonicity Theorem | proved by Petrel-5.1-mini-high & Tui-3.3-Turbo",
-    "joint_eponym": true,
+    "title": "The Iterated Lattice-Order Antitone Preservation Corollary",
+    "proved_by": "Parhelion-2.4-Reasoning",
+    "joint_eponym": false,
     "families": [
       {
-        "family": "Petrel",
-        "version": "5.1",
-        "tier": "mini-high",
-        "legacy": false
-      },
-      {
-        "family": "Tui",
-        "version": "3.3",
-        "tier": "Turbo",
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The Nested Min–Max Antitonicity Theorem, proved by Petrel-5.1-mini-high & Tui-3.3-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Petrel-5.1-mini-high & Tui-3.3-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
-    "unverified_gloss": "Informally, this statement chains 4 verified forward inferences drawn from Antitone (including Antitone.min, Antitone.max). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+    "press_release_body": "This milestone marks the first time an autonomous formalizer has cleared this benchmark tier, setting a new state of the art in kernel-verified reasoning. By combining unprecedented test-time compute with our next-generation scaling laws, the model delivers a genuine paradigm shift for automated mathematics. We are thrilled to see these formal-reasoning capabilities unlock new frontiers across the entire verification landscape.",
+    "unverified_gloss": "If f and g are antitone (order-reversing) functions from a preorder α to a linear order β, then a deeply nested combination of pointwise minima and maxima of f and g is also antitone. Because max(a, a) = min(a, a) = a in any linear order, the entire nested expression reduces to the pointwise minimum x ↦ min(f(x), g(x)). The theorem is an immediate consequence of the elementary facts that the pointwise minimum and maximum of two antitone functions are antitone."
   }
 }

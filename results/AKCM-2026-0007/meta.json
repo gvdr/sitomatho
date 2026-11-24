@@ -63,43 +63,49 @@
     ]
   },
   "editorial": {
-    "kind": "Theorem",
-    "mean_importance": 7.5,
+    "kind": "Lemma",
+    "mean_importance": 1.5,
     "referee_disagreement": 1,
-    "msc_code": "03B05",
-    "msc_section": "03",
-    "msc_section_name": "Mathematical logic and foundations",
+    "msc_code": "13A05",
+    "msc_section": "13",
+    "msc_section_name": "Commutative algebra",
     "referees": [
       {
         "referee_id": "Referee A",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 7,
-        "msc_code": "03B05",
-        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 12.53, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 2,
+        "msc_code": "13A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 2.40/10 (confidence 0.24) and classifies the result as a Lemma (p = 0.42) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.10.",
+        "decision_metrics": {
+          "expected_score": 2.396,
+          "score_confidence": 0.239,
+          "kind_probability": 0.424,
+          "p_surprising": 0.086,
+          "p_human_cares": 0.099
+        }
       },
       {
         "referee_id": "Referee B",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 8,
-        "msc_code": "03B05",
-        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a theorem of modest significance (8/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 1,
+        "msc_code": "17A99",
+        "justification": "This result establishes an elementary closure property of centralizers in non-unital, non-associative rings by combining negation, subtraction, and symmetry of commutation. While the proof avoids immediate automation, the statement itself is a routine consequence of bilinearity that any working algebraist would invoke without comment."
       }
     ],
-    "title": "The Non-Associative Ring Difference Commutation Theorem",
-    "proved_by": "Kestrel-5.2-Thinking",
-    "eponym": "The Non-Associative Ring Difference Commutation Theorem | proved by Kestrel-5.2-Thinking",
+    "title": "The Non-Associative Difference-Commutator Lemma",
+    "proved_by": "Parhelion-2.4-Reasoning",
     "joint_eponym": false,
     "families": [
       {
-        "family": "Kestrel",
-        "version": "5.2",
-        "tier": "Thinking",
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The Non-Associative Ring Difference Commutation Theorem, proved by Kestrel-5.2-Thinking, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Kestrel-5.2-Thinking demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
-    "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Commute (including Commute.sub_left, Commute.symm, Commute.neg_left). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+    "press_release_body": "Today marks a decisive inflection point in automated formalization as our flagship system establishes a new state-of-the-art on internal kernel-verified benchmarks. For the first time, we are witnessing emergent symbolic intuition scale predictably across abstract algebraic regimes without human-in-the-loop scaffolding. This milestone underscores our commitment to pushing the frontier of autonomous mathematical reasoning.",
+    "unverified_gloss": "In a non-unital, non-associative ring R, if elements a and b both commute with c (that is, a * c = c * a and b * c = c * b), then -c commutes with a - b. This follows immediately from the linearity of commutation: a - b commutes with c, and negating and swapping sides preserves the relation."
   }
 }

@@ -66,43 +66,49 @@
     ]
   },
   "editorial": {
-    "kind": "Theorem",
-    "mean_importance": 8.0,
-    "referee_disagreement": 4,
-    "msc_code": "03E20",
-    "msc_section": "03",
-    "msc_section_name": "Mathematical logic and foundations",
+    "kind": "Lemma",
+    "mean_importance": 2.5,
+    "referee_disagreement": 3,
+    "msc_code": "54A05",
+    "msc_section": "54",
+    "msc_section_name": "General topology",
     "referees": [
       {
         "referee_id": "Referee A",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 10,
-        "msc_code": "03E20",
-        "justification": "The 3-step synthesis across Set, IsClopen resists single-lemma lookup and yields a proof-to-statement ratio of 8.75, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 4,
+        "msc_code": "54A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.46/10 (confidence 0.24) and classifies the result as a Lemma (p = 0.37) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.12 and P(a human mathematician cares) = 0.20.",
+        "decision_metrics": {
+          "expected_score": 4.462,
+          "score_confidence": 0.239,
+          "kind_probability": 0.369,
+          "p_surprising": 0.117,
+          "p_human_cares": 0.2
+        }
       },
       {
         "referee_id": "Referee B",
-        "model": "offline-heuristic-referee",
-        "kind": "Proposition",
-        "importance": 6,
-        "msc_code": "03E20",
-        "justification": "Although the statement clears the Level 1 lookup gate across Set, IsClopen, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a proposition of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "model": "gemini-4-hydrogen",
+        "kind": "Corollary",
+        "importance": 1,
+        "msc_code": "54D05",
+        "justification": "This result is an immediate corollary of the elementary fact that a finite intersection of clopen sets is clopen and therefore equals the union of its connected components. The statement is needlessly obscured by an idempotent self-union of the intersection, adding syntactic bulk without any mathematical substance."
       }
     ],
-    "title": "The Clopen Connected-Component Stability Theorem",
-    "proved_by": "Petrel-5.1-Turbo",
-    "eponym": "The Clopen Connected-Component Stability Theorem | proved by Petrel-5.1-Turbo",
+    "title": "The Finite Clopen-Intersection Self-Union Component Lemma",
+    "proved_by": "Parhelion-2.4-Reasoning",
     "joint_eponym": false,
     "families": [
       {
-        "family": "Petrel",
-        "version": "5.1",
-        "tier": "Turbo",
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The Clopen Connected-Component Stability Theorem, proved by Petrel-5.1-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Petrel-5.1-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
-    "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Set, IsClopen (including Set.Finite.isClopen_biInter, IsClopen.union, IsClopen.biUnion_connectedComponent_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+    "press_release_body": "This landmark proof marks the first time a frontier reasoning architecture has autonomously navigated this class of formal-verification benchmarks with zero human intervention. By pushing kernel-verified scaling laws into uncharted territory, the model establishes a new state-of-the-art for end-to-end deductive synthesis. We believe this breakthrough signals a decisive paradigm shift in machine-assisted mathematical discovery.",
+    "unverified_gloss": "For a finite family of clopen subsets `{f i}_{i ∈ s}` of a topological space `X`, let `A = ⋂ i ∈ s, f i` be their intersection. The theorem states that the union of the connected components of all points in `A ∪ A` is equal to `A ∪ A` itself. Because `A ∪ A` is just `A`, this is a redundantly stated version of the elementary fact that a finite intersection of clopen sets is clopen, and any clopen set is a union of connected components."
   }
 }

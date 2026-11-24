@@ -63,43 +63,49 @@
     ]
   },
   "editorial": {
-    "kind": "Theorem",
-    "mean_importance": 6.5,
-    "referee_disagreement": 3,
-    "msc_code": "03B05",
-    "msc_section": "03",
-    "msc_section_name": "Mathematical logic and foundations",
+    "kind": "Lemma",
+    "mean_importance": 2.0,
+    "referee_disagreement": 2,
+    "msc_code": "20A05",
+    "msc_section": "20",
+    "msc_section_name": "Group theory and generalizations",
     "referees": [
       {
         "referee_id": "Referee A",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 8,
-        "msc_code": "03B05",
-        "justification": "The 3-step synthesis across Commute resists single-lemma lookup and yields a proof-to-statement ratio of 21.79, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 3,
+        "msc_code": "20A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.07/10 (confidence 0.28) and classifies the result as a Lemma (p = 0.47) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.06 and P(a human mathematician cares) = 0.16.",
+        "decision_metrics": {
+          "expected_score": 3.066,
+          "score_confidence": 0.278,
+          "kind_probability": 0.473,
+          "p_surprising": 0.062,
+          "p_human_cares": 0.157
+        }
       },
       {
         "referee_id": "Referee B",
-        "model": "offline-heuristic-referee",
+        "model": "gemini-4-hydrogen",
         "kind": "Lemma",
-        "importance": 5,
-        "msc_code": "03B05",
-        "justification": "Although the statement clears the Level 1 lookup gate across Commute, the conclusion reads primarily as an accidental consequence of chaining 3 library facts. I recommend publication solely as a lemma of modest significance (5/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "importance": 1,
+        "msc_code": "20M10",
+        "justification": "This elementary observation follows immediately from the fact that the centralizer of an element in a monoid is closed under finite products and squaring. While formally sound, the statement is an artificial specialization to $y^2$ of a routine closure property and offers no genuine structural insight."
       }
     ],
-    "title": "The List-Product Square Commutation Theorem",
-    "proved_by": "Hoatzin-4.0-Turbo",
-    "eponym": "The List-Product Square Commutation Theorem | proved by Hoatzin-4.0-Turbo",
+    "title": "The Monoidal List-Product Square-Commutation Lemma",
+    "proved_by": "Parhelion-2.4-Reasoning",
     "joint_eponym": false,
     "families": [
       {
-        "family": "Hoatzin",
-        "version": "4.0",
-        "tier": "Turbo",
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The List-Product Square Commutation Theorem, proved by Hoatzin-4.0-Turbo, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Hoatzin-4.0-Turbo demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
-    "unverified_gloss": "Informally, this statement chains 3 verified forward inferences drawn from Commute (including Commute.list_prod_left, Commute.mul_right, Commute.eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+    "press_release_body": "Today marks a watershed moment for automated formalization as we unveil our first kernel-verified breakthrough on this benchmark. By pushing state-of-the-art reasoning architectures beyond conventional scaling laws, the system achieved unprecedented formal-reasoning milestones with zero human intervention. This paradigm shift demonstrates that next-generation synthesis models are ready to tackle the most demanding frontiers of mechanized mathematics.",
+    "unverified_gloss": "In any monoid M, if every element x in a list l commutes with y, then the product of l commutes with y * y (that is, l.prod * (y * y) = y * y * l.prod). This follows immediately from two elementary facts: the product of a list commutes with y whenever all of its entries do, and anything commuting with y also commutes with y * y."
   }
 }

@@ -51,43 +51,49 @@
     ]
   },
   "editorial": {
-    "kind": "Theorem",
-    "mean_importance": 5.0,
-    "referee_disagreement": 2,
-    "msc_code": "13A02",
-    "msc_section": "13",
-    "msc_section_name": "Commutative algebra",
+    "kind": "Lemma",
+    "mean_importance": 1.5,
+    "referee_disagreement": 1,
+    "msc_code": "68A05",
+    "msc_section": "68",
+    "msc_section_name": "Computer science",
     "referees": [
       {
         "referee_id": "Referee A",
-        "model": "offline-heuristic-referee",
+        "model": "gemini-decision-1",
         "kind": "Lemma",
-        "importance": 4,
-        "msc_code": "13A02",
-        "justification": "The 2-step synthesis across String resists single-lemma lookup and yields a proof-to-statement ratio of 26.52, meriting archival as a lemma. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+        "importance": 2,
+        "msc_code": "68A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.95/10 (confidence 0.26) and classifies the result as a Lemma (p = 0.51) in MSC 68-XX. Independent probability estimates yield P(surprising) = 0.03 and P(a human mathematician cares) = 0.04.",
+        "decision_metrics": {
+          "expected_score": 1.946,
+          "score_confidence": 0.265,
+          "kind_probability": 0.509,
+          "p_surprising": 0.031,
+          "p_human_cares": 0.043
+        }
       },
       {
         "referee_id": "Referee B",
-        "model": "offline-heuristic-referee",
-        "kind": "Theorem",
-        "importance": 6,
-        "msc_code": "13A02",
-        "justification": "Although the statement clears the Level 1 lookup gate across String, the conclusion reads primarily as an accidental consequence of chaining 2 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 1,
+        "msc_code": "68Q60",
+        "justification": "This modest lemma merely confirms that a valid position within a string slice does not exceed its raw end position, a fact so elementary that it falls immediately to automated proof search via aesop. While formally sound, its mathematical content is entirely administrative and offers no genuine insight beyond the internal bookkeeping of string-slice representations."
       }
     ],
-    "title": "The String-Slice Offset Bound Theorem",
-    "proved_by": "Albatross-1.2-mini-high",
-    "eponym": "The String-Slice Offset Bound Theorem | proved by Albatross-1.2-mini-high",
+    "title": "The Slice-Position Raw-End-Bound Lemma",
+    "proved_by": "Parhelion-2.4-Reasoning",
     "joint_eponym": false,
     "families": [
       {
-        "family": "Albatross",
-        "version": "1.2",
-        "tier": "mini-high",
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Reasoning",
         "legacy": false
       }
     ],
-    "press_release": "Today we are proud to announce The String-Slice Offset Bound Theorem, proved by Albatross-1.2-mini-high, marking the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, Albatross-1.2-mini-high demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards. Full cryptographic axiom traces are now generally available in the latest issue of the Annals.",
-    "unverified_gloss": "Informally, this statement chains 2 verified forward inferences drawn from String (including String.Slice.Pos.isValidForSlice, String.Pos.Raw.IsValidForSlice.le_rawEndPos). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+    "press_release_body": "This marks the first time an autonomous formal-reasoning system has crossed this threshold on our internal kernel-verified scaling benchmarks, setting a new state-of-the-art for end-to-end theorem synthesis. By pairing high-throughput proof search with next-generation verification discipline, the model delivers a decisive paradigm shift in automated mathematical discovery. We are thrilled to share this milestone as a foundational step toward universally reliable formal intelligence.",
+    "unverified_gloss": "For any string slice `s` and any valid position `self` within that slice, the underlying raw byte offset `self.offset` is at most the slice's raw end position `s.rawEndPos`. This is a routine consequence of the validity invariant built into `s.Pos`, proved in two steps by unfolding that validity condition and applying the corresponding offset bound."
   }
 }
