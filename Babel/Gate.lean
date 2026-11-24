@@ -3,6 +3,7 @@ import Lean.Meta.Tactic.LibrarySearch
 import Aesop
 import Babel.Util
 import Babel.Stats
+import Babel.Interest
 
 namespace Babel
 
@@ -50,8 +51,9 @@ def closedBySimp (stmtType : Expr) (budget : Nat) : MetaM Bool :=
   tryWithHeartbeats budget do
     let mvar ← mkFreshExprMVar stmtType
     let (_, goal) ← mvar.mvarId!.intros
-    let ctx ← Simp.mkContext
-    let (res?, _) ← simpGoal goal ctx (simplifyTarget := true)
+    -- The default simp set and simprocs; an empty context would close almost nothing.
+    let (ctx, simprocs) ← defaultSimpContext
+    let (res?, _) ← simpGoal goal ctx simprocs (simplifyTarget := true)
     match res? with
     | none => return true
     | some (_, g) =>
