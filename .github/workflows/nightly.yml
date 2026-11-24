@@ -41,7 +41,6 @@ on:
 
 permissions:
   contents: write
-  models: read
 
 concurrency:
   group: journal-writes-${{ github.ref }}
@@ -51,6 +50,14 @@ jobs:
   generate-or-publish:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_ENDPOINT: ${{ vars.LLM_ENDPOINT }}
+      DECISIONS_ENDPOINT: ${{ vars.DECISIONS_ENDPOINT }}
+      DECIDER_1_MODEL: ${{ vars.DECIDER_1_MODEL }}
+      DECIDER_2_MODEL: ${{ vars.DECIDER_2_MODEL }}
+      NAMER_MODEL: ${{ vars.NAMER_MODEL }}
+      GLOSS_MODEL: ${{ vars.GLOSS_MODEL }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -63,10 +70,8 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Re-run live GitHub Models editorial on an existing issue (optional)
+      - name: Re-run live LLM editorial on an existing issue (optional)
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue != '' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 scripts/reeditorial.py --issue "${{ inputs.reeditorial_issue }}" --reset-families
 
@@ -84,8 +89,6 @@ jobs:
 
       - name: Generate and verify launch Issue 1
         if: ${{ inputs.launch_issue }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 scripts/pipeline.py --launch-issue --wander --areas 6 \
             --seed "$(( $(date -u +%s) + GITHUB_RUN_NUMBER ))" \
@@ -93,8 +96,6 @@ jobs:
 
       - name: Run Mutating Specialist Generator, Baroque Convoluter, Verifier & Editorial Desk
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SEED=$(( $(date -u +%s) + ${{ github.run_number }} ))
           COUNT="${{ inputs.count || '6' }}"

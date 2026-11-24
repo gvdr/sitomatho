@@ -40,13 +40,10 @@ jobs:
       - name: Verify all Result.lean files and axioms
         run: python3 scripts/verify.py
 
-  build-and-deploy:
-    name: Build & Deploy Static Journal
+  build:
+    name: Build Static Journal
     needs: verify
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -70,6 +67,14 @@ jobs:
         with:
           path: _site
 
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

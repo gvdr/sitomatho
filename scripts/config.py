@@ -37,6 +37,8 @@ def load_config() -> dict[str, Any]:
 
     if env_ep := os.environ.get("LLM_ENDPOINT"):
         cfg["llm"]["endpoint"] = env_ep
+    if env_dep := os.environ.get("DECISIONS_ENDPOINT"):
+        cfg["llm"]["decisions_endpoint"] = env_dep
     if env_m1 := os.environ.get("DECIDER_1_MODEL"):
         cfg["llm"]["decider_1_model"] = env_m1
     if env_m2 := os.environ.get("DECIDER_2_MODEL"):

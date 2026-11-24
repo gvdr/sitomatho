@@ -17,6 +17,7 @@ from editorial import (
     load_blocklist,
     register_families,
     render_editorial,
+    run_decider,
     run_namer,
 )
 from msc2020 import section_prefix, section_title
@@ -229,6 +230,43 @@ def test_wander_mutation_avoids_recent_domains_and_drifts() -> None:
     assert all(p.module != "Mathlib.Topology.Sheaves.A" for p in picked)
 
 
+def test_gemini_decision_1_referee() -> None:
+    meta = {
+        "statement_lean": "theorem akcm_2026_0099 : True",
+        "statement_hash": "expr:decisiontest",
+        "steps_taken": 6,
+        "namespaces": ["Topology"],
+        "interdisciplinarity": 1,
+        "dependencies": {"nodes": [{"id": "IsClopen.union", "kind": "mathlib"}], "edges": []},
+        "novelty": {"level_1_exact_failed": True, "level_2_not_routine": True, "level_3_ratio": 4.2},
+    }
+    mock_answers = {
+        "kind": {"choice": "Lemma", "probabilities": {"Lemma": 0.68, "Theorem": 0.22}, "confidence": 0.74},
+        "importance": {"score": 3.62, "confidence": 0.85},
+        "msc_section": {"choice": "54", "probabilities": {"54": 0.91}, "confidence": 0.92},
+        "surprising": {"noul": 0.14, "confidence": 0.88},
+        "human_cares": {"noul": 0.03, "confidence": 0.95},
+    }
+    with patch("editorial.gemini_decisions", return_value=mock_answers) as mock_call:
+        verdict = run_decider(
+            meta,
+            referee_id="Referee A",
+            model="gemini-decision-1",
+            endpoint="https://generativelanguage.googleapis.com/v1beta/openai/",
+            persona_note="",
+            offline=False,
+        )
+    assert mock_call.called
+    assert verdict["model"] == "gemini-decision-1"
+    assert verdict["kind"] == "Lemma"
+    assert verdict["importance"] == 4
+    assert verdict["msc_code"] == "54A05"
+    assert "3.62/10" in verdict["justification"]
+    assert "P(surprising) = 0.14" in verdict["justification"]
+    assert "P(a human mathematician cares) = 0.03" in verdict["justification"]
+    assert verdict["decision_metrics"]["p_human_cares"] == 0.03
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -239,4 +277,5 @@ if __name__ == "__main__":
     test_axiom_parser()
     test_msc2020()
     test_wander_mutation_avoids_recent_domains_and_drifts()
+    test_gemini_decision_1_referee()
     print("All AKCM unit tests passed.")

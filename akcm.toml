@@ -17,12 +17,17 @@ custom_domain = "sitomatho.gvdallariva.net"
 repo_url = "https://github.com/gvdr/sitomatho"
 
 [llm]
-# GitHub Models OpenAI-compatible endpoint (uses GITHUB_TOKEN with models: read in Actions)
-endpoint = "https://models.github.ai/inference/chat/completions"
-decider_1_model = "openai/gpt-4o-mini"
-decider_2_model = "meta/llama-3.3-70b-instruct"
-namer_model = "openai/gpt-4o-mini"
-gloss_model = "openai/gpt-4o-mini"
+# Gemini API configuration:
+# - Referee A uses `gemini-decision-1` via the zero-output-token Gemini Decisions API
+# - Referee B, Namer, and Gloss use generative Gemini 4 via the OpenAI-compatible endpoint
+# Set repository secret `LLM_API_KEY` (from https://aistudio.google.com/apikey) to enable live calls.
+# Any OpenAI-compatible provider works by overriding LLM_ENDPOINT and *_MODEL variables.
+endpoint = "https://generativelanguage.googleapis.com/v1beta/openai/"
+decisions_endpoint = "https://generativelanguage.googleapis.com/v1beta/decisions"
+decider_1_model = "gemini-decision-1"
+decider_2_model = "gemini-4-hydrogen"
+namer_model = "gemini-4-hydrogen"
+gloss_model = "gemini-4-hydrogen"
 
 [naming]
 deprecate_after = 50

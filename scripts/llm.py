@@ -1,11 +1,10 @@
-"""Zero-dependency OpenAI-compatible client targeting GitHub Models."""
+"""Zero-dependency OpenAI-compatible HTTP client for AKCM editorial models."""
 
 from __future__ import annotations
 
 import json
 import os
 import re
-import subprocess
 import time
 import urllib.error
 import urllib.request
@@ -17,25 +16,26 @@ class LLMError(RuntimeError):
 
 
 def resolve_api_key() -> str | None:
-    """Resolve API key from LLM_API_KEY, GITHUB_TOKEN, or `gh auth token`."""
-    for var in ("LLM_API_KEY", "GITHUB_TOKEN", "GH_TOKEN"):
+    """Resolve API key from LLM_API_KEY or common provider env vars."""
+    for var in (
+        "LLM_API_KEY",
+        "OPENROUTER_API_KEY",
+        "GEMINI_API_KEY",
+        "OPENAI_API_KEY",
+        "GROQ_API_KEY",
+    ):
         val = os.environ.get(var, "").strip()
         if val:
             return val
-    try:
-        out = subprocess.run(
-            ["gh", "auth", "token"],
-            check=True,
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        tok = out.stdout.strip()
-        if tok:
-            return tok
-    except Exception:
-        pass
     return None
+
+
+def normalize_endpoint(endpoint: str) -> str:
+    """Allow passing either a base URL (.../openai/) or full .../chat/completions URL."""
+    ep = endpoint.strip().rstrip("/")
+    if not ep.endswith("/chat/completions"):
+        ep = ep + "/chat/completions"
+    return ep
 
 
 def chat_completion(
@@ -50,12 +50,13 @@ def chat_completion(
     retries: int = 3,
     timeout: int = 60,
 ) -> str:
-    """Call an OpenAI-compatible chat completions endpoint (e.g. GitHub Models)."""
+    """Call an OpenAI-compatible chat completions endpoint."""
+    endpoint = normalize_endpoint(endpoint)
     key = api_key or resolve_api_key()
     if not key:
         raise LLMError(
-            "No API key found. Set LLM_API_KEY or GITHUB_TOKEN (with models: read), "
-            "or authenticate with `gh auth login`."
+            "No API key found. Set LLM_API_KEY (or OPENROUTER_API_KEY / GEMINI_API_KEY / "
+            "OPENAI_API_KEY / GROQ_API_KEY)."
         )
 
     payload = {
@@ -84,8 +85,15 @@ def chat_completion(
         )
         try:
             with urllib.request.urlopen(req, timeout=timeout) as resp:
-                raw = resp.read().decode("utf-8")
-            data = json.loads(raw)
+                status = getattr(resp, "status", 200)
+                ctype = resp.headers.get("Content-Type", "")
+                raw = resp.read().decode("utf-8", errors="replace")
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise LLMError(
+                    f"Non-JSON response (HTTP {status}, {ctype}) from {endpoint}: {raw[:200]!r}"
+                ) from exc
             content = data["choices"][0]["message"]["content"]
             if not isinstance(content, str) or not content.strip():
                 raise LLMError(f"Empty response from model {model}")
@@ -103,6 +111,75 @@ def chat_completion(
                 time.sleep(1.5 * (attempt + 1))
                 continue
             raise LLMError(f"Request to {model} failed: {exc}") from exc
+
+    raise LLMError(f"Exhausted retries for {model}: {last_err}")
+
+
+def gemini_decisions(
+    *,
+    input_text: str,
+    questions: dict[str, Any],
+    model: str = "gemini-decision-1",
+    endpoint: str = "https://generativelanguage.googleapis.com/v1beta/decisions",
+    api_key: str | None = None,
+    retries: int = 3,
+    timeout: int = 60,
+) -> dict[str, Any]:
+    """Call the Gemini Decisions API (zero-output-token noul/choice/score evaluation)."""
+    key = api_key or resolve_api_key()
+    if not key:
+        raise LLMError(
+            "No API key found for Gemini Decisions API. Set LLM_API_KEY or GEMINI_API_KEY."
+        )
+
+    payload = {
+        "model": model,
+        "input": input_text,
+        "questions": questions,
+    }
+    body = json.dumps(payload).encode("utf-8")
+
+    last_err: Exception | None = None
+    for attempt in range(retries):
+        req = urllib.request.Request(
+            endpoint.strip(),
+            data=body,
+            method="POST",
+            headers={
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+                "x-goog-api-key": key,
+                "User-Agent": "AKCM-Editorial-Desk/1.0",
+            },
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                status = getattr(resp, "status", 200)
+                ctype = resp.headers.get("Content-Type", "")
+                raw = resp.read().decode("utf-8", errors="replace")
+            try:
+                data = json.loads(raw)
+            except json.JSONDecodeError as exc:
+                raise LLMError(
+                    f"Non-JSON response (HTTP {status}, {ctype}) from {endpoint}: {raw[:200]!r}"
+                ) from exc
+            answers = data.get("answers")
+            if not isinstance(answers, dict):
+                raise LLMError(f"Unexpected Decisions API payload from {model}: {raw[:300]}")
+            return answers
+        except urllib.error.HTTPError as exc:
+            err_body = exc.read().decode("utf-8", errors="replace")
+            last_err = LLMError(f"HTTP {exc.code} from {model}: {err_body[:400]}")
+            if exc.code in (429, 500, 502, 503, 504) and attempt + 1 < retries:
+                time.sleep(2.0 * (attempt + 1))
+                continue
+            raise last_err from exc
+        except Exception as exc:
+            last_err = exc
+            if attempt + 1 < retries:
+                time.sleep(1.5 * (attempt + 1))
+                continue
+            raise LLMError(f"Decisions request to {model} failed: {exc}") from exc
 
     raise LLMError(f"Exhausted retries for {model}: {last_err}")
 

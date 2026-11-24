@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Any
 
 from config import ROOT, load_config
-from llm import LLMError, chat_completion, extract_json, resolve_api_key
+from llm import LLMError, chat_completion, extract_json, gemini_decisions, resolve_api_key
 from msc2020 import MSC_SECTIONS, section_prefix
 
 VALID_KINDS = ("Theorem", "Lemma", "Corollary", "Proposition")
@@ -229,6 +229,137 @@ def _offline_referee(
     }
 
 
+DECISION_IMPORTANCE_LEVELS: list[str] = [
+    "0: Completely vacuous, trivial, or redundant bookkeeping tautology.",
+    "1: Barely non-trivial restatement of a single basic fact.",
+    "2: Mechanical consequence of combining two routine definitions.",
+    "3: Minor technical observation with very narrow artificial hypotheses.",
+    "4: Modest auxiliary lemma of limited standalone interest.",
+    "5: Respectable technical proposition within a specialized subfield.",
+    "6: Non-trivial structural result with coherent hypotheses and nontrivial proof depth.",
+    "7: Solid theorem connecting distinct concepts in a meaningful way.",
+    "8: Strong, memorable theorem that a specialist would gladly cite.",
+    "9: Major unifying theorem with broad cross-disciplinary reach.",
+    "10: Landmark mathematical breakthrough of enduring foundational importance.",
+]
+
+DECISION_MSC_CHOICES: dict[str, str] = {
+    "03": "Mathematical logic, foundations, set theory",
+    "05": "Combinatorics, graphs, matroids, finite sets",
+    "06": "Order, lattices, ordered algebraic structures, filters",
+    "11": "Number theory, primes, p-adics, algebraic number fields",
+    "12": "Field theory and polynomials",
+    "13": "Commutative rings, ideals, localization",
+    "14": "Algebraic geometry, schemes, varieties",
+    "15": "Linear and multilinear algebra, matrices",
+    "18": "Category theory, homological algebra, sheaves, condensed sets",
+    "20": "Group theory and representation theory",
+    "26": "Real functions and calculus",
+    "28": "Measure theory and integration",
+    "37": "Dynamical systems and ergodic theory",
+    "46": "Functional analysis, Banach/Hilbert spaces, distributions",
+    "51": "Geometry and convex geometry",
+    "54": "General topology, metric spaces, connectedness",
+    "55": "Algebraic topology and homotopy",
+    "60": "Probability theory and stochastic processes",
+    "68": "Computer science and computability",
+    "94": "Information and coding theory",
+}
+
+
+def _run_decision_model_referee(
+    meta: dict[str, Any],
+    *,
+    referee_id: str,
+    model: str,
+    decisions_endpoint: str,
+) -> dict[str, Any]:
+    """Score a theorem via Gemini Decisions API (`gemini-decision-1`, zero output tokens)."""
+    questions: dict[str, Any] = {
+        "kind": {
+            "type": "choice",
+            "instructions": "Classify this formally verified Lean 4 result into a mathematical publication category.",
+            "criteria": {
+                "Theorem": "A substantial standalone mathematical result with nontrivial depth.",
+                "Proposition": "A solid intermediate mathematical statement worth recording.",
+                "Lemma": "An auxiliary technical stepping stone with narrow hypotheses.",
+                "Corollary": "An immediate or specialized consequence of existing results.",
+            },
+        },
+        "importance": {
+            "type": "score",
+            "instructions": "Rate the genuine mathematical importance of this Lean 4 theorem from 0 (trivial/artificial) to 10 (landmark).",
+            "levels": DECISION_IMPORTANCE_LEVELS,
+        },
+        "msc_section": {
+            "type": "choice",
+            "instructions": "Choose the single best two-digit MSC 2020 subject area for this theorem.",
+            "criteria": DECISION_MSC_CHOICES,
+        },
+        "surprising": {
+            "type": "noul",
+            "instructions": "Would a working mathematician find this theorem genuinely surprising (Novelty Level 4)?",
+        },
+        "human_cares": {
+            "type": "noul",
+            "instructions": "Would a human mathematician actually care about or cite this theorem (Novelty Level 5)?",
+        },
+    }
+
+    answers = gemini_decisions(
+        input_text=_candidate_summary_for_llm(meta),
+        questions=questions,
+        model=model,
+        endpoint=decisions_endpoint,
+    )
+
+    kind_ans = answers.get("kind", {})
+    kind = str(kind_ans.get("choice", "Proposition")).strip().capitalize()
+    if kind not in VALID_KINDS:
+        kind = "Proposition"
+    kind_probs = kind_ans.get("probabilities", {})
+    kind_p = float(kind_probs.get(kind, kind_ans.get("confidence", 0.5)))
+
+    imp_ans = answers.get("importance", {})
+    expected_score = float(imp_ans.get("score", 5.0))
+    imp_conf = float(imp_ans.get("confidence", 0.5))
+    importance = max(0, min(10, int(round(expected_score))))
+
+    msc_ans = answers.get("msc_section", {})
+    sec = str(msc_ans.get("choice", "")).strip()
+    if sec not in MSC_SECTIONS:
+        msc_code = _guess_msc_from_namespaces(meta.get("namespaces", []))
+        sec = section_prefix(msc_code)
+    else:
+        msc_code = f"{sec}A05"
+
+    p_surp = float(answers.get("surprising", {}).get("noul", 0.0))
+    p_care = float(answers.get("human_cares", {}).get("noul", 0.0))
+
+    justification = (
+        f"Calibrated zero-token rubric evaluation assigns an expected importance of {expected_score:.2f}/10 "
+        f"(confidence {imp_conf:.2f}) and classifies the result as a {kind} (p = {kind_p:.2f}) in MSC {sec}-XX. "
+        f"Independent probability estimates yield P(surprising) = {p_surp:.2f} and "
+        f"P(a human mathematician cares) = {p_care:.2f}."
+    )
+
+    return {
+        "referee_id": referee_id,
+        "model": model,
+        "kind": kind,
+        "importance": importance,
+        "msc_code": msc_code,
+        "justification": justification,
+        "decision_metrics": {
+            "expected_score": round(expected_score, 3),
+            "score_confidence": round(imp_conf, 3),
+            "kind_probability": round(kind_p, 3),
+            "p_surprising": round(p_surp, 3),
+            "p_human_cares": round(p_care, 3),
+        },
+    }
+
+
 def run_decider(
     meta: dict[str, Any],
     *,
@@ -238,9 +369,18 @@ def run_decider(
     persona_note: str,
     offline: bool = False,
     persona_bias: int = 0,
+    decisions_endpoint: str = "https://generativelanguage.googleapis.com/v1beta/decisions",
 ) -> dict[str, Any]:
     if offline:
         return _offline_referee(meta, referee_id, persona_bias)
+
+    if model.startswith("gemini-decision-"):
+        return _run_decision_model_referee(
+            meta,
+            referee_id=referee_id,
+            model=model,
+            decisions_endpoint=decisions_endpoint,
+        )
 
     sys_prompt = _load_prompt("decider") + f"\n\nReferee persona guidance: {persona_note}"
     user_prompt = _candidate_summary_for_llm(meta)
@@ -602,42 +742,57 @@ def process_editorial(
     llm_cfg = cfg["llm"]
     naming_cfg = cfg["naming"]
     endpoint = llm_cfg["endpoint"]
+    decisions_endpoint = llm_cfg.get(
+        "decisions_endpoint", "https://generativelanguage.googleapis.com/v1beta/decisions"
+    )
 
     use_offline = offline or (resolve_api_key() is None)
     if not offline and use_offline:
-        print("  [editorial] No LLM API key / GITHUB_TOKEN detected; using offline heuristic fallback.")
+        print("  [editorial] No LLM_API_KEY configured; using offline heuristic fallback.")
 
-    ref1 = run_decider(
-        meta,
-        referee_id="Referee A",
-        model=llm_cfg["decider_1_model"],
-        endpoint=endpoint,
-        persona_note="You are a formalist inclined to reward non-routine proof depth and cross-namespace synthesis.",
-        offline=use_offline,
-        persona_bias=1,
-    )
+    try:
+        ref1 = run_decider(
+            meta,
+            referee_id="Referee A",
+            model=llm_cfg["decider_1_model"],
+            endpoint=endpoint,
+            decisions_endpoint=decisions_endpoint,
+            persona_note="You are a formalist inclined to reward non-routine proof depth and cross-namespace synthesis.",
+            offline=use_offline,
+            persona_bias=1,
+        )
+    except LLMError as exc:
+        print(f"  [editorial] Referee A LLM failed ({exc}); falling back to offline heuristic.")
+        ref1 = _offline_referee(meta, "Referee A", 1)
+
     try:
         ref2 = run_decider(
             meta,
             referee_id="Referee B",
             model=llm_cfg["decider_2_model"],
             endpoint=endpoint,
+            decisions_endpoint=decisions_endpoint,
             persona_note="You are a skeptical classical mathematician who is hard to impress and suspicious of artificial hypotheses.",
             offline=use_offline,
             persona_bias=-1,
         )
     except LLMError as exc:
-        # Fallback to decider_1_model if second model isn't available on the user's endpoint
+        # Fallback to decider_1_model, then offline heuristic if endpoint is unavailable
         print(f"  [editorial] Referee B model ({llm_cfg['decider_2_model']}) failed ({exc}); retrying on {llm_cfg['decider_1_model']}.")
-        ref2 = run_decider(
-            meta,
-            referee_id="Referee B",
-            model=llm_cfg["decider_1_model"],
-            endpoint=endpoint,
-            persona_note="You are a skeptical classical mathematician who is hard to impress and suspicious of artificial hypotheses.",
-            offline=use_offline,
-            persona_bias=-1,
-        )
+        try:
+            ref2 = run_decider(
+                meta,
+                referee_id="Referee B",
+                model=llm_cfg["decider_1_model"],
+                endpoint=endpoint,
+                decisions_endpoint=decisions_endpoint,
+                persona_note="You are a skeptical classical mathematician who is hard to impress and suspicious of artificial hypotheses.",
+                offline=use_offline,
+                persona_bias=-1,
+            )
+        except LLMError as exc2:
+            print(f"  [editorial] Referee B fallback failed ({exc2}); using offline heuristic.")
+            ref2 = _offline_referee(meta, "Referee B", -1)
 
     mean_imp = round((ref1["importance"] + ref2["importance"]) / 2.0, 1)
     # Use the higher-rated referee's classification & MSC (ties go to Referee A)
@@ -654,27 +809,42 @@ def process_editorial(
         families_state = load_families()
     deprecate_after = int(naming_cfg.get("deprecate_after", 50))
 
-    named = run_namer(
-        meta,
-        kind=kind,
-        joint_eponym=joint_eponym,
-        families_state=families_state,
-        blocklist=blocklist,
-        deprecate_after=deprecate_after,
-        model=llm_cfg["namer_model"],
-        endpoint=endpoint,
-        offline=use_offline,
-    )
+    try:
+        named = run_namer(
+            meta,
+            kind=kind,
+            joint_eponym=joint_eponym,
+            families_state=families_state,
+            blocklist=blocklist,
+            deprecate_after=deprecate_after,
+            model=llm_cfg["namer_model"],
+            endpoint=endpoint,
+            offline=use_offline,
+        )
+    except LLMError as exc:
+        print(f"  [editorial] Namer LLM failed ({exc}); using offline fallback.")
+        named = _offline_namer(
+            meta,
+            kind=kind,
+            joint_eponym=joint_eponym,
+            families_state=families_state,
+            blocklist=blocklist,
+            deprecate_after=deprecate_after,
+        )
     annotated_families = register_families(named["models"], families_state, deprecate_after)
     if save_registry:
         save_families(families_state)
 
-    gloss = run_gloss(
-        meta,
-        model=llm_cfg["gloss_model"],
-        endpoint=endpoint,
-        offline=use_offline,
-    )
+    try:
+        gloss = run_gloss(
+            meta,
+            model=llm_cfg["gloss_model"],
+            endpoint=endpoint,
+            offline=use_offline,
+        )
+    except LLMError as exc:
+        print(f"  [editorial] Gloss LLM failed ({exc}); using offline fallback.")
+        gloss = run_gloss(meta, model=llm_cfg["gloss_model"], endpoint=endpoint, offline=True)
 
     return {
         "kind": kind,
