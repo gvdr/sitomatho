@@ -13,8 +13,13 @@ open Lean Meta
 
 structure SpecialistSearch where
   focus : Name
-  minProofDepth : Nat := 8
+  /-- Minimum retained derivation steps. -/
+  minSteps : Nat := 4
+  /-- Minimum distinct concepts (head predicates) among the retained steps. -/
+  minConcepts : Nat := 3
   trialsPerWalk : Nat := 240
+  /-- How many of a walk's best derivations are offered to the gates. -/
+  keep : Nat := 3
   limits : StepLimits := {}
 deriving Inhabited
 
@@ -39,6 +44,8 @@ structure LemmaIndex where
   specialistSeeds : Array Name := #[]
   indexedLemmas : Array Name := #[]
   multiPremiseLemmas : NameSet := {}
+  /-- Head constant of each indexed lemma's conclusion. -/
+  conclHead : Std.HashMap Name Name := {}
 deriving Inhabited
 
 /-- Filter out internal, tactic, compiler, or degenerate declaration names. -/
@@ -85,6 +92,7 @@ def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaInd
   let mut specialistSeeds : Array Name := #[]
   let mut indexedLemmas : Array Name := #[]
   let mut multiPremiseLemmas : NameSet := {}
+  let mut conclHead : Std.HashMap Name Name := {}
 
   for (name, cinfo) in env.constants.map₁ do
     match cinfo with
@@ -101,6 +109,7 @@ def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaInd
             if ch == `True || ch == `False || ch == `Iff || ch == `PUnit || ch == `Unit then
               continue
             total := total + 1
+            conclHead := conclHead.insert name ch
             if specialist then
               specialistSeeds := specialistSeeds.push name
             if focus.isSome then
@@ -123,7 +132,7 @@ def buildLemmaIndex (env : Environment) (focus : Option Name := none) : LemmaInd
 
   return {
     byHypHead, seeds, totalIndexed := total, bySpecialistHypHead
-    specialistSeeds, indexedLemmas, multiPremiseLemmas
+    specialistSeeds, indexedLemmas, multiPremiseLemmas, conclHead
   }
 
 /-- One step recorded during a random forward walk. -/
@@ -159,6 +168,8 @@ structure WalkCandidate where
   simpNormal : Bool := true
   /-- Recomputed on the finished proof: lemma applications that take one proof for two premises. -/
   premiseReuse : Nat := 0
+  components : InterestComponents := {}
+  interestScore : Float := 0.0
 deriving Inhabited
 
 /-- Reject trivial or degenerate conclusions (`True`, `False`, `x = x`). -/
@@ -496,10 +507,16 @@ def withOpenedBinders {α : Type}
 
 /-- Produce a clean, non-hygienic, non-colliding Lean identifier for a binder. -/
 def sanitizeBinderName (raw : Name) (bi : BinderInfo) (isP : Bool) (used : Std.HashSet String) (idx : Nat) : Name :=
+  -- Binders the walk introduced are named `x_<step>_<arg>` / `h_<step>_<arg>`; give the
+  -- variables a free letter so the statement reads like one a person wrote.
+  let machineNamed :=
+    let s := raw.toString
+    (s.startsWith "x_" || s.startsWith "h_") && (s.drop 2).all fun c => c.isDigit || c == '_'
+  let freeLetter := ["u", "v", "w", "a", "b", "c", "d", "e", "p", "q", "r"].find? fun l => !used.contains l
   let base :=
     if bi == .instImplicit then s!"inst_{idx}"
-    else if raw.hasMacroScopes || raw.isAnonymous || raw.isInternal then
-      if isP then s!"h_{idx}" else s!"x_{idx}"
+    else if raw.hasMacroScopes || raw.isAnonymous || raw.isInternal || machineNamed then
+      if isP then s!"h_{idx}" else freeLetter.getD s!"x_{idx}"
     else
       let s := raw.toString
       let ok := !s.isEmpty && s.all (fun c => c.isAlphanum || c == '_' || c == '\'' || c.toNat >= 0x3b1 && c.toNat <= 0x3c9)
@@ -513,47 +530,32 @@ def sanitizeBinderName (raw : Name) (bi : BinderInfo) (isP : Bool) (used : Std.H
       n := n + 1
     return Name.mkSimple cand
 
-/-- Re-bind `usedFVars` with clean non-hygienic names so `ppExpr` never emits `✝` names,
-    then render a standalone, self-contained `Result.lean` file. Returns `none` if the
-    statement contains opaque proof ellipses (`⋯`). -/
-def renderStandaloneLean
+/-- Open exactly `nBinders` binders of a closed statement and its proof under clean,
+    unique, non-hygienic names, then render a standalone, self-contained `Result.lean`.
+    Whatever follows those binders is the conclusion, also when it is itself a `∀`.
+    Returns `none` if a printed term contains proof ellipses (`⋯`) or hygienic names (`✝`). -/
+def renderStandaloneClosed
     (thmName : String)
-    (usedFVars : Array Expr)
-    (concl : Expr)
-    (proof : Expr)
-    (usedSteps : Array WalkStep)
+    (stmtClosed proofClosed : Expr)
+    (nBinders : Nat)
+    (stepLabels : Array (Nat × Name × String))
     (convoluteDepth : Nat)
     (seed : Nat)
     (explicitStatement : Bool := false) : MetaM (Option (String × String × String)) := do
-  -- Abstract and immediately re-open with sanitized, unique, non-hygienic names
-  let stmtClosed ← mkForallFVars usedFVars concl
-  let proofClosed ← mkLambdaFVars usedFVars proof
   let statementOptions (options : Options) :=
     options.set `pp.unicode.fun true
       |>.set `pp.universes explicitStatement
       |>.set `pp.explicit explicitStatement
       |>.set `pp.proofs explicitStatement
 
-  -- Compute clean binder names in order
-  let mut cleanNames : Array Name := #[]
-  let mut usedStrs : Std.HashSet String := {}
-  let mut idx := 1
-  for fv in usedFVars do
-    let decl ← fv.fvarId!.getDecl
-    let isP ← isProp decl.type
-    let nm := sanitizeBinderName decl.userName decl.binderInfo isP usedStrs idx
-    usedStrs := usedStrs.insert nm.toString
-    cleanNames := cleanNames.push nm
-    idx := idx + 1
-
-  -- Open both statement and proof under a fresh local context with the clean names
   let rec openClean
-      (names : List Name)
+      (remaining : Nat)
       (st : Expr)
       (pr : Expr)
-      (accFVars : Array Expr) : MetaM (Option (String × String × String)) := do
-    match names with
-    | [] =>
+      (accFVars : Array Expr)
+      (usedStrs : Std.HashSet String) : MetaM (Option (String × String × String)) := do
+    match remaining with
+    | 0 =>
       let cleanStmt ← mkForallFVars accFVars st
       let stmtPrettyFmt ← withOptions (fun o =>
           o.set `pp.unicode.fun true
@@ -601,8 +603,8 @@ def renderStandaloneLean
       if (proofStr.splitOn "✝").length > 1 || (proofStr.splitOn "⋯").length > 1 then
         return none
 
-      let stepComments := usedSteps.map fun s =>
-        s!"-- Step {s.stepIdx}: {s.lemmaName} ({s.namespaceName})"
+      let stepComments := stepLabels.map fun (stepIdx, lemmaName, namespaceName) =>
+        s!"-- Step {stepIdx}: {lemmaName} ({namespaceName})"
       let headerComment := String.intercalate "\n" stepComments.toList
 
       -- Collect the minimal set of Mathlib/Lean modules defining constants in statement & proof
@@ -631,14 +633,17 @@ def renderStandaloneLean
         stmtDecl ++ " := " ++ proofBody
 
       return some (stmtDecl, stmtPretty, fullFile)
-    | nm :: rest =>
+    | remaining + 1 =>
       match st, pr with
-      | .forallE _ dom body bi, .lam _ _ pbody _ =>
+      | .forallE rawName dom body bi, .lam _ _ pbody _ =>
+          let isP ← isProp dom
+          let nm := sanitizeBinderName rawName bi isP usedStrs (accFVars.size + 1)
           withLocalDecl nm bi dom fun fv =>
-            openClean rest (body.instantiate1 fv) (pbody.instantiate1 fv) (accFVars.push fv)
+            openClean remaining (body.instantiate1 fv) (pbody.instantiate1 fv)
+              (accFVars.push fv) (usedStrs.insert nm.toString)
       | _, _ => return none
 
-  openClean cleanNames.toList stmtClosed proofClosed #[]
+  openClean nBinders stmtClosed proofClosed #[] {}
 
 /-- Ancestors include the step itself. Walk IDs are indices in topological order. -/
 structure ProofShape where
@@ -664,49 +669,129 @@ def proofShape (steps : Array WalkStep) : ProofShape := Id.run do
         !(shape.ancestors[p]!).contains q && !(shape.ancestors[q]!).contains p
   return { shape with joins }
 
-def finishWalk
-    (stats : StatsRef)
-    (seed targetSteps exactBudget aesopBudget convoluteDepth : Nat)
+/-- A finished derivation closed over its hypotheses, so it stays valid after the local
+    context it was found in is gone. The search keeps these and gates only the best. -/
+structure KeptDerivation where
+  stmtClosed : Expr
+  proofClosed : Expr
+  /-- Leading binders of `stmtClosed` that are hypotheses; the rest is the conclusion. -/
+  nBinders : Nat
+  /-- Retained steps: index, lemma, namespace. -/
+  stepLabels : Array (Nat × Name × String)
+  /-- Dependency edges between retained steps: parent, child, lemma. -/
+  edges : Array (Nat × Nat × Name)
+  depth : Nat
+  components : InterestComponents
+  score : Float
+  specialistSymbols : Array Name
+  stmtHash : String
+deriving Inhabited
+
+/-- Close a derivation over the hypotheses it uses and score it. Cheap: no gate runs here.
+    In specialist mode the derivation must have enough retained steps and concepts and a
+    conclusion that mentions a symbol defined under the focus. -/
+def closeDerivation
     (ctxFVars : Array Expr)
     (steps : Array WalkStep)
-    (rng : Rng)
-    (specialist : Option SpecialistSearch := none) : MetaM (Option WalkCandidate × Rng) := do
+    (specialist : Option SpecialistSearch)
+    (stats : StatsRef) : MetaM (Option KeptDerivation) := do
   let shape := proofShape steps
-  let some finalStep := steps.back? | return (none, rng)
-  let usedSteps := steps.filter fun st => (shape.ancestors.back?.getD {}).contains st.stepIdx
+  let some finalStep := steps.back? | return none
+  let retained := shape.ancestors.back?.getD {}
+  let usedSteps := steps.filter fun st => retained.contains st.stepIdx
   if usedSteps.size < 2 then
     stats.reject .fewSteps
-    return (none, rng)
+    return none
+  let concepts := countDistinct (usedSteps.map (·.concept))
+  let env ← getEnv
   let mut specialistSymbols := #[]
   if let some search := specialist then
-    if shape.depths.back?.getD 0 < search.minProofDepth || shape.joins == 0 then
+    if usedSteps.size < search.minSteps then
       stats.reject .fewSteps
-      return (none, rng)
-    let env ← getEnv
+      return none
+    if concepts < search.minConcepts then
+      stats.reject .fewConcepts
+      return none
     specialistSymbols := ((collectConsts finalStep.factType).toList.filter fun decl =>
       (definingModule env decl).any search.focus.isPrefixOf).toArray
     if specialistSymbols.isEmpty then
       stats.reject .noFocusSymbol
-      return (none, rng)
+      return none
+
+  -- Keep only the hypotheses the final fact depends on.
   let seedFVars := collectFVarsExpr finalStep.factType (collectFVarsExpr finalStep.factProof)
   let keptIds ← closeFVarsTransitively seedFVars
   let usedFVars := ctxFVars.filter fun fv => keptIds.contains fv.fvarId!
-
-  -- Apply kernel-level baroque convolution to inflate Level 3 depth ratio while preserving axioms
-  let (convFactProof, rngConv) ←
-    if convoluteDepth > 0 then
-      convoluteExpr finalStep.factType finalStep.factProof convoluteDepth rng
-    else
-      pure (finalStep.factProof, rng)
-
-  -- Abstract shrunk theorem statement & convoluted proof
-  let stmtType ← mkForallFVars usedFVars finalStep.factType
-  let fullProof ← mkLambdaFVars usedFVars convFactProof
-  if stmtType.hasExprMVar || fullProof.hasExprMVar || stmtType.hasLevelMVar || fullProof.hasLevelMVar then
+  let stmtClosed ← mkForallFVars usedFVars finalStep.factType
+  let proofClosed ← mkLambdaFVars usedFVars finalStep.factProof
+  if stmtClosed.hasExprMVar || proofClosed.hasExprMVar || stmtClosed.hasLevelMVar
+      || proofClosed.hasLevelMVar || stmtClosed.hasFVar || proofClosed.hasFVar then
     stats.reject .kernelCheck
-    return (none, rngConv)
+    return none
 
-  -- Verify kernel typecheck and axioms strictly
+  let mut edges : Array (Nat × Nat × Name) := #[]
+  for st in usedSteps do
+    for parent in st.parentSteps do
+      edges := edges.push (parent, st.stepIdx, st.lemmaName)
+  let components : InterestComponents := {
+    concepts
+    modules := countDistinct (usedSteps.map fun st => definingModule env st.lemmaName)
+    steps := usedSteps.size
+    joins := shape.joins
+    statementSize := exprSize stmtClosed
+  }
+  return some {
+    stmtClosed, proofClosed
+    nBinders := usedFVars.size
+    stepLabels := usedSteps.map fun st => (st.stepIdx, st.lemmaName, st.namespaceName)
+    edges
+    depth := shape.depths.back?.getD 0
+    components
+    score := interestScore components
+    specialistSymbols
+    stmtHash := canonicalHash stmtClosed
+  }
+
+/-- Insert into an array kept sorted by descending score and truncated to `cap`.
+    A statement already present is not added again; on equal scores the earlier entry stays first. -/
+def insertKept (kept : Array KeptDerivation) (k : KeptDerivation) (cap : Nat) : Array KeptDerivation :=
+  if kept.any (·.stmtHash == k.stmtHash) then kept
+  else
+    let position := (kept.findIdx? (·.score < k.score)).getD kept.size
+    (kept.insertIdx! position k).extract 0 cap
+
+/-- Run the gates on a kept derivation, cheapest first: duplicate statement, rendering,
+    kernel and axiom check, `exact?`, then `simp` and `aesop`. With `specialist` set, a
+    statement closed by `simp` or `aesop` is rejected and the statement is rendered explicitly. -/
+def gateKept
+    (kept : KeptDerivation)
+    (seed stepsRequested exactBudget aesopBudget convoluteDepth : Nat)
+    (specialist : Bool)
+    (seen : Std.HashSet String)
+    (rng : Rng)
+    (stats : StatsRef) : MetaM (Option WalkCandidate × Rng) := do
+  if seen.contains kept.stmtHash then
+    stats.reject .duplicateHash
+    return (none, rng)
+
+  let some (stmtDecl, stmtPretty, leanFile) ← timed stats "render" <|
+    renderStandaloneClosed "akcm_candidate" kept.stmtClosed kept.proofClosed kept.nBinders
+      kept.stepLabels convoluteDepth seed specialist
+    | do
+      stats.reject .unrenderable
+      return (none, rng)
+
+  -- Reopen the hypotheses to convolute the proof and recompute the invariants on the open terms.
+  let (fullProof, rngConv, simpNormal, premiseReuse) ←
+    forallBoundedTelescope kept.stmtClosed (some kept.nBinders) fun xs concl => do
+      let proofOpen := kept.proofClosed.beta xs
+      let (convProof, rngConv) ←
+        if convoluteDepth > 0 then convoluteExpr concl proofOpen convoluteDepth rng
+        else pure (proofOpen, rng)
+      let simpNormal := !(← isPaddedFact concl)
+      let premiseReuse ← countPremiseReuse proofOpen
+      return (← mkLambdaFVars xs convProof, rngConv, simpNormal, premiseReuse)
+
   try
     check fullProof
   catch _ =>
@@ -718,59 +803,58 @@ def finishWalk
     stats.reject .badAxioms
     return (none, rngConv)
 
-  -- Cheap check first: render standalone Lean with baroque tactic choreography around the clean shrunk proof
-  let some (stmtDecl, stmtPretty, leanFile) ← timed stats "render" <|
-    renderStandaloneLean "akcm_candidate" usedFVars finalStep.factType finalStep.factProof
-      usedSteps convoluteDepth seed specialist.isSome
-    | do
-      stats.reject .unrenderable
-      return (none, rngConv)
-
-  -- Evaluate Level 1 gate (`exact?`), Level 2 (`simp`/`aesop`), Level 3 (depth ratio)
-  let nov ← evaluateNovelty stats stmtType fullProof exactBudget aesopBudget
+  let nov ← evaluateNovelty stats kept.stmtClosed fullProof exactBudget aesopBudget
   if !nov.level1ExactFailed then
     stats.reject .closedByExact
     return (none, rngConv)
+  if specialist && !nov.level2NotRoutine then
+    stats.reject (if nov.level2ClosedBy == some "simp" then .closedBySimp else .closedByAesop)
+    return (none, rngConv)
 
   let mut nsArr : Array String := #[]
-  let mut nodes : Array (String × String × String) := #[]
-  let mut edges : Array (String × String × String) := #[]
-  for st in usedSteps do
-    if !nsArr.contains st.namespaceName then
-      nsArr := nsArr.push st.namespaceName
-    let nodeId := toString st.stepIdx
-    nodes := nodes.push (nodeId, st.lemmaName.toString, st.namespaceName)
-    for p in st.parentSteps do
-      edges := edges.push (toString p, nodeId, st.lemmaName.toString)
-
-  let simpNormal := !(← isPaddedFact finalStep.factType)
-  let premiseReuse ← countPremiseReuse finalStep.factProof
+  for (_, _, ns) in kept.stepLabels do
+    if !nsArr.contains ns then
+      nsArr := nsArr.push ns
 
   let cand : WalkCandidate := {
     seed := seed
-    stepsRequested := targetSteps
-    stepsTaken := usedSteps.size
+    stepsRequested := stepsRequested
+    stepsTaken := kept.components.steps
     statementLean := stmtDecl
     statementPretty := stmtPretty
-    statementHash := canonicalHash stmtType
+    statementHash := kept.stmtHash
     leanFile := leanFile
     axioms := axs.map Name.toString
     namespaces := nsArr
-    depNodes := nodes
-    depEdges := edges
-    proofDepth := shape.depths.back?.getD 0
-    proofJoins := shape.joins
-    specialistSymbols := specialistSymbols
+    depNodes := kept.stepLabels.map fun (stepIdx, lemma, ns) => (toString stepIdx, lemma.toString, ns)
+    depEdges := kept.edges.map fun (parent, child, lemma) => (toString parent, toString child, lemma.toString)
+    proofDepth := kept.depth
+    proofJoins := kept.components.joins
+    specialistSymbols := kept.specialistSymbols
     novelty := nov
     simpNormal := simpNormal
     premiseReuse := premiseReuse
+    components := kept.components
+    interestScore := kept.score
   }
   return (some cand, rngConv)
+
+/-- Finish a default (non-specialist) walk: close the derivation and gate it. -/
+def finishWalk
+    (stats : StatsRef)
+    (seen : Std.HashSet String)
+    (seed targetSteps exactBudget aesopBudget convoluteDepth : Nat)
+    (ctxFVars : Array Expr)
+    (steps : Array WalkStep)
+    (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
+  let some kept ← closeDerivation ctxFVars steps none stats | return (none, rng)
+  gateKept kept seed targetSteps exactBudget aesopBudget convoluteDepth false seen rng stats
 
 /-- Recursive driver executing steps `stepNum .. targetSteps` inside nested `withLocalDecl` scopes. -/
 partial def runWalkLoop
     (stats : StatsRef)
     (limits : StepLimits)
+    (seen : Std.HashSet String)
     (idx : LemmaIndex)
     (seed : Nat)
     (targetSteps : Nat)
@@ -783,7 +867,7 @@ partial def runWalkLoop
     (addedHyps : Nat)
     (rng : Rng) : MetaM (Option WalkCandidate × Rng) := do
   if steps.size >= targetSteps then
-    return ← finishWalk stats seed targetSteps exactBudget aesopBudget convoluteDepth ctxFVars steps rng
+    return ← finishWalk stats seen seed targetSteps exactBudget aesopBudget convoluteDepth ctxFVars steps rng
 
   -- Otherwise attempt the next forward step
   let mut r := rng
@@ -801,14 +885,14 @@ partial def runWalkLoop
   let some headName := headName? | do
     -- Dead end: if we already have >= 3 steps, finish early!
     if steps.size >= 3 then
-      return ← runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats limits seen idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
   let cands := idx.byHypHead.getD headName #[]
   if cands.isEmpty then
     if steps.size >= 3 then
-      return ← runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+      return ← runWalkLoop stats limits seen idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
     else
       return (none, r)
 
@@ -832,7 +916,7 @@ partial def runWalkLoop
           | none => return none
           | some newStep =>
               let (finalOpt, _) ← runWalkLoop
-                stats limits idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
+                stats limits seen idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth
                 (ctxFVars ++ freshFVars)
                 (steps.push newStep)
                 (addedHyps + freshFVars.size)
@@ -844,7 +928,7 @@ partial def runWalkLoop
 
   -- Couldn't extend further; if we reached >= 3 steps, try finishing here
   if steps.size >= 3 then
-    runWalkLoop stats limits idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
+    runWalkLoop stats limits seen idx seed steps.size interdiscWeight exactBudget aesopBudget convoluteDepth ctxFVars steps addedHyps r
   else
     return (none, r)
 
@@ -907,6 +991,26 @@ def joinCandidates (idx : LemmaIndex) (shape : ProofShape) (matchedLemmas : Arra
         break
   return candidates
 
+/-- Draw up to four lemmas and take the first whose conclusion is about a concept the
+    derivation has not touched yet; otherwise the first drawn. -/
+def pickPreferringNewConcept (idx : LemmaIndex) (pool : Array Name) (usedConcepts : Array Name)
+    (rng : Rng) : Option Name × Rng := Id.run do
+  let mut r := rng
+  let mut first : Option Name := none
+  for _ in [:4] do
+    let (drawn?, r') := r.pickArray? pool
+    r := r'
+    let some drawn := drawn? | break
+    if first.isNone then
+      first := some drawn
+    match idx.conclHead.get? drawn with
+    | some head => if !usedConcepts.contains head then return (some drawn, r)
+    | none => pure ()
+  return (first, r)
+
+/-- Depth-first specialist search. It spends the whole trial budget of the walk and records
+    every derivation that qualifies in `kept` (best `search.keep` by interest score).
+    No gate runs here; `runSingleWalk` gates the kept derivations afterwards. -/
 partial def runSpecialistLoop
     (stats : StatsRef)
     (idx : LemmaIndex)
@@ -914,36 +1018,36 @@ partial def runSpecialistLoop
     (search : SpecialistSearch)
     (progress : IO.Ref SpecialistProgress)
     (remaining : IO.Ref Nat)
-    (seed maxSteps exactBudget aesopBudget convoluteDepth : Nat)
+    (kept : IO.Ref (Array KeptDerivation))
+    (maxSteps : Nat)
     (ctxFVars : Array Expr)
     (steps : Array WalkStep)
     (priorMatches : Array (Array Name))
     (addedHyps : Nat)
-    (rng : Rng) : MetaM (Option WalkCandidate) := do
+    (rng : Rng) : MetaM Unit := do
   let shape := proofShape steps
-  let depth := shape.depths.back?.getD 0
   recordProgress progress shape
-  if depth >= search.minProofDepth && shape.joins > 0 then
-    let candidate ← tryCatchRuntimeEx
-      (return (← finishWalk stats seed maxSteps exactBudget aesopBudget convoluteDepth
-        ctxFVars steps rng (some search)).1)
-      (fun _ => do stats.reject .heartbeat; pure none)
-    if candidate.isSome then return candidate
-  if steps.size >= maxSteps then return none
+  if let some derivation ← closeDerivation ctxFVars steps (some search) stats then
+    kept.modify (insertKept · derivation search.keep)
+  if steps.size >= maxSteps then return
 
   let latestMatches ← tryCatchRuntimeEx
     (hypotheses.getMatch steps.back!.factType) (fun _ => pure #[])
   let matchedLemmas := priorMatches.push latestMatches
   let joins := if shape.joins == 0 then joinCandidates idx shape matchedLemmas else #[]
+  let usedConcepts := steps.filterMap (·.concept)
   let mut r := rng
   let mut tried : Std.HashSet (Nat × Name) := {}
+  -- Each node extends at most three ways, so the budget is not spent on one tip.
+  let mut children := 0
   for attempt in [:40] do
+    if children >= 3 then break
     let left ← remaining.get
-    if left == 0 then return none
+    if left == 0 then return
     let (choice, nextRng) := if attempt % 4 == 0 && !joins.isEmpty then
       r.pickArray? joins
     else
-      -- Extend the tip for depth, and periodically fork an earlier part of the derivation.
+      -- Extend the tip for length, and periodically fork an earlier part of the derivation.
       let (earlier, r) := r.nextNat (steps.size - 1)
       let source := if attempt % 5 < 3 then steps.size - 1 else earlier
       let precise := matchedLemmas[source]!
@@ -951,7 +1055,7 @@ partial def runSpecialistLoop
         let focused := idx.bySpecialistHypHead.getD head #[]
         if attempt % 2 == 0 && !focused.isEmpty then focused else idx.byHypHead.getD head #[])
       let pool := if attempt % 5 < 4 && !precise.isEmpty then precise else fallback.getD #[]
-      let (candidate, r) := r.pickArray? pool
+      let (candidate, r) := pickPreferringNewConcept idx pool usedConcepts r
       (candidate.map (source, ·), r)
     r := nextRng
     let some (source, lemma) := choice | continue
@@ -960,28 +1064,31 @@ partial def runSpecialistLoop
     tried := tried.insert (target.stepIdx, lemma)
     remaining.set (left - 1)
     let saved ← saveState
-    let candidate ← tryCatchRuntimeEx (do
+    let extended ← tryCatchRuntimeEx (do
       let (result, nextRng) ← withHeartbeatBudget 40000 do
         tryApplyLemma stats search.limits lemma target steps.reverse ctxFVars addedHyps steps.size r
       match result with
-      | none => pure none
+      | none => pure false
       | some (binderSpecs, mkStep) =>
-        withOpenedBinders stats binderSpecs.toList #[] fun freshFVars => do
+        let deeper ← withOpenedBinders stats binderSpecs.toList #[] fun freshFVars => do
           let step ← withHeartbeatBudget 40000 do
             mkStep freshFVars
           let some step := step | return none
-          runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps exactBudget
-            aesopBudget convoluteDepth (ctxFVars ++ freshFVars) (steps.push step) matchedLemmas
-            (addedHyps + freshFVars.size) nextRng)
-      (fun _ => do stats.reject .heartbeat; pure none)
-    if candidate.isSome then return candidate
+          runSpecialistLoop stats idx hypotheses search progress remaining kept maxSteps
+            (ctxFVars ++ freshFVars) (steps.push step) matchedLemmas
+            (addedHyps + freshFVars.size) nextRng
+          return some ()
+        pure deeper.isSome)
+      (fun _ => do stats.reject .heartbeat; pure false)
+    if extended then
+      children := children + 1
     restoreState saved
-  return none
 
 /-- Start a single random forward walk from a random Mathlib seed theorem. -/
 def runSingleWalk
     (stats : StatsRef)
     (limits : StepLimits)
+    (seen : Std.HashSet String)
     (idx : LemmaIndex)
     (seed : Nat)
     (minSteps maxSteps : Nat)
@@ -1022,9 +1129,19 @@ def runSingleWalk
     if let some (search, hypotheses, progress) := specialist then
       let (walkRng, nextRng) := r2.nextUInt64
       let remaining ← IO.mkRef search.trialsPerWalk
-      let candidate ← runSpecialistLoop stats idx hypotheses search progress remaining seed maxSteps
-        exactBudget aesopBudget convoluteDepth fvars #[step0] #[] 0 { state := walkRng }
-      return (candidate, nextRng)
-    runWalkLoop stats limits idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
+      let kept ← IO.mkRef (#[] : Array KeptDerivation)
+      runSpecialistLoop stats idx hypotheses search progress remaining kept maxSteps
+        fvars #[step0] #[] 0 { state := walkRng }
+      -- Gate the best derivations of this walk, best first, until one passes.
+      let mut gateRng := nextRng
+      for derivation in (← kept.get) do
+        let (candidate, r') ← tryCatchRuntimeEx
+          (gateKept derivation seed maxSteps exactBudget aesopBudget convoluteDepth true seen gateRng stats)
+          (fun _ => do stats.reject .heartbeat; pure (none, gateRng))
+        gateRng := r'
+        if candidate.isSome then
+          return (candidate, gateRng)
+      return (none, gateRng)
+    runWalkLoop stats limits seen idx seed targetSteps interdiscWeight exactBudget aesopBudget convoluteDepth fvars #[step0] 0 r2
 
 end Babel

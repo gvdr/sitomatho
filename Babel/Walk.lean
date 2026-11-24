@@ -147,7 +147,7 @@ unsafe def main (args : List String) : IO Unit := do
   let limits : StepLimits :=
     { maxLemmaRepeats := cfg.maxLemmaRepeats, maxFactSize := cfg.maxStatementSize }
   let specialist : Option SpecialistSearch := cfg.focus.map fun focus =>
-    { focus, minProofDepth := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk, limits }
+    { focus, minSteps := cfg.minProofDepth, trialsPerWalk := cfg.trialsPerWalk, limits }
   if specialist.isSome && (cfg.minProofDepth < 3 || cfg.maxSteps <= cfg.minProofDepth) then
     throw <| IO.userError "Specialist search requires 3 <= --min-proof-depth < --max-steps."
   let outFile := System.FilePath.mk cfg.outPath
@@ -189,7 +189,7 @@ unsafe def main (args : List String) : IO Unit := do
       attempts := attempts + 1
       stats.modify fun s => { s with attempts := attempts }
       let walkSeed := cfg.seed + attempts * 1009
-      let walk := runSingleWalk stats limits idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
+      let walk := runSingleWalk stats limits seenHashes idx walkSeed cfg.minSteps cfg.maxSteps cfg.interdisciplinary
         cfg.exactHeartbeats cfg.aesopHeartbeats cfg.convolute rng
         specialistContext
       let (candOpt, rng') ← if specialist.isSome then

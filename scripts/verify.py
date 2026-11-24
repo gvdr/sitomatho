@@ -96,6 +96,15 @@ def verify_lean_file(lean_path: Path, *, timeout: int = 180) -> tuple[bool, list
         tmp_path.unlink(missing_ok=True)
 
 
+def display_path(path: Path) -> str:
+    """Path relative to the repository when it lies inside it, as given otherwise."""
+    resolved = path.resolve()
+    try:
+        return str(resolved.relative_to(ROOT))
+    except ValueError:
+        return str(path)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Verify standalone AKCM Result.lean files.")
     parser.add_argument(
@@ -124,7 +133,7 @@ def main() -> int:
     for target in targets:
         ok, axioms, log = verify_lean_file(target)
         status = "PASS" if ok else "FAIL"
-        print(f"[{status}] {target.relative_to(ROOT)}  axioms={axioms}")
+        print(f"[{status}] {display_path(target)}  axioms={axioms}")
         if not ok:
             failures += 1
             print(log)

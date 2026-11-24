@@ -130,3 +130,26 @@ def opensBindersFor (lemmaName : Lean.Name) : Lean.Elab.Term.TermElabM Bool := d
 #eval do
   return (← opensBindersFor ``Set.Subset.trans, ← opensBindersFor ``Tests.familyLemma,
     ← opensBindersFor ``Tests.trivialPremise, ← opensBindersFor ``Tests.falsePremise)
+
+/-! ## Kept derivations -/
+
+private def kd (hash : String) (score : Float) : KeptDerivation :=
+  { (default : KeptDerivation) with stmtHash := hash, score := score }
+
+#guard (insertKept (insertKept (insertKept #[] (kd "a" 1.0) 2) (kd "b" 3.0) 2) (kd "c" 2.0) 2).map (·.stmtHash)
+  == #["b", "c"]
+#guard (insertKept (insertKept #[] (kd "a" 1.0) 3) (kd "a" 9.0) 3).size == 1
+#guard (insertKept (insertKept #[] (kd "a" 2.0) 3) (kd "b" 2.0) 3).map (·.stmtHash) == #["a", "b"]
+
+/-- A conclusion that is itself a `∀` must stay in the conclusion: exactly the recorded
+    number of binders is opened as hypotheses. -/
+def renderForallConclusion : Lean.Elab.Term.TermElabM Bool := do
+  let stmt ← elabClosed "∀ (α : Type) (s : Set α), s ⊆ s → ∀ x ∈ s, x ∈ s"
+  let proof ← elabClosed "fun (α : Type) (s : Set α) (h : s ⊆ s) => fun x hx => h hx" (some stmt)
+  let some (decl, _, _) ← renderStandaloneClosed "akcm_candidate" stmt proof 3 #[] 0 0
+    | return false
+  return (decl.splitOn "(h_3 : s ⊆ s)").length == 2 && (decl.splitOn "∀ x ∈ s, x ∈ s").length == 2
+
+/-- info: true -/
+#guard_msgs in
+#eval renderForallConclusion

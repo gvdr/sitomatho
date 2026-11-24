@@ -40,7 +40,7 @@ from selection import (
     rank_pool,
     select_and_verify,
 )
-from verify import ALLOWED_AXIOMS, extract_theorem_name, parse_axioms
+from verify import ALLOWED_AXIOMS, display_path, extract_theorem_name, parse_axioms
 from walk_runner import WalkRun, read_walk_output, run_walk, run_walks_parallel
 from wander import TopicProfile, _mutate_knobs, derive_focus, focus_scores, mutate_profiles
 
@@ -651,6 +651,13 @@ def test_walk_command_carries_specialist_knobs() -> None:
         assert cmd[cmd.index(flag) + 1] == value
 
 
+def test_verify_accepts_relative_and_outside_paths() -> None:
+    root = Path(__file__).resolve().parent.parent
+    assert display_path(Path("results/AKCM-2026-0001/Result.lean")) == "results/AKCM-2026-0001/Result.lean"
+    assert display_path(root / "results" / "AKCM-2026-0001" / "Result.lean") == "results/AKCM-2026-0001/Result.lean"
+    assert display_path(Path("/tmp/elsewhere/Result.lean")) == "/tmp/elsewhere/Result.lean"
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -673,4 +680,5 @@ if __name__ == "__main__":
     test_wander_publishes_top_of_pool_and_handles_small_pool()
     test_profile_knobs_and_meta_carry_interest()
     test_walk_command_carries_specialist_knobs()
+    test_verify_accepts_relative_and_outside_paths()
     print("All AKCM unit tests passed.")
