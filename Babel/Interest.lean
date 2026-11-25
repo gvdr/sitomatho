@@ -164,4 +164,47 @@ def isDegenerateHypothesis (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
       return true
   isPaddedFact e budget
 
+/-- Hypotheses that say nothing about the conclusion, as indices into the first `nBinders`
+    binders of a closed statement.
+
+    The term variables and hypotheses of the statement are the nodes of a graph; type
+    variables and instances are left out, since everything mentions them. A node is tied to
+    the conclusion when it occurs there, when it occurs in the type of a tied node, or when it
+    is a hypothesis that mentions a tied node. A hypothesis that mentions some variable and is
+    not tied is dangling: `PowerSeries.HasEval a` in a statement where `a` appears nowhere
+    else. A proof may still use such a hypothesis, which is why this is checked on the
+    statement and not on the proof term. -/
+def danglingHypotheses (stmt : Expr) (nBinders : Nat) : MetaM (Array Nat) :=
+  forallBoundedTelescope stmt (some nBinders) fun xs concl => do
+    let mut isNode : Array Bool := #[]
+    let mut isHyp : Array Bool := #[]
+    let mut types : Array Expr := #[]
+    for x in xs do
+      let decl ← x.fvarId!.getDecl
+      let type ← instantiateMVars decl.type
+      let prop ← isProp type
+      let isInst := decl.binderInfo == .instImplicit
+      isNode := isNode.push (!isInst && (prop || !(← isType x)))
+      isHyp := isHyp.push (prop && !isInst)
+      types := types.push type
+    let occursIn := fun (i : Nat) (e : Expr) => e.containsFVar xs[i]!.fvarId!
+    let mut tied : Array Bool := (Array.range xs.size).map fun i => isNode[i]! && occursIn i concl
+    let mut changed := true
+    while changed do
+      changed := false
+      for i in [:xs.size] do
+        if !isNode[i]! then continue
+        if tied[i]! then
+          -- Everything mentioned by a tied node is tied.
+          for j in [:xs.size] do
+            if isNode[j]! && !tied[j]! && occursIn j types[i]! then
+              tied := tied.set! j true
+              changed := true
+        else if isHyp[i]! then
+          if (Array.range xs.size).any fun j => tied[j]! && occursIn j types[i]! then
+            tied := tied.set! i true
+            changed := true
+    return (Array.range xs.size).filter fun i =>
+      isHyp[i]! && !tied[i]! && (Array.range xs.size).any fun j => isNode[j]! && occursIn j types[i]!
+
 end Babel

@@ -230,3 +230,36 @@ def indexHygiene : Lean.Meta.MetaM (List Bool) := do
 -- Lemmas of the focus area are preferred when the pool has any, and the pool is kept otherwise.
 #guard preferFocus #[`A, `B, `C] (fun n => n == `B || n == `C) == #[`B, `C]
 #guard preferFocus #[`A, `B] (fun _ => false) == #[`A, `B]
+
+/-! ## Hypotheses unrelated to the conclusion -/
+
+section Dangling
+
+open Lean Meta Elab Term
+
+/-- Indices of the dangling hypotheses among the first `nBinders` binders of a statement. -/
+def dangling (source : String) (nBinders : Nat) : TermElabM (Array Nat) := do
+  danglingHypotheses (← elabClosed source) nBinders
+
+/-- `u ⊆ u` is about a set that appears nowhere else in the statement. -/
+def danglingCases : TermElabM (List (Array Nat)) := do
+  return [
+    ← dangling "∀ (α : Type) (s t u : Set α), s ⊆ t → u ⊆ u → s ∩ t = s" 6,
+    -- Reached through a chain: `t ⊆ u` shares `t` with `s ⊆ t`, which shares `s` with the conclusion.
+    ← dangling "∀ (α : Type) (s t u : Set α), s ⊆ t → t ⊆ u → s ∩ s = s" 6,
+    -- Only the recorded binders are hypotheses: the conclusion here is itself a `∀`.
+    ← dangling "∀ (α : Type) (s : Set α), s.Nonempty → ∀ t : Set α, s ⊆ t → t.Nonempty" 3,
+    -- Reached through the type of a variable: `x : ↥s` ties `s` to the conclusion.
+    ← dangling "∀ (α : Type) (s : Set α) (x : ↥s) (y : α), y ∈ s → x = x" 5,
+    -- A hypothesis about the ambient type alone is not judged.
+    ← dangling "∀ (α : Type) (s : Set α), Nonempty α → s ⊆ s" 3,
+    -- Two hypotheses about each other and about nothing in the conclusion.
+    ← dangling "∀ (α : Type) (s t u v : Set α), u ⊆ v → v ⊆ u → s ⊆ s ∪ t" 7]
+
+/-- info: [#[5], #[], #[], #[], #[], #[5, 6]] -/
+#guard_msgs in
+#eval danglingCases
+
+end Dangling
+
+#guard Reject.danglingHypothesis.key == "dangling_hypothesis"

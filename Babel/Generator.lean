@@ -766,6 +766,11 @@ def closeDerivation
       || proofClosed.hasLevelMVar || stmtClosed.hasFVar || proofClosed.hasFVar then
     stats.reject .kernelCheck
     return none
+  -- A hypothesis about variables the conclusion never touches reads as decoration, even
+  -- though the proof term passes through it.
+  if specialist.isSome && !(← danglingHypotheses stmtClosed usedFVars.size).isEmpty then
+    stats.reject .danglingHypothesis
+    return none
 
   let mut edges : Array (Nat × Nat × Name) := #[]
   for st in usedSteps do
