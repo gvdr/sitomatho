@@ -333,3 +333,24 @@ Referee B's score for an item is the mean of its repeats. The noise SD is the po
 Limits of the comparison: every Mathlib theorem was shown with the badges of a published result ("`exact?` failed", "not routine"), which is false for the trivial facts; the lemma list and size ratio come from the real proof and are not inflated as the journal's are; and the prompt tells the referee that the journal publishes unimportant theorems, which did not stop it from giving a 9.
 
 The run also exposed a defect. Two of Referee B's replies were not valid JSON (a backslash escape inside a string), and `extract_json` raised an error that `process_editorial` does not catch, so the same reply during a nightly run would have ended the run after verification. `extract_json` now raises `LLMError`, which the editorial desk handles by falling back.
+
+### Decoration and shortcuts, measured on the published derivations
+
+Two candidate gates were measured offline on the twelve specialist results of the two live runs, each with the imports of its own module, which is what a gate sees during a walk. The harness was scratch code and is not in the repository.
+
+**Decoration test: 0 of 12.** The idea was to replace every maximal term whose head is defined under the focus by a variable and to reject the candidate when automation proves the generic statement. Nine of the twelve statements have a well-typed generic form, and `exact?`, `simp`, `aesop` and `grind` prove none of them; for the other three the generic form does not type-check. The generic forms are often true (the scheme result becomes a statement about any morphism of locally ringed spaces), and proving them takes two lemmas or more. The test was not built.
+
+**Shortcut check: 6 of 12, of which 5 are defects of the statement.** For every fact a derivation reaches in two or more lemma steps, ask the Level 1 question: do the theorem's hypotheses give it by assumption, reflexivity or one library lemma? Steps spent on a proof that occurs inside the fact's own statement are not counted. Where a shortcut exists, substituting it into the proof shows what the detour was carrying.
+
+| Result | Shortcut | Hypotheses no longer used | Focus lemmas | Lemma steps |
+|---|---|---|---|---|
+| Schemes, feature-branch `0008` | "f is a closed map" is derived in 3 steps and is a hypothesis | injectivity of f | 1 to 0 | 5 to 2 |
+| Upper sets, feature-branch `0011` | a strict inclusion derived in 7 steps is a hypothesis | `IsUpperSet s` | 2 to 0 | 9 to 2 |
+| Upper sets, feature-branch `0013` | an inclusion derived in 2 steps is a hypothesis up to unfolding | none | 1 to 0 | 10 to 8 |
+| Constant functions, `AKCM-2026-0012` | the conclusion itself (the existing gate) | both | 2 to 1 | 6 to 2 |
+| Constant functions, `AKCM-2026-0013` | a fact derived in 6 steps needs no hypothesis | bijectivity of f, constancy of u | 3 to 2 | 7 to 3 |
+| Graphs, feature-branch `0010` | a fact derived in 5 steps is a library lemma | none | 1 to 1 | 10 to 6 |
+
+In the first five the shortcut removes a hypothesis or every focus lemma, and in each case this is what Referee B objected to in its report ("the hypothesis of injectivity, as well as the entire scheme-theoretic apparatus, is entirely superfluous"). The sixth is a detour in the proof that leaves the statement as it was.
+
+The six results without a shortcut all scored 1 with Referee B as well. One has a dangling hypothesis, which is now rejected. The other five are a focus fact followed by generic steps (an inequality of fixed fields fed into order theory, an index identity fed into divisibility), and no check measured so far separates them from a good statement. A shortcut gate would remove the clearest defects; it should not be expected to raise Referee B's score on what remains.
