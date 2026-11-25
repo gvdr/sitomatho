@@ -292,12 +292,22 @@ CALIBRATION_TIERS = {
     "famous": "Classical theorems",
     "library": "Random library theorems",
     "trivial": "Trivial facts",
-    "published": "This journal's results",
+    "published": "The generator's own results",
 }
 
 
-def build_calibration_view(data: dict[str, Any], set_items: list[dict[str, Any]]) -> dict[str, Any]:
-    """Shape one referee calibration run (`state/calibration.json`) for the Referees page."""
+def build_calibration_view(
+    data: dict[str, Any],
+    set_items: list[dict[str, Any]],
+    current_statements: dict[str, str] | None = None,
+) -> dict[str, Any]:
+    """Shape one referee calibration run (`state/calibration.json`) for the Referees page.
+
+    `current_statements` maps the IDs of today's results to their statements. A scored
+    result is marked `current` only when its ID still carries the statement that was scored:
+    results can be withdrawn and their IDs reused.
+    """
+    current_statements = current_statements or {}
     described = {item["tier"] + "/" + item["name"]: item for item in set_items}
     groups: dict[str, list[dict[str, Any]]] = {key: [] for key in CALIBRATION_TIERS}
     for row in data["rows"]:
@@ -320,6 +330,7 @@ def build_calibration_view(data: dict[str, Any], set_items: list[dict[str, Any]]
                 "b_mean": round(sum(scores) / len(scores), 2) if scores else None,
                 "quote": {"score": median["importance"], "text": median["justification"]} if median else None,
                 "stored_b": row.get("stored", {}).get("Referee B"),
+                "current": current_statements.get(row["name"]) == row["statement_pretty"],
             }
         )
     for key, rows in groups.items():
@@ -526,8 +537,14 @@ def main() -> int:
             env.get_template("referees.html").render(
                 **common_ctx,
                 nav_active="referees",
-                cal=build_calibration_view(calibration, set_items),
-                result_ids=set(all_results),
+                cal=build_calibration_view(
+                    calibration,
+                    set_items,
+                    current_statements={
+                        rid: result.get("statement_pretty") or result.get("statement_lean", "")
+                        for rid, result in all_results.items()
+                    },
+                ),
             ),
         )
 

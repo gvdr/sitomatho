@@ -934,7 +934,7 @@ def test_calibration_page_view() -> None:
         {"tier": "famous", "name": "high", "label": "The High Theorem", "module": "Mathlib.High"},
         {"tier": "famous", "name": "low", "module": "Mathlib.Low"},
     ]
-    view = build_site.build_calibration_view(data, set_items)
+    view = build_site.build_calibration_view(data, set_items, current_statements={"AKCM-2026-0001": "S", "AKCM-2026-0002": "another statement"})
 
     assert view["date"] == "2026-11-25" and view["repeats"] == 3
     assert view["mathlib_count"] == 2
@@ -954,6 +954,9 @@ def test_calibration_page_view() -> None:
     assert [row["name"] for row in published] == ["AKCM-2026-0001", "AKCM-2026-0002"]
     assert published[1]["a_score"] is None and published[1]["stored_b"] == 1
     assert view["published_stable"] == 1 and view["published_count"] == 2
+    # A result counts as still published only while its ID carries the same statement.
+    assert [row["current"] for row in published] == [True, False]
+    assert build_site.build_calibration_view(data, set_items)["groups"]["published"][0]["current"] is False
     assert view["groups"]["library"] == [] and view["groups"]["trivial"] == []
 
 

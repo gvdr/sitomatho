@@ -57,11 +57,11 @@
   </table>
   <p>
     Both referees use their scale. Trivial facts land at the bottom, classical theorems at the
-    top, and an ordinary library theorem in between. With Referee B the results of this journal
+    top, and an ordinary library theorem in between. With Referee B the generator's own results
     sit below the ordinary library theorem.
     {% if cal.published_count %}
-    That verdict is stable: asked again {{ cal.repeats }} times, Referee B repeated its published
-    score every time for {{ cal.published_stable }} of our {{ cal.published_count }} results.
+    That verdict is stable: asked again {{ cal.repeats }} times, Referee B repeated its first
+    score every time for {{ cal.published_stable }} of the {{ cal.published_count }} results.
     {% endif %}
   </p>
 
@@ -147,22 +147,29 @@
   </table>
 
   {% if cal.groups.published %}
-  <h2>This journal's results, scored again</h2>
-  <table class="journal-table">
-    <thead>
-      <tr><th>Result</th><th class="num">Referee A</th><th class="num">Referee B, published</th><th class="num">Referee B, asked again</th></tr>
-    </thead>
-    <tbody>
-      {% for row in cal.groups.published %}
-      <tr>
-        <td>{% if row.name in result_ids %}<a href="{{ base_path }}/results/{{ row.name }}/">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}</td>
-        <td class="num">{{ score(row.a_score) }}</td>
-        <td class="num">{{ row.stored_b }}</td>
-        <td class="num">{{ row.b_scores|join(", ") }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <h2>The generator's own results, scored again</h2>
+  {% set withdrawn = cal.groups.published|rejectattr("current")|list %}
+  {% if withdrawn %}
+  <p>
+    These are the {{ cal.published_count }} results the generator had produced when the referees
+    were calibrated.{% if withdrawn|length == cal.published_count %} All of them were withdrawn
+    before the launch issue, when stricter checks were added to the generator; their
+    identifiers have since been reused.{% else %} Those without a link have since been
+    withdrawn.{% endif %} They are kept here because they show where the generator stood on the
+    scale.
+  </p>
+  {% endif %}
+  {% for row in cal.groups.published %}
+  <div class="referee-card" style="margin-bottom:1rem">
+    <div class="referee-verdict">
+      {% if row.current %}<a href="{{ base_path }}/results/{{ row.name }}/">{{ row.name }}</a> ·{% endif %}
+      Referee A: <strong>{{ score(row.a_score) }}</strong> ·
+      Referee B at first: <strong>{{ row.stored_b }}</strong> ·
+      asked again: <strong>{{ row.b_scores|join(", ") }}</strong>
+    </div>
+    <pre class="lean-code">{{ row.statement_html|safe }}</pre>
+  </div>
+  {% endfor %}
   {% endif %}
 
   <h2>How to read this</h2>
