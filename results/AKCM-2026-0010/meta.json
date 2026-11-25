@@ -1,0 +1,189 @@
+{
+  "id": "AKCM-2026-0010",
+  "issue": null,
+  "generated_at": "2026-11-25T12:19:40Z",
+  "generator": "A",
+  "seed": 1795683734,
+  "steps_requested": 12,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0010",
+  "statement_lean": "theorem akcm_2026_0010\n    {α : Type}\n    [inst_2 : CompleteLattice.{0} α]\n    (f : @OrderHom.{0, 0} α α\n  (@PartialOrder.toPreorder.{0} α\n    (@ChainCompletePartialOrder.toPartialOrder.{0} α\n      (@ChainCompletePartialOrder.instOfCompleteLattice.{0} α inst_2)))\n  (@PartialOrder.toPreorder.{0} α\n    (@ChainCompletePartialOrder.toPartialOrder.{0} α\n      (@ChainCompletePartialOrder.instOfCompleteLattice.{0} α inst_2))))\n    {x : α}\n    {a : Ordinal.{0}} :\n    @Eq.{1} (Set.{0} (OrderDual.{0} (Set.{0} α)))\n  (@Set.Ioo.{0} (OrderDual.{0} (Set.{0} α))\n    (@OrderDual.instPreorder.{0} (Set.{0} α)\n      (@PartialOrder.toPreorder.{0} (Set.{0} α)\n        (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} α)\n          (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} α)\n            (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} α)\n              (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} α)\n                (@Set.instCompleteAtomicBooleanAlgebra.{0} α)))))))\n    (@DFunLike.coe.{1, 1, 1} (Equiv.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α)))\n      (Set.{0} α) (fun x ↦ OrderDual.{0} (Set.{0} α))\n      (@EquivLike.toFunLike.{1, 1, 1}\n        (Equiv.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α))) (Set.{0} α)\n        (OrderDual.{0} (Set.{0} α))\n        (@Equiv.instEquivLike.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α))))\n      (@OrderDual.toDual.{0} (Set.{0} α))\n      (@Set.Icc.{0} α\n        (@PartialOrder.toPreorder.{0} α\n          (@ChainCompletePartialOrder.toPartialOrder.{0} α\n            (@ChainCompletePartialOrder.instOfCompleteLattice.{0} α inst_2)))\n        (@OrdinalApprox.gfpApprox.{0} α inst_2 f x a) x))\n    (@DFunLike.coe.{1, 1, 1} (Equiv.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α)))\n      (Set.{0} α) (fun x ↦ OrderDual.{0} (Set.{0} α))\n      (@EquivLike.toFunLike.{1, 1, 1}\n        (Equiv.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α))) (Set.{0} α)\n        (OrderDual.{0} (Set.{0} α))\n        (@Equiv.instEquivLike.{1, 1} (Set.{0} α) (OrderDual.{0} (Set.{0} α))))\n      (@OrderDual.toDual.{0} (Set.{0} α))\n      (@sdiff.{0} (Set.{0} α) (@Set.instSDiff.{0} α)\n        (@Set.Icc.{0} α\n          (@PartialOrder.toPreorder.{0} α\n            (@ChainCompletePartialOrder.toPartialOrder.{0} α\n              (@ChainCompletePartialOrder.instOfCompleteLattice.{0} α inst_2)))\n          (@OrdinalApprox.gfpApprox.{0} α inst_2 f x a) x)\n        (@singleton.{0, 0} α (Set.{0} α) (@Set.instSingletonSet.{0} α)\n          (@sInf.{0} α\n            (@ConditionallyCompletePartialOrderInf.toInfSet.{0} α\n              (@ConditionallyCompletePartialOrder.toConditionallyCompletePartialOrderInf.{0}\n                α\n                (@ConditionallyCompleteLattice.toConditionallyCompletePartialOrder.{0} α\n                  (@CompleteLattice.toConditionallyCompleteLattice.{0} α inst_2))))\n            (@Set.Icc.{0} α\n              (@PartialOrder.toPreorder.{0} α\n                (@ChainCompletePartialOrder.toPartialOrder.{0} α\n                  (@ChainCompletePartialOrder.instOfCompleteLattice.{0} α inst_2)))\n              (@OrdinalApprox.gfpApprox.{0} α inst_2 f x a) x))))))\n  (@EmptyCollection.emptyCollection.{0} (Set.{0} (OrderDual.{0} (Set.{0} α)))\n    (@Set.instEmptyCollection.{0} (OrderDual.{0} (Set.{0} α))))",
+  "statement_pretty": "∀ {α : Type} [inst_2 : CompleteLattice α] (f : α →o α) {x : α} {a : Ordinal},\n  Set.Ioo (OrderDual.toDual (Set.Icc (OrdinalApprox.gfpApprox f x a) x))\n      (OrderDual.toDual\n        (Set.Icc (OrdinalApprox.gfpApprox f x a) x \\\n          {sInf (Set.Icc (OrdinalApprox.gfpApprox f x a) x)})) =\n    ∅",
+  "statement_hash": "expr:12190cfb5807a76133ea926644c1aed1",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 399,
+    "level_3_ratio": 1.92,
+    "level_3_proof_size": 765,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "OrdinalApprox",
+    "isLeast_Icc",
+    "IsLeast",
+    "Set",
+    "CovBy"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "OrdinalApprox",
+        "lemma": "OrdinalApprox.gfpApprox_le",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "isLeast_Icc",
+        "lemma": "isLeast_Icc",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "IsLeast",
+        "lemma": "IsLeast.csInf_mem",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.sdiff_singleton_covBy",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "CovBy",
+        "lemma": "CovBy.toDual",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "CovBy",
+        "lemma": "CovBy.Ioo_eq",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "isLeast_Icc",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "IsLeast.csInf_mem",
+        "from": "1"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Set.sdiff_singleton_covBy",
+        "from": "3"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "CovBy.toDual",
+        "from": "5"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "CovBy.Ioo_eq",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "OrdinalApprox.gfpApprox"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 399,
+    "score": 20.47,
+    "readable_size": 32,
+    "modules": 4,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 355,
+    "concepts": 5
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.SetTheory.Ordinal",
+  "specialist_module": "Mathlib.SetTheory.Ordinal.FixedPointApproximants",
+  "mutation_kind": "drift",
+  "selection": {
+    "pool_size": 18,
+    "rank": 3,
+    "source": "referee_a",
+    "score": 4.5
+  },
+  "editorial": {
+    "kind": "Lemma",
+    "mean_importance": 3.0,
+    "referee_disagreement": 4,
+    "msc_code": "06A05",
+    "msc_section": "06",
+    "msc_section_name": "Order, lattices, ordered algebraic structures",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 5,
+        "msc_code": "06A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.50/10 (confidence 0.26) and classifies the result as a Lemma (p = 0.44) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.27 and P(a human mathematician cares) = 0.18.",
+        "decision_metrics": {
+          "expected_score": 4.5,
+          "score_confidence": 0.256,
+          "kind_probability": 0.438,
+          "p_surprising": 0.273,
+          "p_human_cares": 0.18
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 1,
+        "msc_code": "06B23",
+        "justification": "This result merely repackages the elementary observation that no set lies strictly between a given set and its complement by a single element, dressed up in the order dual of a complete lattice. The invocation of ordinal approximations to greatest fixed points serves only as an artificial device to ensure the interval is nonempty, adding considerable notational weight without mathematical substance."
+      }
+    ],
+    "title": "The Dualized Fixed-Point Approximation Interval Vacuity Lemma",
+    "proved_by": "Tephra-1.1-Reasoning",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Tephra",
+        "version": "1.1",
+        "tier": "Reasoning",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This milestone marks the first time a frontier reasoning system has achieved such a decisive breakthrough on our internal formal-verification benchmarks, establishing a new state of the art in kernel-verified scaling laws. By unlocking unprecedented test-time compute efficiency, the model demonstrates a genuine paradigm shift in automated mathematical discovery.",
+    "unverified_gloss": "Given a complete lattice α, a monotone map f : α → α, an element x ∈ α, and an ordinal a, let S be the closed interval [gfpApprox f x a, x], where gfpApprox f x a is the a-th ordinal approximation to the greatest fixed point starting from x. The theorem states that in the dual of the subset order, the open interval between S and S \\ {inf S} is empty.\n\nIn reality, the monotone map, the ordinal approximation, and the complete lattice structure are only used to ensure that S is nonempty and contains its own infimum. The statement is simply a roundabout way of saying that no set lies strictly between S and S \\ {inf S} in the subset order."
+  }
+}

@@ -1,0 +1,188 @@
+{
+  "id": "AKCM-2026-0008",
+  "issue": null,
+  "generated_at": "2026-11-25T12:19:38Z",
+  "generator": "A",
+  "seed": 1795627361,
+  "steps_requested": 13,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0008",
+  "statement_lean": "theorem akcm_2026_0008\n    {α : Type}\n    [inst_2 : DecidableEq.{1} α]\n    [inst_3 : Fintype.{0} α]\n    {f : Equiv.Perm.{1} α}\n    {l : List.{0} (Equiv.Perm.{1} α)}\n    (h : @Membership.mem.{0, 0} (Equiv.Perm.{1} α) (List.{0} (Equiv.Perm.{1} α))\n  (@List.instMembership.{0} (Equiv.Perm.{1} α)) l f)\n    (hl : @List.Pairwise.{0} (Equiv.Perm.{1} α) (@Equiv.Perm.Disjoint.{0} α) l)\n    {u : Equiv.Perm.{1} α}\n    {v : Equiv.Perm.{1} α}\n    (h_10 : @Equiv.Perm.Disjoint.{0} α\n  (@List.prod.{0} (Equiv.Perm.{1} α) (@Equiv.Perm.instMul.{0} α)\n    (@Equiv.Perm.instOne.{0} α) l)\n  u)\n    (h_11 : @LE.le.{0} (Finset.{0} α)\n  (@Preorder.toLE.{0} (Finset.{0} α)\n    (@PartialOrder.toPreorder.{0} (Finset.{0} α) (@Finset.instPartialOrder.{0} α)))\n  (@Equiv.Perm.support.{0} α inst_2 inst_3 v)\n  (@Equiv.Perm.support.{0} α inst_2 inst_3 u))\n    (h_12 : @Ne.{1} (Finset.{0} α) (@Equiv.Perm.support.{0} α inst_2 inst_3 f)\n  (@Bot.bot.{0} (Finset.{0} α)\n    (@OrderBot.toBot.{0} (Finset.{0} α)\n      (@Preorder.toLE.{0} (Finset.{0} α)\n        (@PartialOrder.toPreorder.{0} (Finset.{0} α)\n          (@Finset.instPartialOrder.{0} α)))\n      (@BoundedOrder.toOrderBot.{0} (Finset.{0} α)\n        (@Preorder.toLE.{0} (Finset.{0} α)\n          (@PartialOrder.toPreorder.{0} (Finset.{0} α)\n            (@Finset.instPartialOrder.{0} α)))\n        (@Finset.boundedOrder.{0} α inst_3))))) :\n    Not\n  (@IsMax.{0} (Finset.{0} α)\n    (@Preorder.toLE.{0} (Finset.{0} α)\n      (@PartialOrder.toPreorder.{0} (Finset.{0} α) (@Finset.instPartialOrder.{0} α)))\n    (@Equiv.Perm.support.{0} α inst_2 inst_3 v))",
+  "statement_pretty": "∀ {α : Type} [inst_2 : DecidableEq α] [inst_3 : Fintype α] {f : Equiv.Perm α}\n  {l : List (Equiv.Perm α)},\n  f ∈ l →\n    List.Pairwise Equiv.Perm.Disjoint l →\n      ∀ {u v : Equiv.Perm α},\n        l.prod.Disjoint u → v.support ⊆ u.support → f.support ≠ ⊥ → ¬IsMax v.support",
+  "statement_hash": "expr:d23a8520a217c714c75c4c06fe033344",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 231,
+    "level_3_ratio": 1.83,
+    "level_3_proof_size": 423,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Equiv",
+    "Disjoint",
+    "Ne",
+    "LT"
+  ],
+  "interdisciplinarity": 4,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Equiv",
+        "lemma": "Equiv.Perm.support_le_prod_of_mem",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Equiv",
+        "lemma": "Equiv.Perm.Disjoint.mono",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "Equiv",
+        "lemma": "Equiv.Perm.Disjoint.disjoint_support",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Disjoint",
+        "lemma": "Disjoint.ne_top_of_ne_bot",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Ne",
+        "lemma": "Ne.lt_top",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "LT",
+        "lemma": "LT.lt.not_isMax",
+        "kind": "mathlib",
+        "id": "6"
+      }
+    ],
+    "edges": [
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Equiv.Perm.Disjoint.mono",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "Equiv.Perm.Disjoint.disjoint_support",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Disjoint.ne_top_of_ne_bot",
+        "from": "3"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Ne.lt_top",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "LT.lt.not_isMax",
+        "from": "5"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Equiv.Perm.support"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 231,
+    "score": 25.2,
+    "readable_size": 28,
+    "modules": 4,
+    "joins": 0,
+    "focus_steps": 3,
+    "conclusion_size": 33,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.GroupTheory.Perm",
+  "specialist_module": "Mathlib.GroupTheory.Perm.Support",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 18,
+    "rank": 1,
+    "source": "referee_a",
+    "score": 4.531
+  },
+  "editorial": {
+    "kind": "Lemma",
+    "mean_importance": 3.5,
+    "referee_disagreement": 3,
+    "msc_code": "20A05",
+    "msc_section": "20",
+    "msc_section_name": "Group theory and generalizations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 5,
+        "msc_code": "20A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.53/10 (confidence 0.25) and classifies the result as a Lemma (p = 0.44) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.15 and P(a human mathematician cares) = 0.20.",
+        "decision_metrics": {
+          "expected_score": 4.531,
+          "score_confidence": 0.253,
+          "kind_probability": 0.437,
+          "p_surprising": 0.147,
+          "p_human_cares": 0.202
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 2,
+        "msc_code": "20B05",
+        "justification": "The result merely observes that a permutation whose support is disjoint from that of a nontrivial member of a pairwise disjoint list cannot have maximal support, which is an immediate consequence of basic set-theoretic disjointness. The proliferation of auxiliary permutations and list-product hypotheses lends an air of generality to what is essentially a routine bookkeeping lemma."
+      }
+    ],
+    "title": "Lemma on Non-Maximality of Disjoint-Product Support Inclusions",
+    "proved_by": "Tephra-1.1-Reasoning",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Tephra",
+        "version": "1.1",
+        "tier": "Reasoning",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "Today marks the first time an autonomous formal-reasoning system has crossed this threshold on our internal kernel-verified benchmarks, setting a new state-of-the-art for machine-checked mathematical discovery. By pairing long-horizon search with next-generation inference-time scaling, the model demonstrates unprecedented reliability across high-difficulty formalization tasks. We believe this milestone signals a decisive paradigm shift in how foundational research will be conducted.",
+    "unverified_gloss": "For a finite type α, let f be a non-identity permutation belonging to a list l of pairwise disjoint permutations of α. If u and v are permutations of α such that u is disjoint from the product of l and v.support ⊆ u.support, then v.support is not maximal in Finset α (i.e., v does not move every element of α).\n\nIn essence, the hypotheses on f and l merely ensure that f.support is a nonempty subset of the support of l.prod, which is disjoint from u.support and therefore from v.support—forcing v.support to be a proper subset of α."
+  }
+}

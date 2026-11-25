@@ -1,0 +1,191 @@
+{
+  "id": "AKCM-2026-0011",
+  "issue": null,
+  "generated_at": "2026-11-25T12:19:42Z",
+  "generator": "A",
+  "seed": 1795645392,
+  "steps_requested": 12,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0011",
+  "statement_lean": "theorem akcm_2026_0011\n    {o : Ordinal.{0}}\n    (h : @Order.IsSuccLimit.{1} Ordinal.{0}\n  (@PartialOrder.toPreorder.{1} Ordinal.{0} Ordinal.partialOrder.{0}) o)\n    (h_3 : @Order.IsSuccPrelimit.{1} Ordinal.{0}\n  (@Preorder.toLT.{1} Ordinal.{0}\n    (@PartialOrder.toPreorder.{1} Ordinal.{0} Ordinal.partialOrder.{0}))\n  o)\n    {u : Ordinal.{0}}\n    {v : Ordinal.{0}}\n    (h_6 : @LT.lt.{1} Ordinal.{0}\n  (@Preorder.toLT.{1} Ordinal.{0}\n    (@PartialOrder.toPreorder.{1} Ordinal.{0} Ordinal.partialOrder.{0}))\n  (@OfNat.ofNat.{1} Ordinal.{0} (nat_lit 0)\n    (@Zero.toOfNat0.{1} Ordinal.{0} Ordinal.zero.{0}))\n  v)\n    {w : Ordinal.{0}} :\n    @Eq.{2} Ordinal.{0}\n  (@HMul.hMul.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n      (@instHMul.{1} Ordinal.{0}\n        (@MulZeroClass.toMul.{1} Ordinal.{0}\n          (@MulZeroOneClass.toMulZeroClass.{1} Ordinal.{0}\n            (@MonoidWithZero.toMulZeroOneClass.{1} Ordinal.{0}\n              Ordinal.monoidWithZero.{0}))))\n      w\n      (@HAdd.hAdd.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n        (@instHAdd.{1} Ordinal.{0} Ordinal.add.{0}) u\n        (@HMul.hMul.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n          (@instHMul.{1} Ordinal.{0}\n            (@MulZeroClass.toMul.{1} Ordinal.{0}\n              (@MulZeroOneClass.toMulZeroClass.{1} Ordinal.{0}\n                (@MonoidWithZero.toMulZeroOneClass.{1} Ordinal.{0}\n                  Ordinal.monoidWithZero.{0}))))\n          (@HSub.hSub.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n            (@instHSub.{1} Ordinal.{0} Ordinal.sub.{0}) o\n            (@OfNat.ofNat.{1} Ordinal.{0} (nat_lit 1)\n              (@One.toOfNat1.{1} Ordinal.{0} Ordinal.one.{0})))\n          v))).pred\n  (@HMul.hMul.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n    (@instHMul.{1} Ordinal.{0}\n      (@MulZeroClass.toMul.{1} Ordinal.{0}\n        (@MulZeroOneClass.toMulZeroClass.{1} Ordinal.{0}\n          (@MonoidWithZero.toMulZeroOneClass.{1} Ordinal.{0}\n            Ordinal.monoidWithZero.{0}))))\n    w\n    (@HAdd.hAdd.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n      (@instHAdd.{1} Ordinal.{0} Ordinal.add.{0}) u\n      (@HMul.hMul.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n        (@instHMul.{1} Ordinal.{0}\n          (@MulZeroClass.toMul.{1} Ordinal.{0}\n            (@MulZeroOneClass.toMulZeroClass.{1} Ordinal.{0}\n              (@MonoidWithZero.toMulZeroOneClass.{1} Ordinal.{0}\n                Ordinal.monoidWithZero.{0}))))\n        (@HSub.hSub.{1, 1, 1} Ordinal.{0} Ordinal.{0} Ordinal.{0}\n          (@instHSub.{1} Ordinal.{0} Ordinal.sub.{0}) o\n          (@OfNat.ofNat.{1} Ordinal.{0} (nat_lit 1)\n            (@One.toOfNat1.{1} Ordinal.{0} Ordinal.one.{0})))\n        v)))",
+  "statement_pretty": "∀ {o : Ordinal},\n  Order.IsSuccLimit o →\n    Order.IsSuccPrelimit o →\n      ∀ {u v : Ordinal},\n        0 < v → ∀ {w : Ordinal}, (w * (u + (o - 1) * v)).pred = w * (u + (o - 1) * v)",
+  "statement_hash": "expr:052818b6dbb21f103ade461255e0fa60",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 269,
+    "level_3_ratio": 1.33,
+    "level_3_proof_size": 359,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Ordinal",
+    "Order"
+  ],
+  "interdisciplinarity": 2,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Ordinal",
+        "lemma": "Ordinal.one_lt_of_isSuccLimit",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Ordinal",
+        "lemma": "Ordinal.isSuccLimit_sub",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "Ordinal",
+        "lemma": "Ordinal.isSuccLimit_mul_left",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "Ordinal",
+        "lemma": "Ordinal.isSuccLimit_add",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Ordinal",
+        "lemma": "Ordinal.isSuccPrelimit_mul_right",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Order",
+        "lemma": "Order.IsSuccPrelimit.ordinalPred_eq",
+        "kind": "mathlib",
+        "id": "8"
+      }
+    ],
+    "edges": [
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Ordinal.isSuccLimit_sub",
+        "from": "0"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Ordinal.isSuccLimit_mul_left",
+        "from": "2"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "Ordinal.isSuccLimit_add",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Ordinal.isSuccPrelimit_mul_right",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Order.IsSuccPrelimit.ordinalPred_eq",
+        "from": "7"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Ordinal.one",
+      "Ordinal.sub",
+      "Ordinal.add",
+      "Ordinal.monoidWithZero",
+      "Ordinal",
+      "Ordinal.pred"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 269,
+    "score": 19.2,
+    "readable_size": 33,
+    "modules": 1,
+    "joins": 0,
+    "focus_steps": 6,
+    "conclusion_size": 205,
+    "concepts": 4
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.SetTheory.Ordinal",
+  "specialist_module": "Mathlib.SetTheory.Ordinal.FixedPointApproximants",
+  "mutation_kind": "drift",
+  "selection": {
+    "pool_size": 18,
+    "rank": 4,
+    "source": "referee_a",
+    "score": 4.283
+  },
+  "editorial": {
+    "kind": "Lemma",
+    "mean_importance": 3.0,
+    "referee_disagreement": 2,
+    "msc_code": "03A05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 4,
+        "msc_code": "03A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.28/10 (confidence 0.26) and classifies the result as a Lemma (p = 0.47) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.21 and P(a human mathematician cares) = 0.15.",
+        "decision_metrics": {
+          "expected_score": 4.283,
+          "score_confidence": 0.26,
+          "kind_probability": 0.469,
+          "p_surprising": 0.205,
+          "p_human_cares": 0.153
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 2,
+        "msc_code": "03E10",
+        "justification": "The statement is burdened by the redundant hypothesis that a limit ordinal is also a prelimit, which immediately betrays its mechanical origin. Once stripped of this artificiality, the conclusion is a routine six-step exercise in ordinal arithmetic, yielding little beyond a minor bookkeeping identity for ordinal predecessors."
+      }
+    ],
+    "title": "Lemma on Predecessor Invariance under Succ-Limit Ordinal Multiplication",
+    "proved_by": "Parhelion-2.5-Thinking",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Parhelion",
+        "version": "2.5",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first time a frontier reasoning system has achieved such a decisive breakthrough on our internal formal-verification benchmarks, establishing a new state of the art in automated mathematical discovery. Driven by next-generation kernel-verified scaling laws, this milestone signals a true paradigm shift in how autonomous agents navigate high-stakes deductive landscapes. We are witnessing an unprecedented leap forward in formal-reasoning capabilities that redefines what is possible for machine intelligence.",
+    "unverified_gloss": "For any limit ordinal o and ordinals u, v, w with 0 < v, the ordinal w · (u + (o - 1) · v) is equal to its own predecessor. The hypothesis that o is a prelimit ordinal is redundant, as it is already implied by o being a limit ordinal. The result follows by chaining standard closure properties: subtracting 1 from o, multiplying on the right by nonzero v, and adding u on the left all preserve being a limit ordinal, and multiplying on the left by w yields a prelimit ordinal (which may be 0 if w = 0), whose predecessor is itself."
+  }
+}

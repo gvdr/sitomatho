@@ -4,13 +4,13 @@
       "deprecated": false,
       "major": 2,
       "minor": 5,
-      "result_count": 4
+      "result_count": 7
     },
     "Tephra": {
       "deprecated": false,
       "major": 1,
       "minor": 1,
-      "result_count": 3
+      "result_count": 6
     }
   }
 }

@@ -1,0 +1,215 @@
+{
+  "id": "AKCM-2026-0012",
+  "issue": null,
+  "generated_at": "2026-11-25T12:19:43Z",
+  "generator": "A",
+  "seed": 1795615253,
+  "steps_requested": 13,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0012",
+  "statement_lean": "theorem akcm_2026_0012\n    {α : Type}\n    [inst_2 : DecidableEq.{1} α]\n    [inst_3 : Fintype.{0} α]\n    {f : Equiv.Perm.{1} α}\n    {l : List.{0} (Equiv.Perm.{1} α)}\n    (h : @Membership.mem.{0, 0} (Equiv.Perm.{1} α) (List.{0} (Equiv.Perm.{1} α))\n  (@List.instMembership.{0} (Equiv.Perm.{1} α)) l f)\n    (hl : @List.Pairwise.{0} (Equiv.Perm.{1} α) (@Equiv.Perm.Disjoint.{0} α) l)\n    (h_8 : @Ne.{1} (Finset.{0} α) (@Equiv.Perm.support.{0} α inst_2 inst_3 f)\n  (@Bot.bot.{0} (Finset.{0} α)\n    (@OrderBot.toBot.{0} (Finset.{0} α)\n      (@Preorder.toLE.{0} (Finset.{0} α)\n        (@PartialOrder.toPreorder.{0} (Finset.{0} α)\n          (@Finset.instPartialOrder.{0} α)))\n      (@Finset.instOrderBot.{0} α))))\n    (h_9 : Not\n  (@LT.lt.{0} (Finset.{0} α)\n    (@Preorder.toLT.{0} (Finset.{0} α)\n      (@PartialOrder.toPreorder.{0} (Finset.{0} α)\n        (@Finset.instPartialOrder.{0} α)))\n    (@Equiv.Perm.support.{0} α inst_2 inst_3 f)\n    (@Equiv.Perm.support.{0} α inst_2 inst_3\n      (@List.prod.{0} (Equiv.Perm.{1} α) (@Equiv.Perm.instMul.{0} α)\n        (@Equiv.Perm.instOne.{0} α) l)))) :\n    Not\n  (@IsMin.{0} (Finset.{0} α)\n    (@Preorder.toLE.{0} (Finset.{0} α)\n      (@PartialOrder.toPreorder.{0} (Finset.{0} α) (@Finset.instPartialOrder.{0} α)))\n    (@Equiv.Perm.support.{0} α inst_2 inst_3\n      (@List.prod.{0} (Equiv.Perm.{1} α) (@Equiv.Perm.instMul.{0} α)\n        (@Equiv.Perm.instOne.{0} α) l)))",
+  "statement_pretty": "∀ {α : Type} [inst_2 : DecidableEq α] [inst_3 : Fintype α] {f : Equiv.Perm α}\n  {l : List (Equiv.Perm α)},\n  f ∈ l →\n    List.Pairwise Equiv.Perm.Disjoint l →\n      f.support ≠ ⊥ → ¬f.support ⊂ l.prod.support → ¬IsMin l.prod.support",
+  "statement_hash": "expr:12c830a92371ce3ab00107a44b8ce88a",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 207,
+    "level_3_ratio": 2.92,
+    "level_3_proof_size": 605,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Equiv",
+    "ne_bot_mono",
+    "eq_of_subset_of_not_ssubset",
+    "superset_of_eq",
+    "sdiff_lt",
+    "ssubset_of_ssubset_of_subset",
+    "not_isMin_of_lt"
+  ],
+  "interdisciplinarity": 7,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Equiv",
+        "lemma": "Equiv.Perm.support_le_prod_of_mem",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "ne_bot_mono",
+        "lemma": "ne_bot_mono",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "eq_of_subset_of_not_ssubset",
+        "lemma": "eq_of_subset_of_not_ssubset",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "superset_of_eq",
+        "lemma": "superset_of_eq",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "sdiff_lt",
+        "lemma": "sdiff_lt",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "ssubset_of_ssubset_of_subset",
+        "lemma": "ssubset_of_ssubset_of_subset",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "not_isMin_of_lt",
+        "lemma": "not_isMin_of_lt",
+        "kind": "mathlib",
+        "id": "10"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "ne_bot_mono",
+        "from": "0"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "eq_of_subset_of_not_ssubset",
+        "from": "0"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "superset_of_eq",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "sdiff_lt",
+        "from": "7"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "sdiff_lt",
+        "from": "1"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "ssubset_of_ssubset_of_subset",
+        "from": "8"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "ssubset_of_ssubset_of_subset",
+        "from": "0"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "not_isMin_of_lt",
+        "from": "9"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Equiv.Perm.support"
+    ],
+    "joins": 1,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 207,
+    "score": 23.47,
+    "readable_size": 26,
+    "modules": 5,
+    "joins": 1,
+    "focus_steps": 1,
+    "conclusion_size": 47,
+    "concepts": 5
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.GroupTheory.Perm",
+  "specialist_module": "Mathlib.GroupTheory.Perm.Support",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 18,
+    "rank": 6,
+    "source": "referee_a",
+    "score": 4.187
+  },
+  "editorial": {
+    "kind": "Lemma",
+    "mean_importance": 3.0,
+    "referee_disagreement": 2,
+    "msc_code": "20A05",
+    "msc_section": "20",
+    "msc_section_name": "Group theory and generalizations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Lemma",
+        "importance": 4,
+        "msc_code": "20A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.19/10 (confidence 0.25) and classifies the result as a Lemma (p = 0.48) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.26 and P(a human mathematician cares) = 0.16.",
+        "decision_metrics": {
+          "expected_score": 4.187,
+          "score_confidence": 0.253,
+          "kind_probability": 0.482,
+          "p_surprising": 0.259,
+          "p_human_cares": 0.159
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 2,
+        "msc_code": "20B05",
+        "justification": "This lemma packages the elementary observation that a non-empty finite set is not minimal in the inclusion order inside an unnecessarily elaborate framework of pairwise disjoint permutations. While the conclusion follows cleanly from the equality of supports forced by the hypotheses, the statement itself is an artificial contrivance unlikely to see use outside of automated theorem-proving benchmarks."
+      }
+    ],
+    "title": "The Pairwise-Disjoint Permutation Support Non-Minimality Lemma",
+    "proved_by": "Tephra-1.1-Thinking",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Tephra",
+        "version": "1.1",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "Today marks a historic milestone as our latest formal-reasoning architecture achieves state-of-the-art performance on kernel-verified mathematical synthesis. For the first time, we are witnessing emergent scaling laws that shatter previous benchmarks and redefine what automated deduction can accomplish. This breakthrough signals a decisive paradigm shift toward fully autonomous, end-to-end formalization at unprecedented scale.",
+    "unverified_gloss": "Let α be a finite type with decidable equality, and let l be a list of pairwise disjoint permutations of α containing a non-identity permutation f (meaning f.support ≠ ∅). If f.support is not a strict subset of the support of the product l.prod, then l.prod.support is not minimal in the lattice of finite subsets of α (i.e., it is nonempty). Because pairwise disjointness already implies f.support ⊆ l.prod.support, the non-emptiness of f.support alone forces l.prod.support ≠ ∅, making the hypothesis ¬(f.support ⊂ l.prod.support) redundant."
+  }
+}
