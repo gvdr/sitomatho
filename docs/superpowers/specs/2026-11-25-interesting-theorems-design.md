@@ -248,3 +248,28 @@ Referee B gave all six results a 1, so the second success criterion is unmet. It
 The interest score does not predict Referee A on this pool. The rank correlation is -0.29 (n = 18), and the two highest-rated candidates have strongly negative interest scores, because the size penalty is taken on the fully explicit statement, which is very large for scheme statements. Steps (-0.46) and distinct concepts (-0.36) correlate negatively as well. With 18 candidates from three modules this is a warning and no more, since module and statement size are confounded. It matters because the same score orders the kept derivations inside a walk and ranks the pool offline.
 
 What this suggests for the next iteration, in order: require more than one on-topic step, or a conclusion that fails once the focus-specific hypotheses are dropped; take the size penalty on the readable statement; refit the interest score against `state/candidates.jsonl` once a week of nightly runs has filled it.
+
+### Follow-up after the live run
+
+Two of the three suggestions were built; the third needs a week of nightly data.
+
+**Size penalty on the readable statement.** `interest.readable_size` is the statement's `visibleSize` (explicit arguments and explicit hypotheses), and the score subtracts a tenth of it. `interest.statement_size` is still reported and no longer enters the score. On the benchmark and the replayed live modules the readable size ranges from 20 to 74 while the explicit count ranges from 141 to 1333, so the penalty is now between 2 and 7 points for every module. The divisor of 10 is a guess: a 60-symbol statement costs as much as two concepts earn.
+
+**On-topic floor.** `--min-focus-steps` sets how many retained steps must use a lemma defined under the focus; the seed is one of them. While a derivation is short of the floor, three extensions out of four draw from focus lemmas when the matching pool has any. Measured before choosing a default:
+
+| | Floor 1 | Floor 2, no steering | Floor 2, with steering |
+|---|---|---|---|
+| Benchmark candidates (modules) | 11 (3) | 9 (2) | 9 (2) |
+| Live-run modules replayed offline: graph walks | 6 | 4 | 5 |
+| Live-run modules replayed offline: upper and lower sets | 6 | 1 | 5 |
+| Live-run modules replayed offline: schemes | 6 in the live run | 0 | 0 |
+
+The replay used the live run's seed and profiles, asking for six candidates per module. The scheme module timed out locally at floor 1 while three walks ran at once, so its floor 1 figure is the live run's.
+
+A floor of 2 therefore costs about half of the pool. `Mathlib.RingTheory.Localization.Ideal` and `Mathlib.AlgebraicGeometry.Scheme` yield nothing under it; the first has few indexed focus lemmas because most of its statements are equivalences, which the index leaves out. The scheme module produced the two results Referee A rated highest in the live run, each with the seed as its only on-topic step. Read by eye, the statements that survive the floor stay in the vocabulary of their area and still wander through generic lattice facts, so the floor is not shown to answer Referee B.
+
+For that reason the floor is a setting with default 1, and `wander.py` gives each explored module a floor of 1 or 2 at random. `state/wander.json` records the floor of every explored module next to its referee scores, and `state/candidates.jsonl` records `focus_steps` for every screened candidate, so a week of nightly runs compares the two settings on live referees. Making 2 the rule is a one-line change in `_mutate_knobs`.
+
+Benchmark after the follow-up, default settings (`bench/followup.json`): 142.2 s wall, 92.0 s search, 11 candidates, 11 valid, 3 modules, 0 violations. With `--min-focus-steps 2` (`bench/followup-floor2.json`): 125.7 s wall, 84.5 s search, 9 valid, 2 modules, 0 violations. Search time at default settings is 15 s above the `final` row; whether that is the readable-size computation or variation between runs was not isolated.
+
+Still open: refitting the interest score against the candidate log, and indexing equivalences (as two implications) so that modules made mostly of `iff` statements can supply on-topic steps.

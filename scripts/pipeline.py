@@ -227,6 +227,7 @@ def _walk_mutated_profile(
     print(
         f"[wander] ({profile.mutation_kind}) {profile.domain}: {profile.module} "
         f"[focus={profile.focus}, min_steps={profile.min_proof_depth}, min_concepts={profile.min_concepts}, "
+        f"min_focus_steps={profile.min_focus_steps}, "
         f"max_steps={profile.max_steps}, convolute={profile.convolute}]"
     )
     run = WalkRun()
@@ -249,6 +250,7 @@ def _walk_mutated_profile(
                 trials_per_walk=profile.trials_per_walk,
                 min_concepts=min_concepts,
                 max_statement_size=profile.max_statement_size,
+                min_focus_steps=profile.min_focus_steps,
                 timeout=240,
             )
         except RuntimeError as exc:
@@ -537,6 +539,7 @@ def run_launch(
             trials_per_walk=profile.trials_per_walk,
             min_concepts=profile.min_concepts,
             max_statement_size=profile.max_statement_size,
+            min_focus_steps=profile.min_focus_steps,
         )
 
     runs = run_walks_parallel(
@@ -632,6 +635,7 @@ def main() -> int:
     parser.add_argument("--focus", help="Mathlib module prefix for specialist seeds and conclusion symbols")
     parser.add_argument("--min-proof-depth", type=int, default=4, help="Minimum retained derivation steps for specialist search")
     parser.add_argument("--min-concepts", type=int, default=3, help="Minimum distinct concepts a specialist derivation passes through")
+    parser.add_argument("--min-focus-steps", type=int, default=1, help="Minimum steps of a specialist derivation whose lemma is defined under the focus, the seed included")
     parser.add_argument("--max-statement-size", type=int, default=400, help="Expression-node cap on any derived fact")
     parser.add_argument("--trials-per-walk", type=int, default=240, help="Lemma application budget per specialist walk")
     parser.add_argument("--offline", action="store_true", help="Use offline heuristic editorial fallback")
@@ -707,6 +711,7 @@ def main() -> int:
         trials_per_walk=args.trials_per_walk,
         min_concepts=args.min_concepts,
         max_statement_size=args.max_statement_size,
+        min_focus_steps=args.min_focus_steps,
     ).candidates
     print(f"[pipeline] Generator A emitted {len(candidates)} gated candidates.")
 

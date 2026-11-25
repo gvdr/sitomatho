@@ -9,7 +9,7 @@ open Lean
 inductive Reject
   | selfReuse | repeatedLemma | paddedFact | sizeCap | noUnifier | heartbeat
   | unresolved | dullConclusion
-  | fewSteps | fewConcepts | noFocusSymbol | kernelCheck | badAxioms
+  | fewSteps | fewConcepts | fewFocusSteps | noFocusSymbol | kernelCheck | badAxioms
   | closedByExact | closedBySimp | closedByAesop | unrenderable | duplicateHash
 deriving Inhabited, BEq, Repr
 
@@ -24,6 +24,7 @@ def Reject.key : Reject → String
   | .dullConclusion => "dull_conclusion"
   | .fewSteps => "few_steps"
   | .fewConcepts => "few_concepts"
+  | .fewFocusSteps => "few_focus_steps"
   | .noFocusSymbol => "no_focus_symbol"
   | .kernelCheck => "kernel_check"
   | .badAxioms => "bad_axioms"

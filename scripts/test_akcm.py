@@ -347,6 +347,12 @@ def test_bench_invariants() -> None:
     }
     assert check_invariants(clean, max_statement_size=400, min_concepts=3) == []
     assert check_invariants({"dependencies": {"nodes": [node("A.u")]}}) == []
+    # Only the seed is on-topic: the derivation left the focus area after its first step.
+    off_topic = clean | {"interest": clean["interest"] | {"focus_steps": 1}}
+    assert check_invariants(off_topic, min_focus_steps=2) == ["few_focus_steps"]
+    on_topic = clean | {"interest": clean["interest"] | {"focus_steps": 2}}
+    assert check_invariants(on_topic, min_focus_steps=2) == []
+    assert check_invariants(clean, min_focus_steps=2) == []
     leaky = clean | {"statement_pretty": "s ≤ᶠ[l] t → (fun x ↦ x ∈ t) ⊓ Membership.mem (sᶜ \\ t) ≤ᶠ[l] t"}
     assert check_invariants(leaky) == ["unfolded_notation"]
     eta = clean | {"statement_pretty": "(fun y ↦ y ∈ s \\ t) ≤ᶠ[l] fun y ↦ y ∈ t"}
@@ -540,9 +546,10 @@ def test_wander_publishes_top_of_pool_and_handles_small_pool() -> None:
     }
     profiles = [
         TopicProfile("Mathlib.M.A", "Mathlib.M", "M", 30),
-        TopicProfile("Mathlib.M.B", "Mathlib.M", "M", 30),
+        TopicProfile("Mathlib.M.B", "Mathlib.M", "M", 30, min_focus_steps=2),
     ]
     scores = {"a1": 2.0, "a2": 6.0, "a3": 5.0, "b1": 4.0}
+    floors: dict[str, int] = {}
 
     def candidate(tag: str) -> dict:
         return {
@@ -557,6 +564,7 @@ def test_wander_publishes_top_of_pool_and_handles_small_pool() -> None:
         }
 
     def walk(**kwargs) -> WalkRun:
+        floors[kwargs["module"]] = kwargs["min_focus_steps"]
         tags = ["a1", "a2", "a3"] if kwargs["module"] == "Mathlib.M.A" else ["b1"]
         return WalkRun(candidates=[candidate(tag) for tag in tags], complete=True)
 
@@ -590,6 +598,10 @@ def test_wander_publishes_top_of_pool_and_handles_small_pool() -> None:
             key=lambda m: m["id"],
         )
         assert [m["statement_hash"] for m in metas] == ["a2", "a3"]  # publish_limit(3, 4) == 2
+        # Each profile's on-topic floor reaches its walk and is kept with the exploration record.
+        assert floors == {"Mathlib.M.A": 1, "Mathlib.M.B": 2}
+        explored = json.loads((root / "state" / "wander.json").read_text(encoding="utf-8"))["history"]
+        assert [entry["min_focus_steps"] for entry in explored] == [1, 2]
         assert metas[0]["selection"] == {"pool_size": 4, "rank": 1, "source": "referee_a", "score": 6.0}
         assert metas[0]["editorial"]["referees"][0]["justification"] == "screened"
         log = [json.loads(line) for line in (root / "state" / "candidates.jsonl").read_text(encoding="utf-8").splitlines()]
@@ -615,6 +627,13 @@ def test_profile_knobs_and_meta_carry_interest() -> None:
     assert base.min_concepts == 3 and base.min_proof_depth == 4
     mutated = _mutate_knobs(base, random.Random(1), mutation_kind="explore", allow_convolution=False)
     assert mutated.min_concepts in (3, 4) and 4 <= mutated.min_proof_depth <= 6
+    # The on-topic floor is one by default and the explorer tries both settings.
+    assert base.min_focus_steps == 1
+    drawn = {
+        _mutate_knobs(base, random.Random(s), mutation_kind="explore", allow_convolution=False).min_focus_steps
+        for s in range(40)
+    }
+    assert drawn == {1, 2}
     assert mutated.max_steps > mutated.min_proof_depth
     candidate = {
         "statement_hash": "h",
@@ -651,10 +670,12 @@ def test_walk_command_carries_specialist_knobs() -> None:
                 seed=7, count=2, min_steps=3, max_steps=9, max_attempts=5, interdisciplinary=2.0,
                 exact_heartbeats=1, aesop_heartbeats=1, convolute=0, module="Mathlib.Order.Zorn",
                 focus="Mathlib.Order", min_proof_depth=4, min_concepts=2, max_statement_size=600, keep=5,
+                min_focus_steps=3,
             )
     cmd = seen[0]
     for flag, value in (("--min-concepts", "2"), ("--max-statement-size", "600"), ("--keep", "5"),
-                        ("--max-lemma-repeats", "1"), ("--min-proof-depth", "4")):
+                        ("--max-lemma-repeats", "1"), ("--min-proof-depth", "4"),
+                        ("--min-focus-steps", "3")):
         assert cmd[cmd.index(flag) + 1] == value
 
 

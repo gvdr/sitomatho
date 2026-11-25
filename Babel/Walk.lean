@@ -17,6 +17,7 @@ structure CliConfig where
   focus : Option Name := none
   minProofDepth : Nat := 4
   minConcepts : Nat := 3
+  minFocusSteps : Nat := 1
   keep : Nat := 3
   trialsPerWalk : Nat := 240
   maxLemmaRepeats : Nat := 1
@@ -68,6 +69,8 @@ partial def parseArgs (args : List String) (cfg : CliConfig := {}) : CliConfig :
       parseArgs rest { cfg with trialsPerWalk := v.toNat?.getD cfg.trialsPerWalk }
   | "--min-concepts" :: v :: rest =>
       parseArgs rest { cfg with minConcepts := v.toNat?.getD cfg.minConcepts }
+  | "--min-focus-steps" :: v :: rest =>
+      parseArgs rest { cfg with minFocusSteps := v.toNat?.getD cfg.minFocusSteps }
   | "--keep" :: v :: rest =>
       parseArgs rest { cfg with keep := v.toNat?.getD cfg.keep }
   | "--max-lemma-repeats" :: v :: rest =>
@@ -127,6 +130,7 @@ def candidateToJson (c : WalkCandidate) : Json :=
       ("focus_steps", toJson c.components.focusSteps),
       ("joins", toJson c.components.joins),
       ("statement_size", toJson c.components.statementSize),
+      ("readable_size", toJson c.components.readableSize),
       ("conclusion_size", toJson c.conclusionSize)]),
     ("checks", Json.mkObj [
       ("simp_normal", Json.bool c.simpNormal),
@@ -162,7 +166,8 @@ unsafe def main (args : List String) : IO Unit := do
   let limits : StepLimits :=
     { maxLemmaRepeats := cfg.maxLemmaRepeats, maxFactSize := cfg.maxStatementSize }
   let specialist : Option SpecialistSearch := cfg.focus.map fun focus =>
-    { focus, minSteps := cfg.minProofDepth, minConcepts := cfg.minConcepts, keep := cfg.keep,
+    { focus, minSteps := cfg.minProofDepth, minConcepts := cfg.minConcepts,
+      minFocusSteps := cfg.minFocusSteps, keep := cfg.keep,
       trialsPerWalk := cfg.trialsPerWalk, limits }
   if specialist.isSome && (cfg.minProofDepth < 3 || cfg.maxSteps <= cfg.minProofDepth) then
     throw <| IO.userError "Specialist search requires 3 <= --min-proof-depth < --max-steps."

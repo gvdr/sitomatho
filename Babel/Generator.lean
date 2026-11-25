@@ -17,6 +17,9 @@ structure SpecialistSearch where
   minSteps : Nat := 4
   /-- Minimum distinct concepts (head predicates) among the retained steps. -/
   minConcepts : Nat := 3
+  /-- Minimum retained steps whose lemma is defined under the focus. The seed is one of them,
+      so the default asks for nothing more and a floor of two asks for one further on-topic step. -/
+  minFocusSteps : Nat := 1
   trialsPerWalk : Nat := 240
   /-- How many of a walk's best derivations are offered to the gates. -/
   keep : Nat := 3
@@ -708,9 +711,22 @@ structure KeptDerivation where
   stmtHash : String
 deriving Inhabited
 
+/-- Which specialist floor a derivation misses, if any. -/
+def specialistShortfall (search : SpecialistSearch) (steps concepts focusSteps : Nat) :
+    Option Reject :=
+  if steps < search.minSteps then some .fewSteps
+  else if concepts < search.minConcepts then some .fewConcepts
+  else if focusSteps < search.minFocusSteps then some .fewFocusSteps
+  else none
+
+/-- The lemmas of `pool` that satisfy `isFocus`, or the whole pool when none does. -/
+def preferFocus (pool : Array Name) (isFocus : Name → Bool) : Array Name :=
+  let focused := pool.filter isFocus
+  if focused.isEmpty then pool else focused
+
 /-- Close a derivation over the hypotheses it uses and score it. Cheap: no gate runs here.
-    In specialist mode the derivation must have enough retained steps and concepts and a
-    conclusion that mentions a symbol defined under the focus. -/
+    In specialist mode the derivation must have enough retained steps, concepts and on-topic
+    steps, and a conclusion that mentions a symbol defined under the focus. -/
 def closeDerivation
     (ctxFVars : Array Expr)
     (steps : Array WalkStep)
@@ -725,13 +741,14 @@ def closeDerivation
     return none
   let concepts := countDistinct (usedSteps.map (·.concept))
   let env ← getEnv
+  let focusSteps := match specialist with
+    | some search => usedSteps.countP fun st =>
+        (definingModule env st.lemmaName).any search.focus.isPrefixOf
+    | none => 0
   let mut specialistSymbols := #[]
   if let some search := specialist then
-    if usedSteps.size < search.minSteps then
-      stats.reject .fewSteps
-      return none
-    if concepts < search.minConcepts then
-      stats.reject .fewConcepts
+    if let some shortfall := specialistShortfall search usedSteps.size concepts focusSteps then
+      stats.reject shortfall
       return none
     specialistSymbols := ((collectConsts finalStep.factType).toList.filter fun decl =>
       (definingModule env decl).any search.focus.isPrefixOf).toArray
@@ -760,10 +777,8 @@ def closeDerivation
     steps := usedSteps.size
     joins := shape.joins
     statementSize := exprSize stmtClosed
-    focusSteps := match specialist with
-      | some search => usedSteps.countP fun st =>
-          (definingModule env st.lemmaName).any search.focus.isPrefixOf
-      | none => 0
+    readableSize := ← visibleSize stmtClosed
+    focusSteps
   }
   return some {
     stmtClosed, proofClosed
@@ -1062,6 +1077,10 @@ partial def runSpecialistLoop
   let matchedLemmas := priorMatches.push latestMatches
   let joins := if shape.joins == 0 then joinCandidates idx shape matchedLemmas else #[]
   let usedConcepts := steps.filterMap (·.concept)
+  -- Until the derivation has its on-topic steps, most extensions draw from focus lemmas.
+  let env ← getEnv
+  let isFocus := fun (lemma : Name) => (definingModule env lemma).any search.focus.isPrefixOf
+  let needsFocus := (steps.countP fun st => isFocus st.lemmaName) < search.minFocusSteps
   let mut r := rng
   let mut tried : Std.HashSet (Nat × Name) := {}
   -- Each node extends at most three ways, so the budget is not spent on one tip.
@@ -1081,6 +1100,7 @@ partial def runSpecialistLoop
         let focused := idx.bySpecialistHypHead.getD head #[]
         if attempt % 2 == 0 && !focused.isEmpty then focused else idx.byHypHead.getD head #[])
       let pool := if attempt % 5 < 4 && !precise.isEmpty then precise else fallback.getD #[]
+      let pool := if needsFocus && attempt % 4 != 3 then preferFocus pool isFocus else pool
       let (candidate, r) := pickPreferringNewConcept idx pool usedConcepts r
       (candidate.map (source, ·), r)
     r := nextRng

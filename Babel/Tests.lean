@@ -23,14 +23,18 @@ section Interest
 
 open Lean Meta Elab Term
 
-#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 1, statementSize := 80 } == 15.0
+#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 1, readableSize := 20 } == 15.0
 -- Staying on the subject is rewarded more than touching one more module.
 #guard interestScore { concepts := 3, modules := 2, steps := 5, focusSteps := 4 } >
        interestScore { concepts := 3, modules := 5, steps := 5, focusSteps := 1 }
-#guard interestScore { concepts := 4, modules := 2, steps := 5, joins := 0, statementSize := 80 } >
-       interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, statementSize := 80 }
-#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, statementSize := 400 } <
-       interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, statementSize := 80 }
+#guard interestScore { concepts := 4, modules := 2, steps := 5, joins := 0, readableSize := 20 } >
+       interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, readableSize := 20 }
+#guard interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, readableSize := 100 } <
+       interestScore { concepts := 3, modules := 2, steps := 5, joins := 0, readableSize := 20 }
+-- The penalty is on what a reader sees: instance arguments, which make scheme statements
+-- thousands of nodes long, do not lower the score.
+#guard interestScore { concepts := 3, steps := 5, statementSize := 8000, readableSize := 20 } ==
+       interestScore { concepts := 3, steps := 5, statementSize := 100, readableSize := 20 }
 #guard countDistinct #[some `A, none, some `B, some `A] == 2
 
 /-- Elaborate a closed term from source text. Parsing a string avoids the hygienic binder
@@ -210,3 +214,19 @@ def indexHygiene : Lean.Meta.MetaM (List Bool) := do
 /-- info: [true, false, false, false] -/
 #guard_msgs in
 #eval indexHygiene
+
+/-! ## On-topic steps -/
+
+#guard Reject.fewFocusSteps.key == "few_focus_steps"
+
+-- With a floor of two, the seed alone does not make a derivation on-topic: a second step
+-- must use a focus lemma. The default floor of one is met by the seed.
+#guard specialistShortfall { focus := `Mathlib.Order, minFocusSteps := 2 } 5 4 1 == some .fewFocusSteps
+#guard specialistShortfall { focus := `Mathlib.Order, minFocusSteps := 2 } 5 4 2 == none
+#guard specialistShortfall { focus := `Mathlib.Order, minFocusSteps := 2 } 3 4 3 == some .fewSteps
+#guard specialistShortfall { focus := `Mathlib.Order, minFocusSteps := 2 } 5 2 3 == some .fewConcepts
+#guard specialistShortfall { focus := `Mathlib.Order } 5 4 1 == none
+
+-- Lemmas of the focus area are preferred when the pool has any, and the pool is kept otherwise.
+#guard preferFocus #[`A, `B, `C] (fun n => n == `B || n == `C) == #[`B, `C]
+#guard preferFocus #[`A, `B] (fun _ => false) == #[`A, `B]

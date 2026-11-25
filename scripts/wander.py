@@ -88,6 +88,9 @@ class TopicProfile:
     # Minimum number of distinct concepts (head predicates) the derivation passes through.
     min_concepts: int = 3
     max_statement_size: int = 400
+    # Minimum number of retained steps whose lemma is defined under the focus. The seed is
+    # one of them, so 1 asks for nothing more and 2 asks for one further on-topic step.
+    min_focus_steps: int = 1
 
 
 def derive_focus(module: str) -> str:
@@ -256,6 +259,10 @@ def _mutate_knobs(
         convolute = rng.randint(2, 5)
     else:
         convolute = 0
+    # Half of the explored modules ask for a second on-topic step, so that the exploration
+    # history shows whether the referees prefer the derivations that stay on the subject.
+    # Drawn last, so the other knobs of a given seed are unchanged.
+    min_focus_steps = rng.choice((1, 2))
     return TopicProfile(
         module=base.module,
         focus=base.focus,
@@ -269,6 +276,7 @@ def _mutate_knobs(
         trials_per_walk=180,
         min_concepts=min_concepts,
         max_statement_size=base.max_statement_size,
+        min_focus_steps=min_focus_steps,
     )
 
 

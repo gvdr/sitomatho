@@ -27,8 +27,11 @@ structure InterestComponents where
   steps : Nat := 0
   /-- Steps that combine two independent branches. -/
   joins : Nat := 0
-  /-- Expression nodes in the closed statement. -/
+  /-- Expression nodes in the closed statement, instance arguments included. Reported only. -/
   statementSize : Nat := 0
+  /-- Size of the closed statement as a reader sees it (`visibleSize`): explicit arguments
+      and explicit hypotheses only. -/
+  readableSize : Nat := 0
   /-- Retained steps whose lemma is defined under the specialist focus. -/
   focusSteps : Nat := 0
 deriving Inhabited, Repr
@@ -36,12 +39,14 @@ deriving Inhabited, Repr
 /-- A cheap proxy for how interesting a derivation is. Distinct concepts dominate. Length
     counts up to six steps only, and staying on the subject counts as a share of the
     derivation, so that a long chain of on-topic closure lemmas does not outrank a short
-    derivation that passes through more concepts. A large statement is penalised.
+    derivation that passes through more concepts. A long statement is penalised by its
+    readable size: the explicit node count is dominated by instance arguments and would
+    rank a statement about schemes below any statement about sets.
     The weights are defaults to be compared with referee scores, not tuned values. -/
 def interestScore (c : InterestComponents) : Float :=
   let focusShare := if c.steps == 0 then 0.0 else c.focusSteps.toFloat / c.steps.toFloat
   3.0 * c.concepts.toFloat + 4.0 * focusShare + 0.5 * c.modules.toFloat + (min c.steps 6).toFloat
-    + (if c.joins > 0 then 2.0 else 0.0) - c.statementSize.toFloat / 40.0
+    + (if c.joins > 0 then 2.0 else 0.0) - c.readableSize.toFloat / 10.0
 
 /-- The concept a fact is about: the head constant of its statement. -/
 def conceptOf (factType : Expr) : Option Name :=

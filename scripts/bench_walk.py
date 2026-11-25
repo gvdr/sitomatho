@@ -26,6 +26,7 @@ BENCH_ARGS: dict[str, Any] = dict(
     convolute=0,
     min_proof_depth=4,
     min_concepts=3,
+    min_focus_steps=1,
     trials_per_walk=180,
     timeout=300,
 )
@@ -39,6 +40,7 @@ def check_invariants(
     max_lemma_repeats: int = 1,
     max_statement_size: int | None = None,
     min_concepts: int | None = None,
+    min_focus_steps: int | None = None,
 ) -> list[str]:
     """Return the ways a candidate violates the non-triviality invariants.
 
@@ -62,6 +64,9 @@ def check_invariants(
         violations.append("too_large")
     if min_concepts is not None and "concepts" in interest and interest["concepts"] < min_concepts:
         violations.append("few_concepts")
+    # The seed always counts as one on-topic step.
+    if min_focus_steps is not None and interest.get("focus_steps", min_focus_steps) < min_focus_steps:
+        violations.append("few_focus_steps")
     # A set used as a bare predicate prints as an unapplied `Membership.mem` or as
     # `fun x ↦ x ∈ s`; a lemma was applied through the definitional unfolding of `Set`.
     pretty = candidate.get("statement_pretty", "")
@@ -82,6 +87,7 @@ def summarize_run(
     wall_seconds: float,
     max_statement_size: int | None,
     min_concepts: int | None,
+    min_focus_steps: int | None = None,
 ) -> dict[str, Any]:
     candidates = []
     for candidate in run.candidates:
@@ -95,7 +101,10 @@ def summarize_run(
                     for node in candidate.get("dependencies", {}).get("nodes", [])
                 ],
                 "violations": check_invariants(
-                    candidate, max_statement_size=max_statement_size, min_concepts=min_concepts
+                    candidate,
+                    max_statement_size=max_statement_size,
+                    min_concepts=min_concepts,
+                    min_focus_steps=min_focus_steps,
                 ),
             }
         )
@@ -132,9 +141,14 @@ def main() -> int:
     parser.add_argument("--strict", action="store_true", help="Exit 1 when any candidate violates an invariant")
     parser.add_argument("--min-concepts", type=int, default=None)
     parser.add_argument("--max-statement-size", type=int, default=None)
+    parser.add_argument(
+        "--min-focus-steps", type=int, default=BENCH_ARGS["min_focus_steps"],
+        help="On-topic steps asked of the walk and checked on its candidates",
+    )
     parser.add_argument("--only", default=None, help="Run only modules whose name contains this text")
     args = parser.parse_args()
 
+    bench_args = BENCH_ARGS | {"min_focus_steps": args.min_focus_steps}
     runs: list[dict[str, Any]] = []
     for module, focus in LAUNCH_PROFILES:
         if args.only and args.only not in module:
@@ -142,7 +156,7 @@ def main() -> int:
         for seed in BENCH_SEEDS:
             started = time.monotonic()
             try:
-                run = run_walk(seed=seed, module=module, focus=focus, **BENCH_ARGS)
+                run = run_walk(seed=seed, module=module, focus=focus, **bench_args)
             except RuntimeError as exc:
                 print(f"[bench] {module} seed {seed}: {exc}")
                 run = WalkRun()
@@ -154,6 +168,7 @@ def main() -> int:
                 wall_seconds=time.monotonic() - started,
                 max_statement_size=args.max_statement_size,
                 min_concepts=args.min_concepts,
+                min_focus_steps=args.min_focus_steps,
             )
             runs.append(summary)
             print(
@@ -162,7 +177,7 @@ def main() -> int:
                 f"dominant rejection {run.stats.get('dominant_reject')}"
             )
 
-    report = {"label": args.label, "args": BENCH_ARGS, "totals": totals(runs), "runs": runs}
+    report = {"label": args.label, "args": bench_args, "totals": totals(runs), "runs": runs}
     BENCH_DIR.mkdir(parents=True, exist_ok=True)
     out_path = BENCH_DIR / f"{args.label}.json"
     out_path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
