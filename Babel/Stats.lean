@@ -11,7 +11,7 @@ inductive Reject
   | unresolved | dullConclusion
   | fewSteps | fewConcepts | fewFocusSteps | noFocusSymbol | danglingHypothesis
   | kernelCheck | badAxioms
-  | closedByExact | closedBySimp | closedByAesop | unrenderable | duplicateHash
+  | closedByExact | closedBySimp | closedByAesop | unrenderable | duplicateHash | gateError
 deriving Inhabited, BEq, Repr
 
 def Reject.key : Reject → String
@@ -35,6 +35,7 @@ def Reject.key : Reject → String
   | .closedByAesop => "closed_by_aesop"
   | .unrenderable => "unrenderable"
   | .duplicateHash => "duplicate_hash"
+  | .gateError => "gate_error"
 
 /-- Timings and counters for one `walk` run. Wall-clock values are reported only;
     no search decision reads them. -/

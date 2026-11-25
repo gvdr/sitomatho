@@ -237,6 +237,9 @@ section Dangling
 
 open Lean Meta Elab Term
 
+/-- A predicate with an implicit argument a reader never sees. -/
+def tagged {α : Type} {_witness : α} (s : Set α) : Prop := s.Nonempty
+
 /-- Indices of the dangling hypotheses among the first `nBinders` binders of a statement. -/
 def dangling (source : String) (nBinders : Nat) : TermElabM (Array Nat) := do
   danglingHypotheses (← elabClosed source) nBinders
@@ -254,12 +257,66 @@ def danglingCases : TermElabM (List (Array Nat)) := do
     -- A hypothesis about the ambient type alone is not judged.
     ← dangling "∀ (α : Type) (s : Set α), Nonempty α → s ⊆ s" 3,
     -- Two hypotheses about each other and about nothing in the conclusion.
-    ← dangling "∀ (α : Type) (s t u v : Set α), u ⊆ v → v ⊆ u → s ⊆ s ∪ t" 7]
+    ← dangling "∀ (α : Type) (s t u v : Set α), u ⊆ v → v ⊆ u → s ⊆ s ∪ t" 7,
+    -- Occurrences are counted as a reader sees them: `a` also occurs in an implicit
+    -- argument of `tagged s`, which is not printed, so `a = a` still dangles.
+    ← dangling "∀ (α : Type) (a : α) (s : Set α), a = a → @tagged α a s → s.Nonempty" 5]
 
-/-- info: [#[5], #[], #[], #[], #[], #[5, 6]] -/
+/-- info: [#[5], #[], #[], #[], #[], #[5, 6], #[3]] -/
 #guard_msgs in
 #eval danglingCases
 
 end Dangling
 
 #guard Reject.danglingHypothesis.key == "dangling_hypothesis"
+
+/-! ## The `exact?` gate -/
+
+section ExactGate
+
+open Lean Meta Elab Term
+
+/-- A statement that is one library lemma away must be closed by the Level 1 gate at the
+    budget the pipeline uses, with or without an extra hypothesis in the context. -/
+def exactGateCases : TermElabM (List Bool) := do
+  return [
+    ← Babel.closedByExact? (← elabClosed "∀ (α : Type) (s t u : Set α), s ⊆ t → t ⊆ u → s ⊆ u") 150000,
+    ← Babel.closedByExact? (← elabClosed "∀ (α : Type) (s t u : Set α), s.Nonempty → s ⊆ t → t ⊆ u → s ⊆ u") 150000,
+    ← Babel.closedByExact? (← elabClosed "∀ (α : Type) (s t : Set α), s ⊆ t → t ⊆ s") 150000]
+
+/-- info: [true, true, false] -/
+#guard_msgs in
+#eval exactGateCases
+
+end ExactGate
+
+/-! ## Gate errors are counted -/
+
+/-- A gate that throws is reported as "not closed", which is how the `exact?` gate stayed
+    broken unnoticed. The failure must at least be counted. -/
+def gateErrorIsCounted : Lean.Meta.MetaM (Bool × Nat) := do
+  let stats ← IO.mkRef ({} : WalkStats)
+  let closed ← tryWithHeartbeats 1000 (throwError "boom") (some stats)
+  return (closed, (← stats.get).rejects.getD "gate_error" 0)
+
+/-- info: (false, 1) -/
+#guard_msgs in
+#eval gateErrorIsCounted
+
+/-- Each Level 2 gate closes a statement it should close, leaves an unprovable one open, and
+    an ordinary failure to prove ("made no progress") is not counted as a gate error. -/
+def levelTwoGateCases : Lean.Elab.Term.TermElabM (List Bool × Nat) := do
+  let stats ← IO.mkRef ({} : WalkStats)
+  let easy ← elabClosed "∀ (α : Type) (s t u : Set α), s ⊆ t → s ∩ u ⊆ t ∪ u"
+  let open_ ← elabClosed "∀ (α : Type) (s t : Set α), s ⊆ t → t ⊆ s"
+  let results := [
+    ← closedBySimp (← elabClosed "∀ (α : Type) (s : Set α), s ∩ s = s") 150000 (some stats),
+    ← closedBySimp open_ 150000 (some stats),
+    ← closedByAesop easy 150000 (some stats),
+    ← closedByAesop open_ 150000 (some stats),
+    ← closedByExact? open_ 150000 (some stats)]
+  return (results, (← stats.get).rejects.getD "gate_error" 0)
+
+/-- info: ([true, false, true, false, false], 0) -/
+#guard_msgs in
+#eval levelTwoGateCases

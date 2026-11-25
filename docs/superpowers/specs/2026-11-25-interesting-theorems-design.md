@@ -290,3 +290,17 @@ Three of the four modules drew an on-topic floor of 2, and one of those three (`
 
 Referee B's reasons are now specific. In four of the six reports it names hypotheses that do no work: a hypothesis about a variable that occurs nowhere else in the statement (`PowerSeries.HasEval a` in `AKCM-2026-0008`), hypotheses that are unnecessary because the fibre of a bijection over a point is a singleton (`AKCM-2026-0012` and `AKCM-2026-0013`), and a field-extension setting around a divisibility fact about natural numbers (`AKCM-2026-0011`).
 
+### Hypotheses that do no work, and a broken gate
+
+Work prompted by Referee B's reports on the first nightly run.
+
+**Dangling hypotheses.** Specialist search now drops a closed statement in which some hypothesis shares no variable with the conclusion, directly or through other hypotheses. Occurrences are counted as a reader sees them (explicit arguments). This matters for the case that prompted the check: in `AKCM-2026-0008` the variable `a` of `PowerSeries.HasEval a` does occur a second time, inside an unprinted topology argument of another hypothesis, so a check on raw occurrences finds nothing. That statement has a second defect the check does not address: one of its hypotheses is stated for a non-standard topology, which the printed form hides.
+
+**The `exact?` gate never worked on statements with hypotheses.** `librarySearch` was called outside the goal's local context and threw on the first introduced hypothesis; the catch around the gate read the error as "not closed". The defect predates this work. With the search run inside the goal's context, a statement that is exactly `Set.Subset.trans` is closed, with or without an extra hypothesis (test in `Babel/Tests.lean`). A failure of a gate that is not a spent budget is now counted as `gate_error`.
+
+Checked against what was published: of the twelve results from the two live runs, a working `exact?` over all of Mathlib closes one, `AKCM-2026-0012`, the result Referee B called a tautology. The seven older results were not checked.
+
+**The drop-one-hypothesis gate was not built.** The idea was to reject a statement that automation still proves after one hypothesis is removed. On the twelve published statements, `simp_all`, `aesop` and `grind` close none of the reduced statements, and `exact?` closes only reduced forms of `AKCM-2026-0012`, which the repaired gate rejects whole. The gate would have added tactic calls per hypothesis and caught nothing new.
+
+Benchmark with both changes (`bench/gates.json`): 10 candidates, 10 valid, 2 modules, 0 violations; one statement rejected by `exact?` (the only candidate of the short exact sequence module, which was one lemma away), two derivations rejected for a dangling hypothesis, no gate errors. The run took 271 s of wall time on a machine that was swapping; phase timings show index building and tree building slowed by the same factor as the search, and the two new computations took about 10 ms per run.
+

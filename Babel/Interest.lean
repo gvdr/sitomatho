@@ -164,6 +164,35 @@ def isDegenerateHypothesis (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
       return true
   isPaddedFact e budget
 
+/-- The free variables of a term that a reader sees: those in explicit arguments, counted
+    the way `visibleSize` counts nodes. -/
+partial def visibleFVars (e : Expr) (seen : Std.HashSet FVarId := {}) :
+    MetaM (Std.HashSet FVarId) := do
+  match e with
+  | .fvar id => return seen.insert id
+  | .app .. =>
+      let fn := e.getAppFn
+      let args := e.getAppArgs
+      let info ← getFunInfoNArgs fn args.size
+      let mut out ← visibleFVars fn seen
+      for i in [:args.size] do
+        let explicit := if h : i < info.paramInfo.size then info.paramInfo[i].binderInfo == .default else true
+        if explicit then
+          out ← visibleFVars args[i]! out
+      return out
+  | .lam .. =>
+      lambdaTelescope e fun _ body => visibleFVars body seen
+  | .forallE .. =>
+      forallTelescope e fun xs body => do
+        let mut out ← visibleFVars body seen
+        for x in xs do
+          if (← x.fvarId!.getBinderInfo) == .default then
+            out ← visibleFVars (← inferType x) out
+        return out
+  | .mdata _ inner => visibleFVars inner seen
+  | .proj _ _ inner => visibleFVars inner seen
+  | _ => return seen
+
 /-- Hypotheses that say nothing about the conclusion, as indices into the first `nBinders`
     binders of a closed statement.
 
@@ -173,12 +202,14 @@ def isDegenerateHypothesis (e : Expr) (budget : Nat := 20000) : MetaM Bool := do
     is a hypothesis that mentions a tied node. A hypothesis that mentions some variable and is
     not tied is dangling: `PowerSeries.HasEval a` in a statement where `a` appears nowhere
     else. A proof may still use such a hypothesis, which is why this is checked on the
-    statement and not on the proof term. -/
+    statement and not on the proof term. Occurrences are the visible ones (`visibleFVars`):
+    in the published case `a` did occur a second time, inside an unprinted topology argument
+    of another hypothesis, and the reader saw a variable used once. -/
 def danglingHypotheses (stmt : Expr) (nBinders : Nat) : MetaM (Array Nat) :=
   forallBoundedTelescope stmt (some nBinders) fun xs concl => do
     let mut isNode : Array Bool := #[]
     let mut isHyp : Array Bool := #[]
-    let mut types : Array Expr := #[]
+    let mut types : Array (Std.HashSet FVarId) := #[]
     for x in xs do
       let decl ← x.fvarId!.getDecl
       let type ← instantiateMVars decl.type
@@ -186,9 +217,11 @@ def danglingHypotheses (stmt : Expr) (nBinders : Nat) : MetaM (Array Nat) :=
       let isInst := decl.binderInfo == .instImplicit
       isNode := isNode.push (!isInst && (prop || !(← isType x)))
       isHyp := isHyp.push (prop && !isInst)
-      types := types.push type
-    let occursIn := fun (i : Nat) (e : Expr) => e.containsFVar xs[i]!.fvarId!
-    let mut tied : Array Bool := (Array.range xs.size).map fun i => isNode[i]! && occursIn i concl
+      types := types.push (← visibleFVars type)
+    let inConclusion ← visibleFVars concl
+    let occursIn := fun (i : Nat) (visible : Std.HashSet FVarId) => visible.contains xs[i]!.fvarId!
+    let mut tied : Array Bool :=
+      (Array.range xs.size).map fun i => isNode[i]! && occursIn i inConclusion
     let mut changed := true
     while changed do
       changed := false

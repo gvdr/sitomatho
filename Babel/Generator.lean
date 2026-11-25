@@ -768,7 +768,7 @@ def closeDerivation
     return none
   -- A hypothesis about variables the conclusion never touches reads as decoration, even
   -- though the proof term passes through it.
-  if specialist.isSome && !(← danglingHypotheses stmtClosed usedFVars.size).isEmpty then
+  if specialist.isSome && !(← timed stats "dangling" (danglingHypotheses stmtClosed usedFVars.size)).isEmpty then
     stats.reject .danglingHypothesis
     return none
 
@@ -782,7 +782,7 @@ def closeDerivation
     steps := usedSteps.size
     joins := shape.joins
     statementSize := exprSize stmtClosed
-    readableSize := ← visibleSize stmtClosed
+    readableSize := ← timed stats "readable_size" (visibleSize stmtClosed)
     focusSteps
   }
   return some {

@@ -20,19 +20,26 @@ structure NoveltyReport where
   level3Ratio : Float
 deriving Inhabited
 
-/-- Run a MetaM action with an isolated heartbeat budget and catch failures/timeouts. -/
-def tryWithHeartbeats (budget : Nat) (act : MetaM Bool) : MetaM Bool := do
+/-- Run a MetaM action with an isolated heartbeat budget. Running out of budget and any
+    other failure both answer `false`; a failure that is not a spent budget is counted as
+    `gate_error`, since a gate that always throws would otherwise pass every statement. -/
+def tryWithHeartbeats (budget : Nat) (act : MetaM Bool) (stats : Option StatsRef := none) :
+    MetaM Bool := do
   let saved ← saveState
   try
     tryCatchRuntimeEx
       (withHeartbeatBudget budget act)
-      (fun _ => pure false)
+      (fun e => do
+        if !e.isMaxHeartbeat then
+          if let some ref := stats then ref.reject .gateError
+        pure false)
   finally
     restoreState saved
 
 /-- Level 1 gate: returns `true` iff `exact?` (`librarySearch`) CLOSES the goal. -/
-def closedByExact? (stmtType : Expr) (budget : Nat) : MetaM Bool :=
-  tryWithHeartbeats budget do
+def closedByExact? (stmtType : Expr) (budget : Nat) (stats : Option StatsRef := none) :
+    MetaM Bool :=
+  tryWithHeartbeats (stats := stats) budget do
     let mvar ← mkFreshExprMVar stmtType
     let (_, goal) ← mvar.mvarId!.intros
     -- First check trivial assumption/rfl
@@ -42,31 +49,42 @@ def closedByExact? (stmtType : Expr) (budget : Nat) : MetaM Bool :=
       goal.refl
       return true
     catch _ => pure ()
-    -- Now run `exact?` (Lean's LibrarySearch)
-    let res ← Lean.Meta.LibrarySearch.librarySearch goal
+    -- Now run `exact?` (Lean's LibrarySearch). It must run in the goal's local context:
+    -- outside it the search throws on the first introduced hypothesis, and the catch
+    -- around this gate would report that as "not closed".
+    let res ← goal.withContext (Lean.Meta.LibrarySearch.librarySearch goal)
     return res.isNone
 
 /-- Try closing a goal with `simp_all` / `simp`. -/
-def closedBySimp (stmtType : Expr) (budget : Nat) : MetaM Bool :=
-  tryWithHeartbeats budget do
+def closedBySimp (stmtType : Expr) (budget : Nat) (stats : Option StatsRef := none) :
+    MetaM Bool :=
+  tryWithHeartbeats (stats := stats) budget do
     let mvar ← mkFreshExprMVar stmtType
     let (_, goal) ← mvar.mvarId!.intros
     -- The default simp set and simprocs; an empty context would close almost nothing.
     let (ctx, simprocs) ← defaultSimpContext
-    let (res?, _) ← simpGoal goal ctx simprocs (simplifyTarget := true)
-    match res? with
-    | none => return true
-    | some (_, g) =>
-        if (← g.assumptionCore) then return true
-        try g.refl; return true catch _ => return false
+    -- `simp` throws when it makes no progress. That is an ordinary "not closed".
+    try
+      let (res?, _) ← simpGoal goal ctx simprocs (simplifyTarget := true)
+      match res? with
+      | none => return true
+      | some (_, g) =>
+          if (← g.assumptionCore) then return true
+          g.refl
+          return true
+    catch _ => return false
 
 /-- Try closing a goal with `aesop`. -/
-def closedByAesop (stmtType : Expr) (budget : Nat) : MetaM Bool :=
-  tryWithHeartbeats budget do
+def closedByAesop (stmtType : Expr) (budget : Nat) (stats : Option StatsRef := none) :
+    MetaM Bool :=
+  tryWithHeartbeats (stats := stats) budget do
     let mvar ← mkFreshExprMVar stmtType
     let (_, goal) ← mvar.mvarId!.intros
-    let (goals, _) ← Aesop.search goal
-    return goals.isEmpty
+    -- `aesop` throws when it makes no progress. That is an ordinary "not closed".
+    try
+      let (goals, _) ← Aesop.search goal
+      return goals.isEmpty
+    catch _ => return false
 
 /-- Evaluate Levels 1, 2, and 3 on a shrunk `(stmtType, proofExpr)` pair. -/
 def evaluateNovelty
@@ -75,7 +93,7 @@ def evaluateNovelty
     (proofExpr : Expr)
     (exactBudget : Nat)
     (aesopBudget : Nat) : MetaM NoveltyReport := do
-  let exactClosed ← timed stats "gate_exact" (closedByExact? stmtType exactBudget)
+  let exactClosed ← timed stats "gate_exact" (closedByExact? stmtType exactBudget (some stats))
   let proofSz := exprSize proofExpr
   let stmtSz := exprSize stmtType
   let ratio := Float.ofNat proofSz / Float.ofNat (max 1 stmtSz)
@@ -94,9 +112,9 @@ def evaluateNovelty
 
   -- Level 2: measure whether routine automation (`simp`, `aesop`) closes it
   let closedBy ←
-    if (← timed stats "gate_simp" (closedBySimp stmtType aesopBudget)) then
+    if (← timed stats "gate_simp" (closedBySimp stmtType aesopBudget (some stats))) then
       pure (some "simp")
-    else if (← timed stats "gate_aesop" (closedByAesop stmtType aesopBudget)) then
+    else if (← timed stats "gate_aesop" (closedByAesop stmtType aesopBudget (some stats))) then
       pure (some "aesop")
     else
       pure none
