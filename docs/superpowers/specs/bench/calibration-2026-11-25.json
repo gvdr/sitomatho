@@ -1,0 +1,2488 @@
+{
+  "offline": false,
+  "repeats": 3,
+  "referee_a_model": "gemini-decision-1",
+  "referee_b_model": "gemini-4-hydrogen",
+  "summary": {
+    "famous": {
+      "n": 18,
+      "scored": 18,
+      "a_mean": 7.13,
+      "b_mean": 4.94,
+      "b_median": 4.67,
+      "b_min": 1.33,
+      "b_max": 8.67,
+      "b_noise_sd": 1.4
+    },
+    "library": {
+      "n": 24,
+      "scored": 24,
+      "a_mean": 4.27,
+      "b_mean": 1.68,
+      "b_median": 1.67,
+      "b_min": 0.33,
+      "b_max": 3.67,
+      "b_noise_sd": 0.41
+    },
+    "trivial": {
+      "n": 8,
+      "scored": 8,
+      "a_mean": 1.28,
+      "b_mean": 0.04,
+      "b_median": 0.0,
+      "b_min": 0.0,
+      "b_max": 0.33,
+      "b_noise_sd": 0.2
+    },
+    "published": {
+      "n": 13,
+      "scored": 13,
+      "a_mean": 3.6,
+      "b_mean": 1.18,
+      "b_median": 1.0,
+      "b_min": 1.0,
+      "b_max": 2.0,
+      "b_noise_sd": 0.23
+    }
+  },
+  "rows": [
+    {
+      "id": "famous/Nat.exists_infinite_primes",
+      "tier": "famous",
+      "name": "Nat.exists_infinite_primes",
+      "statement_pretty": "∀ (n : ℕ), ∃ p, n ≤ p ∧ Nat.Prime p",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.52/10 (confidence 0.26) and classifies the result as a Theorem (p = 0.38) in MSC 11-XX. Independent probability estimates yield P(surprising) = 0.04 and P(a human mathematician cares) = 0.57.",
+        "expected_score": 6.518
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This result establishes the infinitude of primes via the standard factorial-and-minimal-factor argument, a cornerstone of elementary number theory. While the statement is undeniably fundamental, its novelty is somewhat diminished by having been known since antiquity."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "This result establishes the infinitude of primes via Euclid's classical factorial construction, a foundational fact of elementary number theory. While the formalization is sound and avoids routine automation, its mathematical content has been thoroughly settled since antiquity."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This statement is nothing less than Euclid's classical theorem on the infinitude of primes, established here via the standard factorial-plus-one construction. While its mathematical significance is beyond dispute, the 19-to-1 proof-to-statement ratio reflects the somewhat laborious overhead required to formalize even elementary number-theoretic arguments."
+        }
+      ],
+      "b_scores": [
+        8,
+        7,
+        8
+      ]
+    },
+    {
+      "id": "famous/Subgroup.card_subgroup_dvd_card",
+      "tier": "famous",
+      "name": "Subgroup.card_subgroup_dvd_card",
+      "statement_pretty": "∀ {α : Type} [inst : Group α] (s : Subgroup α), Nat.card ↥s ∣ Nat.card α",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.17/10 (confidence 0.26) and classifies the result as a Proposition (p = 0.35) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.03 and P(a human mathematician cares) = 0.54.",
+        "expected_score": 6.169
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Corollary",
+          "justification": "This is, of course, Lagrange's theorem, though the present proof amounts to little more than a two-step observation from the standard quotient-index formula. While the classical stature of the result cannot be denied, its reliance on `Nat.card` conventions—which silently assign zero to infinite groups—renders the statement slightly less profound than it initially appears."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Corollary",
+          "justification": "This is a routine restatement of Lagrange's theorem in terms of `Nat.card`, following immediately from the index-order factorization and elementary divisibility. While the underlying classical fact is foundational, its two-step derivation here offers no substantive mathematical novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This is recognizable as Lagrange's theorem, albeit cast in the slightly peculiar `Nat.card` convention where infinite cardinalities conveniently collapse to zero. Although the formal derivation is a mere two-step deduction from the coset decomposition formula, the statement itself remains an indispensable cornerstone of elementary group theory."
+        }
+      ],
+      "b_scores": [
+        7,
+        3,
+        8
+      ]
+    },
+    {
+      "id": "famous/Function.cantor_surjective",
+      "tier": "famous",
+      "name": "Function.cantor_surjective",
+      "statement_pretty": "∀ {α : Type} (f : α → Set α), ¬Function.Surjective f",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.12/10 (confidence 0.34) and classifies the result as a Theorem (p = 0.40) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.13 and P(a human mathematician cares) = 0.69.",
+        "expected_score": 7.12
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 6,
+          "kind": "Theorem",
+          "justification": "This is a straightforward formalization of Cantor's theorem, which has been a standard fixture of set theory since 1891. While the result itself is undeniably foundational, its presentation as a novel contribution—even with a surprisingly bloated proof-to-statement ratio of 13.32—offers nothing beyond a routine exercise in diagonalization."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "This submission establishes Cantor's classical theorem on the non-surjectivity of maps from a type into its power set, albeit restricted to the lowest universe level. While the underlying result is undeniably foundational, the inflated proof-to-statement ratio suggests a rather pedestrian formalization of an argument that ought to be immediate."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "This result is a formalization of Cantor's theorem, establishing that no function from a type to its power set can be surjective. While the diagonalization argument is foundational and mathematically unimpeachable, its appearance here as an isolated type-theoretic exercise with a curiously inflated proof-to-statement ratio warrants a solid Theorem classification."
+        }
+      ],
+      "b_scores": [
+        6,
+        7,
+        7
+      ]
+    },
+    {
+      "id": "famous/intermediate_value_Icc",
+      "tier": "famous",
+      "name": "intermediate_value_Icc",
+      "statement_pretty": "∀ {α : Type} [inst : TopologicalSpace α] [inst_1 : ConditionallyCompleteLinearOrder α]\n  [OrderTopology α] [DenselyOrdered α] {δ : Type} [inst_4 : LinearOrder δ]\n  [inst_5 : TopologicalSpace δ] [OrderClosedTopology δ] {a b : α},\n  a ≤ b →\n    ∀ {f : α → δ}, ContinuousOn f (Set.Icc a b) → Set.Icc (f a) (f b) ⊆ f '' Set.Icc a b",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.81/10 (confidence 0.31) and classifies the result as a Proposition (p = 0.42) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.62.",
+        "expected_score": 6.812
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Corollary",
+          "justification": "This result is a straightforward specialization of the intermediate value theorem for preconnected sets, dressed in an elaborate tower of order-theoretic typeclass assumptions. While the conclusion is unimpeachably classical, the heavy machinery of conditionally complete linear orders and order-closed topologies serves only to obscure a routine four-step deduction."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Corollary",
+          "justification": "This is a routine specialization of the general intermediate value theorem for preconnected sets to closed intervals in densely ordered, conditionally complete linear orders. While the conclusion is classically recognizable, the proliferation of order-topological typeclass hypotheses and the four-step derivation from existing library machinery warrant no higher than a modest corollary."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Corollary",
+          "justification": "This is merely the classical Intermediate Value Theorem restated for order topologies, deduced in four steps as an immediate corollary of preconnectedness for closed intervals. While the underlying principle is unimpeachable, the proliferation of artificial typeclass hypotheses obscures a routine specialization of an existing library result."
+        }
+      ],
+      "b_scores": [
+        3,
+        4,
+        3
+      ]
+    },
+    {
+      "id": "famous/IsCompact.exists_isMinOn",
+      "tier": "famous",
+      "name": "IsCompact.exists_isMinOn",
+      "statement_pretty": "∀ {α β : Type} [inst : LinearOrder α] [inst_1 : TopologicalSpace α]\n  [inst_2 : TopologicalSpace β] [ClosedIicTopology α] {s : Set β},\n  IsCompact s → s.Nonempty → ∀ {f : β → α}, ContinuousOn f s → ∃ x ∈ s, IsMinOn f s x",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.44/10 (confidence 0.31) and classifies the result as a Proposition (p = 0.40) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.10 and P(a human mathematician cares) = 0.73.",
+        "expected_score": 6.441
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard extreme value theorem for a continuous function on a nonempty compact set taking values in a linearly ordered space with closed lower rays. While the statement is clean and free of artificial hypotheses, it follows immediately by applying the existence of a least element to the compact image of the domain, offering no genuine mathematical novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This result is a routine restatement of the classical extreme value theorem for continuous functions on compact sets, slightly dressed up in the language of closed lower-ray topologies. Its proof is an immediate six-step assembly of existing compactness and image lemmas, offering no genuine methodological novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition merely repackages the classical extreme value theorem for minima by passing to the continuous image of a nonempty compact set under the somewhat contrived `ClosedIicTopology` hypothesis. While the result is undeniably sound and occasionally convenient, its six-step derivation from `IsCompact.exists_isLeast` offers little beyond routine topological bookkeeping."
+        }
+      ],
+      "b_scores": [
+        3,
+        2,
+        4
+      ]
+    },
+    {
+      "id": "famous/Matrix.aeval_self_charpoly",
+      "tier": "famous",
+      "name": "Matrix.aeval_self_charpoly",
+      "statement_pretty": "∀ {R : Type} [inst : CommRing R] {n : Type} [inst_1 : DecidableEq n] [inst_2 : Fintype n]\n  (M : Matrix n n R), (Polynomial.aeval M) M.charpoly = 0",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 9,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 8.53/10 (confidence 0.35) and classifies the result as a Theorem (p = 0.67) in MSC 15-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.94.",
+        "expected_score": 8.532
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This is a clean formalization of the classical Cayley–Hamilton theorem over an arbitrary commutative ring, establishing that every square matrix annihilates its own characteristic polynomial. While the result is entirely standard in linear algebra, its proof-to-statement ratio of 79.35 reflects the nontrivial algebraic machinery required to bridge matrix rings and polynomial evaluations without artificial hypotheses."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This submission establishes the classical Cayley–Hamilton theorem for square matrices over an arbitrary commutative ring, albeit encumbered by the type-theoretic apparatus of decidable equality and finite-type witnesses. While the result is undeniably foundational—meriting a high importance score and the status of a full Theorem—its mathematical novelty is zero, as it has been known since 1858."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This is the classical Cayley-Hamilton theorem for matrices over an arbitrary commutative ring, a cornerstone of linear algebra that remains indispensable despite its ubiquity. While the formalization's proof-to-statement ratio of 79.35 betrays a rather heavy-handed reliance on adjugate and polynomial-ring equivalences, the result itself is undeniably substantive."
+        }
+      ],
+      "b_scores": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "id": "famous/Complex.exists_root",
+      "tier": "famous",
+      "name": "Complex.exists_root",
+      "statement_pretty": "∀ {f : Polynomial ℂ}, 0 < f.degree → ∃ z, f.IsRoot z",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 8,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 8.49/10 (confidence 0.30) and classifies the result as a Theorem (p = 0.57) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.12 and P(a human mathematician cares) = 0.79.",
+        "expected_score": 8.489
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 9,
+          "kind": "Theorem",
+          "justification": "This result is a clean formalization of the Fundamental Theorem of Algebra, established here via standard complex-analytic methods rather than purely algebraic machinery. While the statement itself is foundational and entirely free of artificial hypotheses, its originality is nil and the reliance on Liouville-type compactness arguments yields a rather heavy proof."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 9,
+          "kind": "Theorem",
+          "justification": "This is the Fundamental Theorem of Algebra, established here through standard complex-analytic machinery via Liouville-type behavior at the cocompact filter. While the result is undeniably foundational and merits the designation of Theorem, the argument itself is a well-trodden analytic exercise rather than a novel algebraic insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This is the Fundamental Theorem of Algebra, established here via complex-analytic compactness arguments and the behavior of polynomials at infinity. Although the statement has been standard since the eighteenth century, its substantial proof-to-statement ratio and reliance on analytic machinery warrant its classification as a Theorem."
+        }
+      ],
+      "b_scores": [
+        9,
+        9,
+        8
+      ]
+    },
+    {
+      "id": "famous/Sylow.exists_subgroup_card_pow_prime",
+      "tier": "famous",
+      "name": "Sylow.exists_subgroup_card_pow_prime",
+      "statement_pretty": "∀ {G : Type} [inst : Group G] [Finite G] (p : ℕ) {n : ℕ} [Fact (Nat.Prime p)],\n  p ^ n ∣ Nat.card G → ∃ K, Nat.card ↥K = p ^ n",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.20/10 (confidence 0.37) and classifies the result as a Proposition (p = 0.37) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.13 and P(a human mathematician cares) = 0.67.",
+        "expected_score": 7.202
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Corollary",
+          "justification": "This result is a routine textbook corollary of Sylow's First Theorem, repackaged here with `Fact` typeclass boilerplate and `Nat.card` coercions. While the underlying group-theoretic fact is respectable, its formalization exhibits an inflated proof-to-statement ratio of 9.58 for what amounts to a three-step specialization of `Sylow.exists_subgroup_card_pow_prime_ge`."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition merely repackages the classical existence of subgroups of prime-power order, already available in Mathlib via Sylow.exists_subgroup_card_pow_prime_ge, by handling the degenerate n = 0 case with Subgroup.card_bot. While the underlying Sylow theory is foundational, the present formulation offers no new mathematical insight and its inflated proof-to-statement ratio reflects mechanical boilerplate rather than genuine depth."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 6,
+          "kind": "Corollary",
+          "justification": "This result is a standard textbook corollary of Sylow's first theorem, asserting the existence of subgroups of prime-power order dividing the group order. While mathematically genuine and free of artificial hypotheses, it offers no novelty beyond routine finite group theory."
+        }
+      ],
+      "b_scores": [
+        3,
+        3,
+        6
+      ]
+    },
+    {
+      "id": "famous/ContractingWith.exists_fixedPoint",
+      "tier": "famous",
+      "name": "ContractingWith.exists_fixedPoint",
+      "statement_pretty": "∀ {α : Type} [inst : EMetricSpace α] {K : NNReal} {f : α → α} [CompleteSpace α],\n  ContractingWith K f →\n    ∀ (x : α),\n      edist x (f x) ≠ ⊤ →\n        ∃ y,\n          Function.IsFixedPt f y ∧\n            Filter.Tendsto (fun n ↦ f^[n] x) Filter.atTop (nhds y) ∧\n              ∀ (n : ℕ), edist (f^[n] x) y ≤ edist x (f x) * ↑K ^ n / (1 - ↑K)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 8,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.69/10 (confidence 0.38) and classifies the result as a Theorem (p = 0.53) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.80.",
+        "expected_score": 7.692
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Theorem",
+          "justification": "This result is a straightforward repackaging of the classical Banach contraction principle in the setting of extended metric spaces, where the finiteness hypothesis `edist x (f x) ≠ ⊤` is an artificial concession to the generality of `ENNReal`. While the quantitative error bound is mildly serviceable, the proof merely stitches together standard Cauchy sequence and continuity lemmas without introducing any genuine analytical novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Theorem",
+          "justification": "This result is a routine formalization of Banach's classical contraction mapping principle in the setting of extended metric spaces, complete with the standard finiteness hypothesis on the initial step. While the statement is undeniably true and structurally sound, it merely stitches together pre-existing Cauchy sequence and continuity lemmas without offering any new analytical insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition records the existence and geometric convergence rate of a fixed point for a contracting map in a complete extended metric space, albeit omitting the standard uniqueness assertion. While the Banach contraction principle is undeniably foundational, this particular formulation is a routine repackaging of classical arguments with no discernible novelty."
+        }
+      ],
+      "b_scores": [
+        4,
+        3,
+        4
+      ]
+    },
+    {
+      "id": "famous/Metric.isCompact_iff_isClosed_bounded",
+      "tier": "famous",
+      "name": "Metric.isCompact_iff_isClosed_bounded",
+      "statement_pretty": "∀ {α : Type} {s : Set α} [inst : MetricSpace α] [ProperSpace α],\n  IsCompact s ↔ IsClosed s ∧ Bornology.IsBounded s",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.54/10 (confidence 0.31) and classifies the result as a Proposition (p = 0.44) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.05 and P(a human mathematician cares) = 0.61.",
+        "expected_score": 6.541
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition merely packages the classical Heine–Borel equivalence for proper metric spaces by concatenating three existing library results. While the statement is mathematically coherent, the `ProperSpace` hypothesis essentially encodes the conclusion by fiat, rendering the result an unremarkable exercise in typeclass bookkeeping."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition merely packages the classical Heine-Borel characterization of compactness in proper metric spaces by combining three existing library lemmas. While the statement is clean and standard, its content is largely tautological under the `ProperSpace` hypothesis and offers no genuine mathematical surprise."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition merely packages the two directions of the Heine-Borel characterization in proper metric spaces into a single biconditional. While the classical content is foundational, the result here is an immediate three-step assembly of existing library lemmas under a hypothesis that essentially encodes compactness of closed bounded sets by definition."
+        }
+      ],
+      "b_scores": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "famous/ZMod.pow_card_sub_one_eq_one",
+      "tier": "famous",
+      "name": "ZMod.pow_card_sub_one_eq_one",
+      "statement_pretty": "∀ {p : ℕ} [inst : Fact (Nat.Prime p)] {a : ZMod p}, a ≠ 0 → a ^ (p - 1) = 1",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.21/10 (confidence 0.25) and classifies the result as a Corollary (p = 0.39) in MSC 11-XX. Independent probability estimates yield P(surprising) = 0.06 and P(a human mathematician cares) = 0.58.",
+        "expected_score": 6.207
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This statement is merely a two-step specialization of the general finite field power identity to the prime field, dressed up in the typeclass machinery of `Fact (Nat.Prime p)`. While Fermat's little theorem is of foundational interest in elementary number theory, deriving it as a trivial corollary of `FiniteField.pow_card_sub_one_eq_one` adds no mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This is merely Fermat's Little Theorem, a seventeenth-century exercise, disguised by the artificial typeclass apparatus of `Fact (Nat.Prime p)`. While the automated tactics failed to locate it directly, its two-step derivation from the general finite-field cardinality lemma renders it a routine corollary of no independent interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 6,
+          "kind": "Corollary",
+          "justification": "This result is a direct specialization of the multiplicative structure of finite fields to the prime residue ring, recovering Fermat's little theorem in two formal steps. While the underlying classical fact is foundational, its appearance here is merely a routine instantiation of a more general lemma."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        6
+      ]
+    },
+    {
+      "id": "famous/Nat.sum_four_squares",
+      "tier": "famous",
+      "name": "Nat.sum_four_squares",
+      "statement_pretty": "∀ (n : ℕ), ∃ a b c d, a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = n",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 8,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.92/10 (confidence 0.34) and classifies the result as a Theorem (p = 0.71) in MSC 11-XX. Independent probability estimates yield P(surprising) = 0.11 and P(a human mathematician cares) = 0.92.",
+        "expected_score": 7.925
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This result establishes the classical representation of every natural number as a sum of four squares, assembling the prime case and Euler's four-square identity in a brisk two-step deduction. While the theorem itself is of foundational stature in elementary number theory, its present contribution lies primarily in packaging existing library infrastructure into a clean universal statement."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This statement establishes Lagrange's four-square theorem for the natural numbers, a cornerstone of classical additive number theory. Although the proof is a mere two-step mechanical synthesis of `Nat.Prime.sum_four_squares` and `Nat.euler_four_squares`, its high proof-to-statement ratio and foundational content warrant publication as a Theorem."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "While Lagrange's four-square theorem is a respectable classical fact, its present incarnation is merely a two-step mechanical assembly of `Nat.Prime.sum_four_squares` and `Nat.euler_four_squares`. The bloated proof-to-statement ratio of 71.91 only confirms that the formalization apparatus has expended considerable effort to rediscover what Euler and Lagrange settled in the eighteenth century."
+        }
+      ],
+      "b_scores": [
+        8,
+        8,
+        3
+      ]
+    },
+    {
+      "id": "famous/exists_deriv_eq_slope",
+      "tier": "famous",
+      "name": "exists_deriv_eq_slope",
+      "statement_pretty": "∀ (f : ℝ → ℝ) {a b : ℝ},\n  a < b →\n    ContinuousOn f (Set.Icc a b) →\n      DifferentiableOn ℝ f (Set.Ioo a b) →\n        ∃ c ∈ Set.Ioo a b, deriv f c = (f b - f a) / (b - a)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 8,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.51/10 (confidence 0.41) and classifies the result as a Theorem (p = 0.44) in MSC 26-XX. Independent probability estimates yield P(surprising) = 0.01 and P(a human mathematician cares) = 0.67.",
+        "expected_score": 7.509
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "While the classical Mean Value Theorem is undeniably foundational, this formulation is merely a routine specialization of `exists_hasDerivAt_eq_slope` that trades the clean `HasDerivAt` predicate for the more rigid `deriv` operator. The five-step proof confirms that no genuine analytical work is performed here, warranting only its classification as a minor corollary."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This result is nothing more than the classical Mean Value Theorem, obtained here as an immediate corollary of `exists_hasDerivAt_eq_slope` by passing from `HasDerivAt` to `deriv` on an open interval. While the statement is undeniably true, its mathematical novelty is negligible and its five-step derivation merely translates standard hypotheses into slightly different notation."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This is a routine reformulation of the classical Mean Value Theorem, differing from the existing library result only in its use of the total derivative `deriv` rather than `HasDerivAt`. While the statement is unimpeachably true, its mathematical novelty is negligible and its five-step proof merely translates between standard differentiability predicates."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "famous/irrational_sqrt_two",
+      "tier": "famous",
+      "name": "irrational_sqrt_two",
+      "statement_pretty": "Irrational √2",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.23/10 (confidence 0.24) and classifies the result as a Corollary (p = 0.33) in MSC 11-XX. Independent probability estimates yield P(surprising) = 0.03 and P(a human mathematician cares) = 0.58.",
+        "expected_score": 6.227
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Corollary",
+          "justification": "While the irrationality of the square root of two is a foundational fact of classical mathematics, its derivation here as a two-step specialization of `Nat.Prime.irrational_sqrt` hardly constitutes a novel contribution. The invocation of `Nat.prime_two` is entirely routine, and the failure of automated tactics to close the goal reflects a limitation of the search heuristics rather than any genuine mathematical depth."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Corollary",
+          "justification": "While the irrationality of √2 is of historical interest, the present submission is merely an immediate two-step specialization of the general primality criterion Nat.Prime.irrational_sqrt. Given the triviality of verifying that 2 is prime, this result merits at most a passing corollary."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "While the irrationality of √2 is a cornerstone of classical number theory, the present formalization is merely a two-step specialization of Nat.Prime.irrational_sqrt to the prime 2. Its inclusion is justified only by the enduring historical charm of the statement, as the proof itself offers no technical novelty."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "famous/IsGalois.card_aut_eq_finrank",
+      "tier": "famous",
+      "name": "IsGalois.card_aut_eq_finrank",
+      "statement_pretty": "∀ (F : Type) [inst : Field F] (E : Type) [inst_1 : Field E] [inst_2 : Algebra F E]\n  [FiniteDimensional F E] [IsGalois F E], Nat.card Gal(E/F) = Module.finrank F E",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.28/10 (confidence 0.39) and classifies the result as a Theorem (p = 0.51) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.10 and P(a human mathematician cares) = 0.79.",
+        "expected_score": 7.278
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This result establishes the fundamental equality between the cardinality of the Galois group and the degree of a finite Galois extension, a cornerstone of classical field theory. While the restriction to Type 0 is an unnecessary formal artifact, the theorem itself is of unquestionable significance and its proof appropriately invokes the primitive element theorem."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This result establishes the classical equality between the cardinality of the Galois group and the degree of a finite Galois extension, a cornerstone of elementary field theory. While the proof's reliance on the primitive element theorem and substantial formalization overhead is entirely standard, the statement itself remains a foundational pillar rather than a novel contribution."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 8,
+          "kind": "Theorem",
+          "justification": "This is the classical identity equating the order of the Galois group of a finite Galois extension to its degree, a foundational result that retains its stature even when restricted to universe-zero types. The proof's considerable length and reliance on the primitive element theorem suggest a somewhat circuitous formalization, though the statement itself is unimpeachable."
+        }
+      ],
+      "b_scores": [
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "id": "famous/Ideal.exists_le_maximal",
+      "tier": "famous",
+      "name": "Ideal.exists_le_maximal",
+      "statement_pretty": "∀ {α : Type} [inst : Semiring α] (I : Ideal α), I ≠ ⊤ → ∃ M, M.IsMaximal ∧ I ≤ M",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.41/10 (confidence 0.35) and classifies the result as a Theorem (p = 0.42) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.76.",
+        "expected_score": 7.411
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "This result establishes Krull's theorem for arbitrary semirings, demonstrating that every proper ideal is contained in a maximal ideal. While the restriction to a fixed universe `Type` is an artifact of the formalization, the theorem remains a foundational pillar of semiring ideal theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "This establishes Krull's maximal ideal theorem in the setting of general semirings without superfluous hypotheses, a foundational existence result whose non-constructive proof via Zorn's lemma naturally resists automated tactics. While the underlying argument is standard in classical ring theory, its formalization at this level of generality merits publication as a solid, self-contained theorem."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Theorem",
+          "justification": "This is a standard formalization of Krull's theorem establishing the existence of maximal ideals containing any proper ideal in a semiring, a foundational fact that is entirely classical. While the proof-to-statement ratio of 8.17 indicates a nontrivial Zorn-style argument, the result itself offers no mathematical surprise."
+        }
+      ],
+      "b_scores": [
+        7,
+        7,
+        4
+      ]
+    },
+    {
+      "id": "famous/Function.Embedding.schroeder_bernstein",
+      "tier": "famous",
+      "name": "Function.Embedding.schroeder_bernstein",
+      "statement_pretty": "∀ {α β : Type} {f : α → β} {g : β → α},\n  Function.Injective f → Function.Injective g → ∃ h, Function.Bijective h",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 7.30/10 (confidence 0.35) and classifies the result as a Theorem (p = 0.44) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.05 and P(a human mathematician cares) = 0.58.",
+        "expected_score": 7.299
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 6,
+          "kind": "Theorem",
+          "justification": "This is a standard formulation of the Cantor–Schröder–Bernstein theorem, asserting the existence of a bijection between two types given mutual injections. While the result is foundational in classical set theory, its appearance here as a one-step consequence of `Function.Embedding.schroeder_bernstein_of_rel` offers little beyond routine type-theoretic repackaging."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Corollary",
+          "justification": "This result is merely a thin repackaging of the classical Cantor-Schröder-Bernstein theorem, translating `Function.Embedding.schroeder_bernstein_of_rel` into the language of injective functions. While the underlying set-theoretic principle is foundational, the present formulation adds no new mathematical content and warrants only a modest classification as a corollary."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 7,
+          "kind": "Theorem",
+          "justification": "While the Cantor–Schröder–Bernstein theorem is undeniably a foundational pillar of elementary set theory, its appearance here as a one-step wrapper around an existing Mathlib lemma offers little in the way of genuine mathematical novelty. Nevertheless, the statement itself is of unimpeachable classical pedigree, warranting classification as a Theorem despite the somewhat derivative nature of its formalization."
+        }
+      ],
+      "b_scores": [
+        6,
+        3,
+        7
+      ]
+    },
+    {
+      "id": "famous/LinearMap.finrank_range_add_finrank_ker",
+      "tier": "famous",
+      "name": "LinearMap.finrank_range_add_finrank_ker",
+      "statement_pretty": "∀ {K V : Type} [inst : Ring K] [HasRankNullity K] [StrongRankCondition K]\n  [inst_3 : AddCommGroup V] [inst_4 : _root_.Module K V] {V₂ : Type}\n  [inst_5 : AddCommGroup V₂] [inst_6 : _root_.Module K V₂] [Module.Finite K V]\n  (f : V →ₗ[K] V₂), Module.finrank K ↥f.range + Module.finrank K ↥f.ker = Module.finrank K V",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Theorem",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.99/10 (confidence 0.35) and classifies the result as a Theorem (p = 0.36) in MSC 15-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.76.",
+        "expected_score": 6.989
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This is merely the classical rank-nullity theorem, dressed up in artificial typeclass hypotheses (`HasRankNullity` and `StrongRankCondition`) that largely presuppose the desired conclusion. The proof is a routine two-step application of linear equivalence and quotient finrank additivity, offering no new mathematical insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition establishes the rank-nullity identity for finitely generated modules, though its reliance on the bespoke typeclass hypothesis `HasRankNullity K` renders the conclusion somewhat tautological. As a two-step assembly of standard isomorphism theorems for submodules, it offers little beyond routine bookkeeping."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition establishes the rank-nullity identity for finitely generated modules over a ring equipped with the somewhat contrived `HasRankNullity` and `StrongRankCondition` typeclasses. While the conclusion is a staple of linear algebra, the proof is a mere two-step composition of the first isomorphism theorem with quotient dimension additivity, offering little beyond a routine formalization exercise."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        4
+      ]
+    },
+    {
+      "id": "trivial/Set.inter_comm",
+      "tier": "trivial",
+      "name": "Set.inter_comm",
+      "statement_pretty": "∀ {α : Type} (a b : Set α), a ∩ b = b ∩ a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.20/10 (confidence 0.37) and classifies the result as a Corollary (p = 0.49) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.01 and P(a human mathematician cares) = 0.10.",
+        "expected_score": 1.203
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This result merely records the commutativity of binary intersection for subsets of an arbitrary type, a fact that has been implicitly assumed since the dawn of naive set theory. While the formalization cleanly invokes inf_comm without superfluous hypotheses, its mathematical content is entirely elementary and warrants at most a passing Lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the commutativity of set-theoretic intersection, an elementary identity that follows immediately from the underlying meet-semilattice structure. While formally verified, its mathematical content is entirely routine and offers no new insight beyond what is already standard in foundational set theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the commutativity of set intersection, a foundational identity that follows immediately from the underlying lattice-theoretic `inf_comm`. While formally verified, its mathematical content is entirely elementary and offers no new insight beyond standard textbook preliminaries."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/Set.subset_union_left",
+      "tier": "trivial",
+      "name": "Set.subset_union_left",
+      "statement_pretty": "∀ {α : Type} {s t : Set α}, s ⊆ s ∪ t",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.19/10 (confidence 0.36) and classifies the result as a Corollary (p = 0.49) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.01 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 1.193
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This statement is an immediate specialization of the elementary lattice identity `le_sup_left` to the power set of a type, offering no mathematical content beyond the definition of set union. While the automated novelty checks curiously failed to resolve it by routine tactics, the result remains a foundational tautology of naive set theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This elementary inclusion is an immediate restatement of the lattice-theoretic inequality `le_sup_left` specialized to the power set, offering no genuine mathematical substance beyond the definition of set union. While the automated novelty checks curiously failed to dispatch it, the result remains a routine foundational tautology unworthy of independent publication."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This result is an immediate specialization of the lattice-theoretic fact le_sup_left to the power set of a type, offering no mathematical content beyond what is already foundational. Its classification as a Lemma with an importance of 0 reflects that it is a routine definitional unfolding rather than a substantive contribution."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/Set.Subset.refl",
+      "tier": "trivial",
+      "name": "Set.Subset.refl",
+      "statement_pretty": "∀ {α : Type} (a : Set α), a ⊆ a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 0,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 0.45/10 (confidence 0.71) and classifies the result as a Corollary (p = 0.44) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.01 and P(a human mathematician cares) = 0.07.",
+        "expected_score": 0.451
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This note establishes the reflexivity of set inclusion for arbitrary types, a foundational tautology of naive set theory. While the automated tactics reportedly struggled to dispatch it, the mathematical content remains entirely negligible."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "While the reflexivity of set inclusion is an indispensable foundation of naive set theory, its formalization here requires no conceptual leap beyond unfolding the definition of a subset. The failure of automated tactics to discharge this tautology speaks more to the idiosyncrasies of the proof assistant than to any intrinsic mathematical depth."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma establishes the reflexivity of set inclusion, a foundational tautology that scarcely warrants formal verification. While the automated novelty checks curiously failed to dispatch it, the result remains mathematically inert and offers no new insight."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/Set.union_self",
+      "tier": "trivial",
+      "name": "Set.union_self",
+      "statement_pretty": "∀ {α : Type} (a : Set α), a ∪ a = a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.69/10 (confidence 0.30) and classifies the result as a Corollary (p = 0.43) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.03 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 1.695
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "The idempotence of set union is an elementary identity that any undergraduate would take for granted without proof. While the formalization cleanly invokes `sup_idem`, the result itself offers no novel mathematical insight and scarcely warrants publication as a standalone lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Proposition",
+          "justification": "This result establishes the idempotence of set-theoretic union, a foundational tautology that follows immediately from the general lattice-theoretic identity `sup_idem`. While formally verified, the statement offers no mathematical novelty and serves only as a routine specialization of elementary order theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This result establishes the idempotency of set union, a foundational identity that is an immediate specialization of `sup_idem` to the Boolean algebra of subsets. Despite the automated novelty certificate, the statement is entirely elementary and offers no new mathematical insight."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/Finset.inter_comm",
+      "tier": "trivial",
+      "name": "Finset.inter_comm",
+      "statement_pretty": "∀ {α : Type} [inst : DecidableEq α] (s₁ s₂ : Finset α), s₁ ∩ s₂ = s₂ ∩ s₁",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.91/10 (confidence 0.29) and classifies the result as a Corollary (p = 0.45) in MSC 05-XX. Independent probability estimates yield P(surprising) = 0.04 and P(a human mathematician cares) = 0.08.",
+        "expected_score": 1.911
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely restates the commutativity of intersection for finite sets, a fact so elementary that it scarcely merits formal verification, let alone publication. Its sole redeeming feature is the economy of its proof, which reduces the entire matter to a single invocation of `inf_comm`."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the commutativity of finite set intersection, an elementary observation that follows immediately from inf_comm once the superfluous DecidableEq hypothesis is tolerated. While the automated tactics apparently struggled to recognize this basic fact, its mathematical content is entirely negligible and unworthy of further attention."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This result merely restates the commutativity of finite set intersection, which follows immediately from the underlying semilattice structure via `inf_comm`. Requiring decidable equality on the ambient type to establish such an elementary identity underscores the mechanical nature of the formalization."
+        }
+      ],
+      "b_scores": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/Finset.card_empty",
+      "tier": "trivial",
+      "name": "Finset.card_empty",
+      "statement_pretty": "∀ {α : Type}, ∅.card = 0",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.26/10 (confidence 0.37) and classifies the result as a Corollary (p = 0.45) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 1.261
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "That the empty set has cardinality zero is a definitional commonplace that scarcely merits formal enshrinement, even when dressed in type-theoretic generality. Despite the automated apparatus's insistence that `simp` and `exact?` were thwarted, the resulting lemma remains an elementary tautology of zero mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "The assertion that the empty set has cardinality zero is a foundational tautology that scarcely warrants formal verification, let alone publication. Despite the automated prover's inexplicable struggle to discharge it via standard simplification tactics, the mathematical content remains entirely vacuous."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "The assertion that the empty set has cardinality zero is a foundational convention rather than a mathematical discovery, regardless of how many automated tactics failed to recognize it. While the formalization is unimpeachable, publishing this result as a standalone lemma would be an exercise in bureaucratic redundancy."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/continuous_id",
+      "tier": "trivial",
+      "name": "continuous_id",
+      "statement_pretty": "∀ {X : Type} [inst : TopologicalSpace X], Continuous id",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.36/10 (confidence 0.30) and classifies the result as a Corollary (p = 0.50) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.05 and P(a human mathematician cares) = 0.06.",
+        "expected_score": 1.359
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "That the identity map on a topological space is continuous is a tautological consequence of the definition of continuity. While the formal proof exhibits an unexpectedly inflated proof-to-statement ratio, the result itself is entirely routine and devoid of mathematical novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "That the identity map on a topological space is continuous is an immediate tautology of the definitions, requiring neither deep insight nor a seventy-nine-unit proof. While the automated novelty metrics suggest this formulation escaped standard lookup tactics, the result itself remains entirely devoid of mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "That the identity map on an arbitrary topological space is continuous is an immediate tautology of the definition, regardless of the automated prover's apparent difficulty in locating it. While the statement is formally sound, it offers no mathematical insight and belongs at best as an unnumbered remark rather than a standalone result."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "trivial/le_refl",
+      "tier": "trivial",
+      "name": "le_refl",
+      "statement_pretty": "∀ {α : Type} [inst : Preorder α] (a : α), a ≤ a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.16/10 (confidence 0.38) and classifies the result as a Corollary (p = 0.42) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.01 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 1.156
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely restates the defining reflexivity axiom of a preorder, offering no genuine mathematical insight beyond unpacking the typeclass hypotheses. Despite its formal verification and the apparent failure of automated tactics to close it, the result is entirely tautological and warrants no further attention."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This submission merely restates the defining reflexivity axiom of a preorder, offering no new mathematical insight beyond the foundational definitions already established in the literature. Despite its formal verification, the result is entirely tautological and warrants no further elevation than a minor lemma of negligible importance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely restates the defining reflexivity axiom of a preorder, offering no discernible mathematical substance beyond the tautological. Despite the mechanical novelty badges, the result is entirely trivial and warrants no further consideration for a serious journal."
+        }
+      ],
+      "b_scores": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "library/Function.isConstOn_id_iff",
+      "tier": "library",
+      "name": "Function.isConstOn_id_iff",
+      "statement_pretty": "∀ {α : Type} {s : Set α}, Function.IsConstOn id s ↔ s.Subsingleton",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.14/10 (confidence 0.22) and classifies the result as a Corollary (p = 0.37) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.12 and P(a human mathematician cares) = 0.19.",
+        "expected_score": 3.135
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma establishes a purely definitional equivalence between the constancy of the identity map on a set and the set's status as a subsingleton. Although the formal verification requires a curiously nontrivial proof-to-statement ratio, the mathematical content is entirely tautological and merits no higher classification."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the definitional equivalence between the identity map being constant on a set and that set having at most one element. While the formal verification requires a curiously circuitous proof, the mathematical content is entirely vacuous and warrants no higher than a minimal importance rating."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely unpacks the definitions of constancy on a set for the identity map and subsingletonicity, yielding an equivalence that is immediate by inspection. While formally verified without automation, the statement lacks substantive mathematical content and serves only as a minor definitional restatement."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "library/Set.EqOn.isConstOn_iff",
+      "tier": "library",
+      "name": "Set.EqOn.isConstOn_iff",
+      "statement_pretty": "∀ {α β : Type} {f g : α → β} {s : Set α},\n  Set.EqOn f g s → (Function.IsConstOn f s ↔ Function.IsConstOn g s)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.40/10 (confidence 0.31) and classifies the result as a Lemma (p = 0.43) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.05 and P(a human mathematician cares) = 0.18.",
+        "expected_score": 3.398
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma records the entirely elementary observation that constancy of a function on a subset is invariant under pointwise agreement on that subset. While formally sound and not immediately discharged by automated tactics, the result is a routine two-step consequence of symmetry and scarcely merits independent publication."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This elementary lemma merely observes that the property of being constant on a subset depends solely on the restriction of the function to that subset. While formally verified, the result is an immediate definitional tautology that scarcely warrants a two-step proof, let alone publication."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma records the elementary observation that constancy on a subset is invariant under pointwise agreement on that subset, a fact that follows immediately from the symmetry of equality. While formally verified in two steps, the result is entirely routine and offers no substantive insight beyond basic bookkeeping."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/Function.IsConstOn.comp_right",
+      "tier": "library",
+      "name": "Function.IsConstOn.comp_right",
+      "statement_pretty": "∀ {α γ : Type} {g : γ → γ} {t : Set γ},\n  Function.IsConstOn g t →\n    ∀ {f : α → γ} {s : Set α}, Set.MapsTo f s t → Function.IsConstOn (g ∘ f) s",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 2.56/10 (confidence 0.26) and classifies the result as a Lemma (p = 0.49) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.06 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 2.559
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This elementary observation on the composition of a function constant on a subset with a map respecting that subset is an immediate consequence of the definitions. While formally verified without recourse to automated tactics, the result is entirely routine and warrants at most a minor lemma designation."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma records the elementary observation that precomposing a function constant on a target set with a map into that set yields a constant function on the domain. While the failure of automated tactics suggests a minor definitional hurdle, the mathematical content is wholly routine and requires no further comment."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The claim that precomposing a function constant on a set with a map into that set yields a constant function is an immediate definitional unfolding of no independent interest. Moreover, the gratuitous restriction of the outer map to an endofunction on a single type is an artificial hypothesis that further diminishes its mathematical value."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.SimplicialObject.Splitting.IndexSet.eqId_iff_len_le",
+      "tier": "library",
+      "name": "CategoryTheory.SimplicialObject.Splitting.IndexSet.eqId_iff_len_le",
+      "statement_pretty": "∀ {Δ : SimplexCategoryᵒᵖ} (A : CategoryTheory.SimplicialObject.Splitting.IndexSet Δ),\n  A.EqId ↔ (Opposite.unop Δ).len ≤ (Opposite.unop A.fst).len",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 4,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.21/10 (confidence 0.28) and classifies the result as a Lemma (p = 0.43) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.22 and P(a human mathematician cares) = 0.20.",
+        "expected_score": 4.213
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma merely translates the identity condition for an index set of a simplicial splitting into a length inequality by exploiting the implicit epimorphism structure. While formally sound, the result is a routine piece of categorical bookkeeping that offers no substantive insight beyond the existing characterization."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma merely repackages the characterization of identity index sets in terms of simplex lengths by exploiting the antisymmetry of the natural order on finite ordinals. While formally sound, the result is a minor piece of categorical bookkeeping that offers no genuine geometric or combinatorial insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma provides a minor characterization of the `EqId` predicate for index sets of simplicial object splittings by reducing it to a length inequality in the simplex category. While the proof is not entirely automatic, the result is merely a routine reformulation of `eqId_iff_len_eq` via epimorphism length bounds and offers little independent mathematical substance."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.SimplicialObject.Split.mk.inj",
+      "tier": "library",
+      "name": "CategoryTheory.SimplicialObject.Split.mk.inj",
+      "statement_pretty": "∀ {C : Type} {inst : CategoryTheory.Category C} {X : CategoryTheory.SimplicialObject C}\n  {s : X.Splitting} {X_1 : CategoryTheory.SimplicialObject C} {s_1 : X_1.Splitting},\n  { X := X, s := s } = { X := X_1, s := s_1 } → X = X_1 ∧ s ≍ s_1",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.50/10 (confidence 0.33) and classifies the result as a Lemma (p = 0.49) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.09.",
+        "expected_score": 1.504
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the definitional injectivity of a dependent pair constructor for split simplicial objects, dressed in the formalism of heterogeneous equality. While the automated tactics apparently balked at unpacking the structure, the mathematical content is entirely vacuous and offers no insight into simplicial homotopy theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely records the componentwise injectivity of a dependent record packaging a simplicial object with a splitting, a fact that holds by the most elementary principles of type-theoretic equality. Despite the impressive categorical trappings, the result carries no genuine mathematical content beyond syntactic bookkeeping."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This result merely unpacks the definition of equality for a dependent pair consisting of a simplicial object and a splitting, yielding an immediate conjunction of equalities. Despite the categorical and simplicial trappings, the underlying logical content is entirely tautological and offers no genuine mathematical insight."
+        }
+      ],
+      "b_scores": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.SimplicialObject.Splitting.IndexSet.eqId_iff_eq",
+      "tier": "library",
+      "name": "CategoryTheory.SimplicialObject.Splitting.IndexSet.eqId_iff_eq",
+      "statement_pretty": "∀ {Δ : SimplexCategoryᵒᵖ} (A : CategoryTheory.SimplicialObject.Splitting.IndexSet Δ),\n  A.EqId ↔ A.fst = Δ",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 4,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.53/10 (confidence 0.25) and classifies the result as a Lemma (p = 0.50) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.15 and P(a human mathematician cares) = 0.15.",
+        "expected_score": 3.531
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma provides a routine characterization of the identity condition for splitting index sets of simplicial objects, reducing `A.EqId` to the equality `A.fst = Δ`. Despite the unexpectedly large proof-to-statement ratio, the result is a minor piece of categorical bookkeeping of little interest outside formalizations of simplicial splittings."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma establishes a routine equivalence characterizing the identity condition for index sets in the splitting of simplicial objects. Despite the disproportionately lengthy proof, the result is merely a piece of categorical bookkeeping of minimal independent interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma establishes a routine equivalence characterizing the identity index condition in a simplicial object splitting solely in terms of its first component. While the high proof-to-statement ratio reflects the bureaucratic overhead of formalizing categorical bookkeeping, the mathematical content itself is an elementary structural observation."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/PowerSeries.map_algebraMap_eq_subst_X",
+      "tier": "library",
+      "name": "PowerSeries.map_algebraMap_eq_subst_X",
+      "statement_pretty": "∀ {R : Type} [inst : CommRing R] {S : Type} [inst_1 : CommRing S] [inst_2 : Algebra R S]\n  (f : PowerSeries R),\n  (PowerSeries.map (algebraMap R S)) f = PowerSeries.subst PowerSeries.X f",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 4,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.41/10 (confidence 0.24) and classifies the result as a Lemma (p = 0.37) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.26.",
+        "expected_score": 4.415
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Corollary",
+          "justification": "This result merely specializes the multivariate identity MvPowerSeries.map_algebraMap_eq_subst_X to a single variable, establishing the expected compatibility between coefficient-wise scalar extension and substitution of the indeterminate. While formally verified, the statement is an immediate consequence of the definitions and offers no independent mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This result merely specializes the existing multivariate identity MvPowerSeries.map_algebraMap_eq_subst_X to the univariate formal power series ring, as reflected by its minimal proof-to-statement ratio. Although automated tactics such as exact? and simp fail to close it directly, the statement remains a routine piece of algebraic bookkeeping of negligible independent interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result is an immediate, one-line specialization of the corresponding multivariate identity for formal power series, offering no genuine mathematical novelty. While formally sound, the equivalence between coefficient-wise scalar extension and substitution of the indeterminate is a routine compatibility check that scarcely warrants independent publication."
+        }
+      ],
+      "b_scores": [
+        1,
+        2,
+        1
+      ]
+    },
+    {
+      "id": "library/PowerSeries.coe_substAlgHom",
+      "tier": "library",
+      "name": "PowerSeries.coe_substAlgHom",
+      "statement_pretty": "∀ {R : Type} [inst : CommRing R] {τ S : Type} [inst_1 : CommRing S] [inst_2 : Algebra R S]\n  {a : MvPowerSeries τ S} (ha : PowerSeries.HasSubst a),\n  ⇑(PowerSeries.substAlgHom ha) = PowerSeries.subst a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.23/10 (confidence 0.25) and classifies the result as a Lemma (p = 0.41) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.11 and P(a human mathematician cares) = 0.24.",
+        "expected_score": 3.228
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely records the compatibility between the underlying function of an algebra homomorphism and the substitution map for formal power series, a fact that holds essentially by definition. Its reliance on formal coercion machinery rather than genuine algebraic substance warrants its classification as a minor technical lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely records that the underlying function of the substitution algebra homomorphism coincides with the substitution map itself, an artifact of type-theoretic bundling rather than a mathematical insight. While formally verified, its content is entirely routine bookkeeping for formal power series."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This note merely records that the underlying map of the substitution algebra homomorphism on formal power series coincides with the bare substitution function. While formally sound, the result is an entirely routine definitional unpacking of notation that offers no genuine insight into the structure of power series rings."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/PowerSeries.hasSubst_iff_hasEval_of_discreteTopology",
+      "tier": "library",
+      "name": "PowerSeries.hasSubst_iff_hasEval_of_discreteTopology",
+      "statement_pretty": "∀ {τ S : Type} [inst : CommRing S] [inst_1 : TopologicalSpace S] [DiscreteTopology S]\n  {a : MvPowerSeries τ S}, PowerSeries.HasSubst a ↔ PowerSeries.HasEval a",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.89/10 (confidence 0.22) and classifies the result as a Lemma (p = 0.33) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.17 and P(a human mathematician cares) = 0.26.",
+        "expected_score": 4.892
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition merely translates an existing equivalence between substitution and evaluation for multivariate power series into the univariate predicate framework. The imposition of a discrete topology on the coefficient ring is an artificial restriction that strips the result of genuine analytical or algebraic depth."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This result merely translates the known equivalence between substitution and evaluation for multivariate power series over a discrete ring into the corresponding univariate predicates. While the formalization requires a nontrivial proof-to-statement ratio to unpack the definitions, the underlying mathematics is an immediate consequence of an artificially restrictive topological hypothesis."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition merely translates the equivalence between substitution and evaluation for multivariate power series from its native setting to the univariate API under the rather artificial hypothesis of a discrete topology. While formally nontrivial to automate, the result is an administrative bridge between two definitions rather than a genuine mathematical advance."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/IsGalois.splits",
+      "tier": "library",
+      "name": "IsGalois.splits",
+      "statement_pretty": "∀ (F : Type) [inst : Field F] {E : Type} [inst_1 : Field E] [inst_2 : Algebra F E]\n  [IsGalois F E] (x : E), (Polynomial.map (algebraMap F E) (minpoly F x)).Splits",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.39/10 (confidence 0.25) and classifies the result as a Proposition (p = 0.34) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.11 and P(a human mathematician cares) = 0.71.",
+        "expected_score": 6.386
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This is an immediate specialization of the defining property of normal extensions, needlessly encumbered by the stronger assumption that the extension is Galois. As a one-line consequence of an existing library lemma, it offers no new mathematical insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition merely unpacks the normality condition implicit in the Galois hypothesis, confirming that the minimal polynomial of any element splits over the extension. While formally sound, it is an immediate one-step consequence of `Normal.splits'` and offers no substantive insight beyond standard textbook Galois theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This statement is an immediate specialization of the normality property of Galois extensions, amounting to little more than a typeclass-mediated invocation of `Normal.splits'`. While formally sound, it offers no new mathematical insight beyond a routine textbook exercise in elementary field theory."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/Algebra.IsQuadraticExtension.isCyclic",
+      "tier": "library",
+      "name": "Algebra.IsQuadraticExtension.isCyclic",
+      "statement_pretty": "∀ (F K : Type) [inst : Field F] [inst_1 : Field K] [inst_2 : Algebra F K]\n  [Algebra.IsQuadraticExtension F K], IsCyclic Gal(K/F)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.01/10 (confidence 0.25) and classifies the result as a Proposition (p = 0.39) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.10 and P(a human mathematician cares) = 0.64.",
+        "expected_score": 6.012
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "That the Galois group of a quadratic extension is cyclic follows immediately from the elementary observation that any group of order at most two is cyclic. While the formalization dutifully navigates Mathlib's cardinality machinery to establish this fact, the result itself is a routine exercise rather than a substantive contribution to Galois theory."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "That the Galois group of a quadratic extension is cyclic follows immediately from the bound $|\\mathrm{Gal}(K/F)| \\le [K:F] = 2$, since any group of order one or two is cyclic. While the formalization cleanly avoids a separability hypothesis, the underlying mathematical content is entirely elementary and scarcely warrants a proof-to-statement ratio exceeding twenty-five."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "Because a quadratic field extension has degree two, its Galois group has order at most two, rendering cyclicity an immediate consequence of elementary group theory. Although the statement is clean and free of artificial hypotheses, its mathematical content is entirely routine and warrants only a modest classification."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/IsGalois.fixedField_eq_iff_fixingSubgroup_eq",
+      "tier": "library",
+      "name": "IsGalois.fixedField_eq_iff_fixingSubgroup_eq",
+      "statement_pretty": "∀ {F : Type} [inst : Field F] {E : Type} [inst_1 : Field E] [inst_2 : Algebra F E]\n  [FiniteDimensional F E] [IsGalois F E] {K : IntermediateField F E}\n  {H : Subgroup Gal(E/F)}, IntermediateField.fixedField H = K ↔ K.fixingSubgroup = H",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.69/10 (confidence 0.29) and classifies the result as a Proposition (p = 0.45) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.14 and P(a human mathematician cares) = 0.56.",
+        "expected_score": 6.695
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This result merely unpacks the invertibility of the Galois correspondence for finite Galois extensions, asserting that the fixed-field and fixing-subgroup maps are mutual inverses. Despite the inexplicably bloated proof-to-statement ratio, the mathematical content is entirely routine and warrants no more than a passing corollary."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition merely restates the mutual-inverse property of the fundamental Galois correspondence between intermediate fields and subgroups of the Galois group. While the underlying theory is classical, the present formulation is an immediate, routine consequence of the order-isomorphism already established in the ambient framework."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition merely restates the bijectivity of the classical Galois correspondence for finite Galois extensions in terms of fixed fields and fixing subgroups. While the underlying theory is foundational, the present formulation is an immediate equivalence of standard definitions whose mechanized proof exhibits a rather inflated complexity-to-content ratio."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        3
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.ShortComplex.shortExact_iff_unop",
+      "tier": "library",
+      "name": "CategoryTheory.ShortComplex.shortExact_iff_unop",
+      "statement_pretty": "∀ {C : Type} [inst : CategoryTheory.Category C]\n  [inst_1 : CategoryTheory.Limits.HasZeroMorphisms C] (S : CategoryTheory.ShortComplex Cᵒᵖ),\n  S.ShortExact ↔ S.unop.ShortExact",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 4,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.08/10 (confidence 0.23) and classifies the result as a Lemma (p = 0.43) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.16 and P(a human mathematician cares) = 0.43.",
+        "expected_score": 4.081
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely dualizes `shortExact_iff_op` by passing from a short complex in `Cᵒᵖ` to its unop in `C`, adding no substantive homological content beyond routine categorical bookkeeping. While formally valid, its one-step derivation and narrow scope warrant classification as a minor lemma of negligible mathematical importance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Corollary",
+          "justification": "This result is an immediate, one-step dualization of `CategoryTheory.ShortComplex.shortExact_iff_op`, merely translating the exactness equivalence from the opposite category to its `unop` counterpart. While the automated search failed to recognize the syntactic rearrangement, the mathematical content is entirely routine and warrants only a minimal importance score."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Corollary",
+          "justification": "This result is an immediate dualization of the existing library lemma `shortExact_iff_op`, offering no substantive mathematical content beyond reversing arrows in a category with zero morphisms. While formally sound, it merits classification only as a minor corollary of negligible independent interest."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.ShortComplex.ShortExact.isIso_f_iff",
+      "tier": "library",
+      "name": "CategoryTheory.ShortComplex.ShortExact.isIso_f_iff",
+      "statement_pretty": "∀ {C : Type} [inst : CategoryTheory.Category C] [inst_1 : CategoryTheory.Preadditive C]\n  {S : CategoryTheory.ShortComplex C},\n  S.ShortExact →\n    ∀ [CategoryTheory.Balanced C],\n      CategoryTheory.IsIso S.f ↔ CategoryTheory.Limits.IsZero S.X₃",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.77/10 (confidence 0.25) and classifies the result as a Proposition (p = 0.43) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.25 and P(a human mathematician cares) = 0.41.",
+        "expected_score": 5.775
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition establishes a routine equivalence between the invertibility of the monomorphism in a short exact sequence and the vanishing of its third term, albeit under the somewhat artificial combination of preadditive and balanced hypotheses. While the formalization requires a surprisingly lengthy proof relative to the statement's brevity, the mathematical content remains a standard exercise in elementary homological algebra."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the elementary equivalence between the first map in a short exact sequence being an isomorphism and the third object being zero, under the rather convenient hypothesis that the ambient preadditive category is balanced. While the formalization requires a surprisingly verbose proof term, the mathematical content is a routine diagram chase of minimal independent interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This is an elementary diagram-chasing exercise characterizing when the first map of a short exact sequence in a balanced preadditive category is an isomorphism. While the balanced hypothesis is a mildly artificial substitute for abelianness, the equivalence itself is a routine consequence of standard mono-epi cancellation."
+        }
+      ],
+      "b_scores": [
+        3,
+        3,
+        2
+      ]
+    },
+    {
+      "id": "library/CategoryTheory.ShortComplex.Splitting.shortExact",
+      "tier": "library",
+      "name": "CategoryTheory.ShortComplex.Splitting.shortExact",
+      "statement_pretty": "∀ {C : Type} [inst : CategoryTheory.Category C] [inst_1 : CategoryTheory.Preadditive C]\n  {S : CategoryTheory.ShortComplex C} [CategoryTheory.Limits.HasZeroObject C]\n  (s : S.Splitting), S.ShortExact",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.38/10 (confidence 0.25) and classifies the result as a Proposition (p = 0.41) in MSC 18-XX. Independent probability estimates yield P(surprising) = 0.12 and P(a human mathematician cares) = 0.53.",
+        "expected_score": 5.379
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "That a split short complex in a preadditive category with a zero object is short exact is an immediate consequence of the definitions of exactness, monomorphisms, and epimorphisms. While the formalization dutifully assembles these three standard properties, the result itself is an elementary book-keeping observation rather than a substantive theorem."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "That a split short complex in a preadditive category with a zero object is short exact is an immediate bookkeeping consequence of the definitions of exactness, monomorphism, and epimorphism. While the proof avoids automated lookup, it merely assembles three pre-existing structural lemmas without introducing any genuine mathematical content."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "That a split short complex in a preadditive category with a zero object is short exact is a routine structural observation, amounting to little more than assembling the defining properties of a splitting. The proof merely bundles three immediate consequences of the splitting data, offering minimal mathematical surprise despite clearing the automated novelty filters."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ]
+    },
+    {
+      "id": "library/Filter.EventuallySubset.union",
+      "tier": "library",
+      "name": "Filter.EventuallySubset.union",
+      "statement_pretty": "∀ {α : Type} {s t : Set α} {l : Filter α},\n  s ≤ᶠ[l] t → ∀ {s' t' : Set α}, s' ≤ᶠ[l] t' → s ∪ s' ≤ᶠ[l] t ∪ t'",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.35/10 (confidence 0.26) and classifies the result as a Lemma (p = 0.45) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.06 and P(a human mathematician cares) = 0.29.",
+        "expected_score": 3.352
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely records that eventual inclusion of sets along a filter is preserved under finite unions, an immediate consequence of the filter axioms and elementary set theory. While formally valid, the result is far too routine to warrant independent status and belongs at most as an unremarkable auxiliary observation."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result records the elementary monotonicity of eventual set inclusion with respect to finite unions along a filter. While formally unassailable, it is an immediate consequence of the definitions and scarcely warrants elevation beyond a routine bookkeeping lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This result establishes the elementary compatibility of eventual set inclusion along a filter with binary unions, a routine consequence of the closure of filter-eventual predicates under finite conjunction. While formally sound, the statement is an immediate exercise in definition-unfolding and merits at most a passing Lemma in the foundations of general topology."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "library/Filter.iSup_principal",
+      "tier": "library",
+      "name": "Filter.iSup_principal",
+      "statement_pretty": "∀ {α : Type 1} {ι : Type} {s : ι → Set α},\n  ⨆ x, Filter.principal (s x) = Filter.principal (⋃ i, s i)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.51/10 (confidence 0.24) and classifies the result as a Proposition (p = 0.35) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.12 and P(a human mathematician cares) = 0.35.",
+        "expected_score": 4.513
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This result merely records that the principal filter construction commutes with indexed suprema, a standard and entirely routine lattice-theoretic identity. The universe-monomorphic formulation and inflated proof-to-statement ratio reflect mechanical verification overhead rather than genuine mathematical depth, warranting at most a minor lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the elementary fact that the principal filter map preserves arbitrary suprema, converting a family of principal filters into the principal filter of their union. Despite the formal proof's bloated length, the result is a routine lattice-theoretic tautology that any working analyst would treat as immediate from the definitions."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This identity merely records that the principal filter construction commutes with arbitrary suprema, a standard and elementary observation in the theory of filters. Despite the nontrivial proof-to-statement ratio in the formalization, the result is entirely routine and warrants only a modest classification as a proposition."
+        }
+      ],
+      "b_scores": [
+        2,
+        3,
+        2
+      ]
+    },
+    {
+      "id": "library/Filter.Frequently.of_forall",
+      "tier": "library",
+      "name": "Filter.Frequently.of_forall",
+      "statement_pretty": "∀ {α : Type} {f : Filter α} [f.NeBot] {p : α → Prop},\n  (∀ (x : α), p x) → ∃ᶠ (x : α) in f, p x",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.24/10 (confidence 0.25) and classifies the result as a Corollary (p = 0.47) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.06 and P(a human mathematician cares) = 0.32.",
+        "expected_score": 3.239
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely observes that a predicate holding universally on a type also holds frequently along any non-trivial filter, a fact that follows immediately by composing two elementary library lemmas. While the formalization is sound, the statement is an entirely routine tautology disguised by filter-theoretic notation and merits no higher than a passing lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely observes that a universally valid predicate holds frequently along any non-trivial filter, a fact that follows immediately from the definitions. While formally sound, the result is entirely routine and offers no genuine mathematical insight beyond basic filter bookkeeping."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely observes that a universally true predicate holds frequently along any non-trivial filter, a fact that follows immediately from the definitions. While formally verified, the result is entirely routine and offers no genuine mathematical insight beyond standard filter bookkeeping."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/IsLocalization.map_algebraMap_ne_top_iff_disjoint",
+      "tier": "library",
+      "name": "IsLocalization.map_algebraMap_ne_top_iff_disjoint",
+      "statement_pretty": "∀ {R : Type} [inst : CommSemiring R] (M : Submonoid R) (S : Type) [inst_1 : CommSemiring S]\n  [inst_2 : Algebra R S] [IsLocalization M S] (I : Ideal R),\n  Ideal.map (algebraMap R S) I ≠ ⊤ ↔ Disjoint ↑M ↑I",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.38/10 (confidence 0.25) and classifies the result as a Proposition (p = 0.48) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.17 and P(a human mathematician cares) = 0.68.",
+        "expected_score": 6.378
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "The characterization of properness for an extended ideal under localization is a standard textbook exercise, here dressed in the somewhat gratuitous generality of commutative semirings. Despite the mechanical verification and a surprisingly bloated proof-to-statement ratio, the result offers no genuine mathematical novelty beyond routine ideal-theoretic bookkeeping."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard criterion for an ideal to remain proper under localization, formulated here in the modest generality of commutative semirings. While the proof-to-statement ratio is curiously inflated for such a routine equivalence, the result itself is a staple of introductory commutative algebra rather than a substantive contribution."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard criterion for an extended ideal in a localization to remain proper, albeit generalized to commutative semirings. While the thirty-seven-fold proof-to-statement ratio suggests an unnecessarily labyrinthine formalization, the underlying mathematical content is a routine textbook exercise."
+        }
+      ],
+      "b_scores": [
+        3,
+        3,
+        3
+      ]
+    },
+    {
+      "id": "library/IsLocalization.isMaximal_of_isMaximal_disjoint",
+      "tier": "library",
+      "name": "IsLocalization.isMaximal_of_isMaximal_disjoint",
+      "statement_pretty": "∀ {R : Type} [inst : CommSemiring R] (M : Submonoid R) (S : Type) [inst_1 : CommSemiring S]\n  [inst_2 : Algebra R S] [IsLocalization M S] (I : Ideal R) [hI : I.IsMaximal],\n  Disjoint ↑M ↑I → (Ideal.map (algebraMap R S) I).IsMaximal",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 6,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.44/10 (confidence 0.28) and classifies the result as a Proposition (p = 0.46) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.13 and P(a human mathematician cares) = 0.69.",
+        "expected_score": 6.44
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition establishes the standard preservation of maximality for ideals disjoint from a multiplicative set under localization, here stated in the setting of commutative semirings. While mathematically sound and occasionally convenient, it follows immediately in three steps from existing contraction-extension lemmas and offers no genuine structural surprise."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard fact that a maximal ideal disjoint from a multiplicative submonoid extends to a maximal ideal in the localization, here generalized to commutative semirings. Its proof is an immediate three-step synthesis of existing localization lemmas, offering little beyond a routine verification of compatibility."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This result merely records a standard three-step exercise in commutative algebra, deducing the maximality of an extended ideal in a localization directly from the prime correspondence. While the generalization to commutative semirings is mildly dutiful, the statement is an immediate consequence of existing localization machinery and warrants no higher than a routine proposition."
+        }
+      ],
+      "b_scores": [
+        4,
+        3,
+        2
+      ]
+    },
+    {
+      "id": "library/IsLocalization.isPrime_iff_isPrime_disjoint",
+      "tier": "library",
+      "name": "IsLocalization.isPrime_iff_isPrime_disjoint",
+      "statement_pretty": "∀ {R : Type} [inst : CommSemiring R] (M : Submonoid R) (S : Type) [inst_1 : CommSemiring S]\n  [inst_2 : Algebra R S] [IsLocalization M S] (J : Ideal S),\n  J.IsPrime ↔ (Ideal.under R J).IsPrime ∧ Disjoint ↑M ↑(Ideal.under R J)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 7,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 6.77/10 (confidence 0.31) and classifies the result as a Proposition (p = 0.50) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.11 and P(a human mathematician cares) = 0.70.",
+        "expected_score": 6.775
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 3,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard correspondence between prime ideals of a localization and prime ideals of the base semiring disjoint from the multiplicative set. While the verification in the generality of commutative semirings is mildly tidy, the result itself is an elementary textbook exercise offering no genuine mathematical novelty."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard correspondence between prime ideals of a localization and prime ideals of the base semiring disjoint from the multiplicative set. While mathematically sound, it is a routine textbook exercise that offers no genuine novelty beyond its formalization for commutative semirings."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 4,
+          "kind": "Proposition",
+          "justification": "This proposition records the standard characterization of prime ideals in a localization as those whose contraction is prime and disjoint from the multiplicative submonoid, here stated in the slightly more general setting of commutative semirings. While the result itself is a routine textbook exercise, the proof-to-statement ratio of 123.23 suggests a needlessly baroque formalization of an elementary fact."
+        }
+      ],
+      "b_scores": [
+        3,
+        4,
+        4
+      ]
+    },
+    {
+      "id": "library/Opens.mayerVietorisSquare_X₂",
+      "tier": "library",
+      "name": "Opens.mayerVietorisSquare_X₂",
+      "statement_pretty": "∀ {T : Type} [inst : TopologicalSpace T] (U V : TopologicalSpace.Opens T),\n  (Opens.mayerVietorisSquare U V).X₂ = U",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.56/10 (confidence 0.35) and classifies the result as a Lemma (p = 0.42) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.25 and P(a human mathematician cares) = 0.08.",
+        "expected_score": 1.562
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This note merely unpacks the definition of the Mayer-Vietoris square of two open sets to recover one of its constituent vertices, a fact that requires no topological insight whatsoever. While formally verified, its mathematical content is negligible and serves only as a minor bookkeeping identity."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely records the definitional value of a single vertex in the Mayer-Vietoris square of open sets, offering no substantive topological insight. While its formal verification is sound, the statement is an elementary projection that hardly merits elevation beyond a routine Lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 0,
+          "kind": "Lemma",
+          "justification": "This note merely unfolds the definition of the Mayer-Vietoris square for open subsets to recover one of its constituent objects, a fact that requires no mathematical argument beyond inspecting the notation. While formally verified, the result is entirely tautological and offers no geometric or topological insight."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "library/Opens.coe_mayerVietorisSquare_X₄",
+      "tier": "library",
+      "name": "Opens.coe_mayerVietorisSquare_X₄",
+      "statement_pretty": "∀ {T : Type} [inst : TopologicalSpace T] (U V : TopologicalSpace.Opens T),\n  ↑(Opens.mayerVietorisSquare U V).X₄ = ↑U ∪ ↑V",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 4,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.60/10 (confidence 0.24) and classifies the result as a Lemma (p = 0.41) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.08 and P(a human mathematician cares) = 0.30.",
+        "expected_score": 3.596
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely unpacks the underlying set of the terminal vertex in the Mayer–Vietoris square for open subsets of a topological space. Although automated tactics stumble over the coercion bookkeeping, the identity itself is mathematically tautological and offers no substantive insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Proposition",
+          "justification": "This proposition merely unpacks the definition of the terminal vertex in the Mayer-Vietoris square of two open sets, confirming that its underlying carrier coincides with their union. While the failure of automated tactics lends it a veneer of formal resistance, the mathematical content is entirely tautological and warrants no more than a passing footnote."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely unpacks the definition of the Mayer-Vietoris square for open sets, asserting that its fourth vertex has underlying set equal to the union of the two given opens. While the categorical packaging obscures this elementary fact from automated tactics, the result itself is devoid of genuine topological content."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "library/Opens.mayerVietorisSquare_X₃",
+      "tier": "library",
+      "name": "Opens.mayerVietorisSquare_X₃",
+      "statement_pretty": "∀ {T : Type} [inst : TopologicalSpace T] (U V : TopologicalSpace.Opens T),\n  (Opens.mayerVietorisSquare U V).X₃ = V",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 1,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.48/10 (confidence 0.36) and classifies the result as a Lemma (p = 0.41) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.13 and P(a human mathematician cares) = 0.12.",
+        "expected_score": 1.478
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely extracts the third vertex of the Mayer-Vietoris square for two open sets, which is definitionally equal to the second open set by construction. While the failure of automated tactics to discharge such a tautology is mildly amusing, the result itself offers no geometric insight and barely warrants a line in an appendix."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely unpacks the definition of the Mayer-Vietoris square for open subsets of a topological space, identifying its third vertex with the second open set. While formally verified without relying on external Mathlib lemmas, the result is a routine structural projection of no independent mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely extracts a designated vertex from the Mayer–Vietoris square of open sets, a fact that holds by the very construction of the diagram. While its formal verification is sound, the result carries negligible mathematical weight beyond confirming an internal naming convention."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "id": "published/AKCM-2026-0001",
+      "tier": "published",
+      "name": "AKCM-2026-0001",
+      "statement_pretty": "∀ {M : Type} [inst_2 : Monoid M] (l : List M) (y : M),\n  (∀ x ∈ l, Commute x y) → l.prod * (y * y) = y * y * l.prod",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.32/10 (confidence 0.29) and classifies the result as a Lemma (p = 0.50) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.09 and P(a human mathematician cares) = 0.21.",
+        "expected_score": 3.32
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely observes that if every element of a list commutes with a given monoid element, then the list product commutes with its square, a fact that follows immediately from standard properties of centralizers. While the statement avoids overtly artificial hypotheses, its mathematical content is entirely elementary and warrants no higher classification."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This is an immediate corollary of the elementary fact that an element commuting with every entry of a list commutes with its product, combined with the stability of the centralizer under squaring. While the proof-to-statement ratio is inflated by formal overhead, the underlying mathematical content is a routine exercise in monoid arithmetic."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "That an element commuting with every term of a list also commutes with its product—and hence that its square does so as well—is an elementary observation in monoid theory. While the statement is formally sound, it amounts to little more than a two-step exercise in algebraic bookkeeping."
+        }
+      ],
+      "b_scores": [
+        1,
+        2,
+        2
+      ],
+      "stored": {
+        "Referee A": 3,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0002",
+      "tier": "published",
+      "name": "AKCM-2026-0002",
+      "statement_pretty": "∀ {α : Type} [inst_2 : LinearOrder α] [inst_3 : SuccOrder α] {a b : α},\n  a < Order.succ b → max (Order.succ b) (Order.succ a) = Order.succ b",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.27/10 (confidence 0.28) and classifies the result as a Lemma (p = 0.49) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.16 and P(a human mathematician cares) = 0.19.",
+        "expected_score": 3.265
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma records an elementary monotonicity property of the successor operator in a linear order, following immediately from the equivalence between $a < \\operatorname{succ}(b)$ and $a \\le b$. Despite its formal verification and inflated proof-to-statement ratio, the result is a routine book-keeping identity of minimal mathematical significance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This minor lemma merely chains together the defining adjunction of the successor operator with the elementary absorption of a smaller term by `max` in a linear order. Although it technically evades automated tactics, the result is an immediate three-step exercise of no independent mathematical interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result is an immediate, three-step consequence of the monotonicity of the successor operator in a linear order, offering no substantive insight beyond the definitions involved. Although the automated tactics failed to dispatch it directly, its mathematical content is entirely routine and warrants only a minor lemma classification."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        1
+      ],
+      "stored": {
+        "Referee A": 3,
+        "Referee B": 2
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0003",
+      "tier": "published",
+      "name": "AKCM-2026-0003",
+      "statement_pretty": "∀ {R : Type} [inst_2 : Add R] {a : Rᵃᵒᵖ},\n  IsAddRightRegular a →\n    IsVAddRegular Rᵃᵒᵖᵃᵒᵖᵃᵒᵖ\n      (AddOpposite.op\n        (AddOpposite.op (AddOpposite.op (AddOpposite.op (AddOpposite.unop a)))))",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 2.81/10 (confidence 0.27) and classifies the result as a Lemma (p = 0.57) in MSC 20-XX. Independent probability estimates yield P(surprising) = 0.28 and P(a human mathematician cares) = 0.06.",
+        "expected_score": 2.806
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma establishes that right-regularity in an additive opposite magma survives fourfold wrapping and unwrapping into a triply-opposite action, a result whose primary achievement is navigating its own syntactic bureaucracy. While the proof's 23.69-fold expansion over the statement suggests a nontrivial mechanical exertion, the underlying mathematical content is entirely tautological and warrants no higher than an importance score of 1."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely transports additive right-regularity through four redundant layers of opposite-groupoid wrapping and unwrapping. While formally non-trivial to automated tactics due to the baroque nesting of `AddOpposite`, the underlying mathematical content is entirely vacuous."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely transports right-regularity across four nested layers of additive opposition to deduce regularity of the induced action, an exercise in syntactic bookkeeping rather than algebraic substance. While the proof-to-statement ratio reflects the tedious overhead of unwrapping and rewrapping opposite types, the result itself is an artificial artifact of type-theoretic encoding."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 2,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0004",
+      "tier": "published",
+      "name": "AKCM-2026-0004",
+      "statement_pretty": "∀ {s : String.Slice} (self : s.Pos), self.offset ≤ s.rawEndPos",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.69/10 (confidence 0.25) and classifies the result as a Lemma (p = 0.50) in MSC 68-XX. Independent probability estimates yield P(surprising) = 0.03 and P(a human mathematician cares) = 0.05.",
+        "expected_score": 1.695
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This routine bookkeeping lemma merely unpacks the validity predicate for a string slice position to bound its raw offset, a fact so elementary that it yields immediately to automated proof search. While formally sound, its narrow scope within string representation internals offers no substantive mathematical insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result merely extracts a routine upper bound on the offset of a valid string slice position, a fact so immediate that it succumbs to automated search via aesop. While formally sound, the statement relies entirely on the internal invariants of String.Slice and offers no discernible mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This routine bound on string slice positions follows immediately from `aesop` and merely unpacks the underlying validity invariant. As a purely syntactic bookkeeping lemma for data structures, it offers no substantive mathematical content."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 2,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0005",
+      "tier": "published",
+      "name": "AKCM-2026-0005",
+      "statement_pretty": "∀ {α β : Type} [inst_3 : Preorder α] [inst_4 : LinearOrder β] {f g : α → β},\n  Antitone f →\n    Antitone g →\n      Antitone fun x ↦\n        max (min (max (min (f x) (g x)) (min (f x) (g x))) (min (f x) (g x)))\n          (min (f x) (g x))",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 2,
+        "kind": "Corollary",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 1.87/10 (confidence 0.22) and classifies the result as a Corollary (p = 0.46) in MSC 06-XX. Independent probability estimates yield P(surprising) = 0.14 and P(a human mathematician cares) = 0.06.",
+        "expected_score": 1.87
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The conclusion merely asserts the antitonicity of a needlessly iterated lattice expression that collapses immediately to the pointwise minimum of f and g. While the formal verification navigates this artificial syntactic nesting without routine automation, the underlying mathematical content is entirely elementary and warrants no more than a minor lemma."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "By idempotence of the lattice operations, the nested expression collapses immediately to the pointwise minimum of two antitone functions, which is already a standard elementary fact. The baroque syntactic dressing and inflated proof-to-statement ratio do not disguise the fact that this result is entirely trivial."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The conclusion asserts the antitonicity of an unnecessarily baroque nesting of lattice operations that collapses immediately by idempotence to the pointwise minimum of two antitone functions. While formally verified, the result offers no genuine mathematical insight beyond a routine application of `Antitone.min`."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 1,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0006",
+      "tier": "published",
+      "name": "AKCM-2026-0006",
+      "statement_pretty": "∀ {X : Type} [inst_2 : TopologicalSpace X] {Y : Type} {s : Set Y},\n  s.Finite →\n    ∀ {f : Y → Set X},\n      (∀ i ∈ s, IsClopen (f i)) →\n        ⋃ x ∈ (⋂ i ∈ s, f i) ∪ ⋂ i ∈ s, f i, connectedComponent x =\n          (⋂ i ∈ s, f i) ∪ ⋂ i ∈ s, f i",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.08/10 (confidence 0.23) and classifies the result as a Proposition (p = 0.32) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.14 and P(a human mathematician cares) = 0.25.",
+        "expected_score": 5.076
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely observes that a finite intersection of clopen sets, unioned with itself, equals the union of its own connected components. The self-union is entirely redundant and the conclusion follows immediately from elementary properties of clopen sets, offering no genuine topological insight."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result is an immediate consequence of the elementary fact that a finite intersection of clopen sets is clopen, and therefore equals the union of its connected components. The redundant self-union of the intersection in the statement is a purely formal artifact that adds no mathematical substance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely observes that a finite intersection of clopen sets is clopen and therefore coincides with the union of its connected components, a fact obscured only by the gratuitous self-union of the intersection with itself. Despite the nontrivial proof-to-statement ratio, the result is an immediate consequence of elementary point-set topology and merits no independent standing."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 4,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0007",
+      "tier": "published",
+      "name": "AKCM-2026-0007",
+      "statement_pretty": "∀ {R : Type} [inst_2 : NonUnitalNonAssocRing R] {a b c : R},\n  Commute a c → Commute b c → Commute (-c) (a - b)",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 2.66/10 (confidence 0.23) and classifies the result as a Lemma (p = 0.45) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.07 and P(a human mathematician cares) = 0.11.",
+        "expected_score": 2.655
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma establishes that in a non-unital, non-associative ring, if two elements commute with a third, then their difference commutes with the additive inverse of that element. While the generality of the ambient ring structure is mildly cute, the result is an immediate three-step consequence of basic commutation rules and scarcely merits independent publication."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "While the statement is formally valid in the rather baroque setting of a non-unital, non-associative ring, the result itself is an immediate consequence of the basic compatibility of commutation with subtraction and negation. The three-step proof offers no genuine mathematical insight, warranting classification as a minor lemma of negligible importance."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma merely records that the set of elements commuting with a fixed element in a non-unital, non-associative ring is closed under subtraction and sign reversal, a fact so elementary that it scarcely warrants a formal proof. The invocation of a non-unital, non-associative ring structure appears to be an artificial generalization of a routine arithmetic observation."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 2,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0008",
+      "tier": "published",
+      "name": "AKCM-2026-0008",
+      "statement_pretty": "∀ {R : Type} [inst_2 : CommRing R] {S : Type} [inst_4 : CommRing S] {φ : R →+* S} {a : S}\n  [inst_7 : UniformSpace R] [inst_8 : UniformSpace S] [inst_9 : IsUniformAddGroup R]\n  [inst_10 : IsTopologicalSemiring R] [inst_11 : IsUniformAddGroup S] [inst_12 : T2Space S]\n  [inst_13 : CompleteSpace S] [inst_14 : IsTopologicalRing S]\n  [inst_15 : IsLinearTopology S S],\n  Continuous ⇑φ →\n    PowerSeries.HasEval a →\n      ∀ {u : S},\n        PowerSeries.HasEval u →\n          ∀ {v : S},\n            Commute u v → UniformContinuous fun x ↦ PowerSeries.eval₂ φ (u * v) x + v",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Proposition",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.43/10 (confidence 0.24) and classifies the result as a Proposition (p = 0.34) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.31 and P(a human mathematician cares) = 0.35.",
+        "expected_score": 5.431
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Corollary",
+          "justification": "This corollary establishes the uniform continuity of a translated power series evaluation map by chaining standard topological ring properties with an elementary translation lemma. Its hypotheses are noticeably bloated by an unused evaluation point `a` and a redundant commutativity assumption in an already commutative ring, which severely limits its independent mathematical interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Proposition",
+          "justification": "This proposition establishes uniform continuity for a shifted power series evaluation map by combining standard topological nilpotency arguments with the elementary invariance of uniform continuity under translation. However, the statement is marred by an entirely unused evaluability hypothesis on an auxiliary element and a baroque accumulation of topological-ring axioms that obscure its modest content."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 2,
+          "kind": "Lemma",
+          "justification": "This lemma establishes the uniform continuity of a translated power series evaluation map under a formidable stack of topological-ring hypotheses, though it is marred by an entirely unused `HasEval a` assumption and a redundant commutativity hypothesis on a commutative ring. The conclusion follows routinely from standard uniform continuity of power series evaluation and translation by a constant, offering little beyond a mechanical exercise in typeclass assembly."
+        }
+      ],
+      "b_scores": [
+        2,
+        2,
+        2
+      ],
+      "stored": {
+        "Referee A": 5,
+        "Referee B": 2
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0009",
+      "tier": "published",
+      "name": "AKCM-2026-0009",
+      "statement_pretty": "∀ {F : Type} [inst_2 : Field F] {E : Type} [inst_4 : Field E] [inst_5 : Algebra F E]\n  {H1 H2 : Subgroup Gal(E/F)},\n  H1 ≤ H2 →\n    ∀ {u : Set (IntermediateField F E)},\n      IntermediateField.fixedField H2 ∈ upperBounds u →\n        IsLUB (upperBounds u) (IntermediateField.fixedField H1) →\n          ∀ {v : Filter (IntermediateField F E)},\n            Set.Iio (IntermediateField.fixedField H1) ≤ᶠ[v] ⋃ x ∈ upperBounds u, Set.Iio x",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.79/10 (confidence 0.23) and classifies the result as a Lemma (p = 0.35) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.23 and P(a human mathematician cares) = 0.16.",
+        "expected_score": 4.792
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This lemma dresses up a routine order-theoretic identity for principal lower sets in the language of Galois theory and filters, despite the filter playing no genuine role in the argument. The hypotheses concerning the subgroup inclusion and the upper bound appear entirely artificial, serving only to obscure a straightforward consequence of the least upper bound property."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The Galois-theoretic hypotheses serve merely to manufacture an upper bound in the lattice of intermediate fields, after which the conclusion reduces to a routine order-theoretic identity dressed up with an arbitrary filter. While formally sound, the statement is an artificial mashup of field theory and filter-theoretic boilerplate with no discernible mathematical utility."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The conclusion is an immediate order-theoretic tautology: since the fixed field of H1 is assumed to be the least upper bound of the upper bounds of u, its strict down-set coincides with the union of the strict down-sets of those upper bounds. The Galois-theoretic hypotheses and the arbitrary filter v are entirely superfluous window dressing, rendering the result too artificial to merit a higher classification."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 5,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0010",
+      "tier": "published",
+      "name": "AKCM-2026-0010",
+      "statement_pretty": "∀ {R : Type} [inst_2 : CommRing R] {τ : Type} {f : MvPowerSeries τ R} {φ : PowerSeries R},\n  MvPowerSeries.constantCoeff f = 0 →\n    PowerSeries.constantCoeff φ = 0 →\n      ∀ (u : ℕ),\n        IsUnit ((PowerSeries.subst f φ).order \\ f.order) →\n          ((PowerSeries.monomial u)\n                (symmDiff (PowerSeries.subst f φ).order f.order)).order =\n            ↑u",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.77/10 (confidence 0.24) and classifies the result as a Lemma (p = 0.46) in MSC 13-XX. Independent probability estimates yield P(surprising) = 0.43 and P(a human mathematician cares) = 0.24.",
+        "expected_score": 4.773
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The result artificially couples the symmetric difference of power series orders with a unit assumption on their set-theoretic difference solely to trigger a standard monomial order calculation. While formally sound, the hypotheses appear entirely contrived to accommodate the proof's syntactic path rather than to illuminate any genuine structure in formal power series rings."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The hypotheses artificially couple the symmetric difference of formal power series orders with a unit assumption solely to ensure the nonvanishing of a monomial's coefficient. Once unpacked, the conclusion merely recovers the degree of a nonzero monomial, offering no genuine insight into the arithmetic of power series."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The result merely observes that a monomial with a nonzero coefficient has the expected order, disguised behind an artificial unit hypothesis on the symmetric difference of power series orders. While formally sound, the invocation of `symmDiff` on `ENat`-valued orders in the context of multivariate power series substitution is an unmotivated contrivance of no discernible classical interest."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 5,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0011",
+      "tier": "published",
+      "name": "AKCM-2026-0011",
+      "statement_pretty": "∀ {F E : Type} (E' : Type) [inst_4 : Field F] [inst_5 : Field E] [inst_6 : Field E']\n  [inst_7 : Algebra F E] [inst_8 : Algebra F E'] [inst_9 : Algebra E E']\n  [inst_10 : IsScalarTower F E E'] (L : IntermediateField F E) [inst_12 : Normal F E]\n  [inst_13 : Normal F E'] {u : ℕ},\n  IsRelPrime u\n      (IntermediateField.map (IsScalarTower.toAlgHom F E E') L).fixingSubgroup.index →\n    ∀ {v : ℕ},\n      u ∣ v * L.fixingSubgroup.index →\n        IsPrimal u →\n          gcd L.fixingSubgroup.index u ∣\n            gcd\n              (IntermediateField.map (IsScalarTower.toAlgHom F E E') L).fixingSubgroup.index\n              v",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 5,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 4.67/10 (confidence 0.21) and classifies the result as a Lemma (p = 0.49) in MSC 12-XX. Independent probability estimates yield P(surprising) = 0.31 and P(a human mathematician cares) = 0.25.",
+        "expected_score": 4.67
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "Beneath a formidable apparatus of scalar towers and normal field extensions, this result merely observes that once the index of the fixing subgroup is invariant under the ambient embedding, the divisibility conclusion collapses to an elementary gcd identity. The hypotheses are conspicuously overdetermined, rendering the Galois-theoretic setting an elaborate disguise for a routine arithmetic observation."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The Galois-theoretic apparatus—a tower of normal extensions and the index of a fixing subgroup under an embedding—serves only to equate two indices, after which the coprimality hypothesis renders the resulting divisibility of greatest common divisors immediate. Despite clearing the automated novelty checks, the statement is an artificial amalgamation of elementary arithmetic and field-theoretic boilerplate, warranting only a low-priority Lemma designation."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "This result dresses up an elementary divisibility fact about natural numbers in the heavy regalia of Galois theory and normal field extensions, only to exploit the equality of fixing subgroup indices under an embedding. The hypotheses are artificially tangled, and the conclusion is a routine consequence of coprimality and primality once the field-theoretic veneer is stripped away."
+        }
+      ],
+      "b_scores": [
+        1,
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 5,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0012",
+      "tier": "published",
+      "name": "AKCM-2026-0012",
+      "statement_pretty": "∀ {α β : Type} {f : α → β},\n  Function.Bijective f →\n    ∀ (b : β) {u : β → β},\n      Function.IsConstOn u (f '' {x | f x = b}) → Function.IsConstOn (u ∘ f) {x | f x = b}",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.22/10 (confidence 0.27) and classifies the result as a Lemma (p = 0.52) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.20 and P(a human mathematician cares) = 0.12.",
+        "expected_score": 3.223
+      },
+      "referee_b": [
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The conclusion that a composition is constant on a set whenever the outer map is constant on its image holds for any function whatsoever, rendering the bijectivity hypothesis entirely superfluous. Routing this elementary observation through uniqueness, subsingletons, and bijections on images inflates a triviality into a six-step detour of minimal mathematical interest."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "The conclusion that $u \\circ f$ is constant on the fiber $f^{-1}(\\{b\\})$ holds unconditionally by definition, rendering both the bijectivity hypothesis on $f$ and the constancy hypothesis on $u$ entirely redundant. Its six-step derivation via unique existence and subsingleton images is an unnecessarily baroque detour around a tautology."
+        },
+        {
+          "error": "JSONDecodeError: Invalid \\escape: line 5 column 250 (char 312)"
+        }
+      ],
+      "b_scores": [
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 3,
+        "Referee B": 1
+      }
+    },
+    {
+      "id": "published/AKCM-2026-0013",
+      "tier": "published",
+      "name": "AKCM-2026-0013",
+      "statement_pretty": "∀ {α β : Type} {f : α → β},\n  Function.Bijective f →\n    ∀ (b : β) {u : β → β},\n      Function.IsConstOn u (f '' {x | f x = b}) →\n        ∀ {v : α → β}, Set.EqOn (u ∘ f) v {x | f x = b} → Function.IsConstOn v {x | f x = b}",
+      "referee_a": {
+        "model": "gemini-decision-1",
+        "importance": 3,
+        "kind": "Lemma",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 3.18/10 (confidence 0.29) and classifies the result as a Lemma (p = 0.49) in MSC 03-XX. Independent probability estimates yield P(surprising) = 0.22 and P(a human mathematician cares) = 0.11.",
+        "expected_score": 3.176
+      },
+      "referee_b": [
+        {
+          "error": "JSONDecodeError: Invalid \\escape: line 5 column 58 (char 120)"
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "Because the bijectivity of f forces the fiber {x | f x = b} to be a singleton, any function v is automatically constant on it, rendering the hypotheses on u and the agreement of v with u ∘ f entirely superfluous. While the proof-to-statement ratio of 15.44 suggests a remarkably circuitous formal derivation, this baroque scaffolding cannot disguise the underlying triviality of the claim."
+        },
+        {
+          "model": "gemini-4-hydrogen",
+          "importance": 1,
+          "kind": "Lemma",
+          "justification": "Because the bijectivity of f forces the fiber {x | f x = b} to be a singleton, any function is automatically constant on it, rendering the auxiliary hypotheses on u and v entirely superfluous. The substantial proof-to-statement ratio reflects an unnecessarily circuitous derivation of a set-theoretic triviality."
+        }
+      ],
+      "b_scores": [
+        1,
+        1
+      ],
+      "stored": {
+        "Referee A": 3,
+        "Referee B": 1
+      }
+    }
+  ]
+}

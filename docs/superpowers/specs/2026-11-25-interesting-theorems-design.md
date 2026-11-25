@@ -304,3 +304,32 @@ Checked against what was published: of the twelve results from the two live runs
 
 Benchmark with both changes (`bench/gates.json`): 10 candidates, 10 valid, 2 modules, 0 violations; one statement rejected by `exact?` (the only candidate of the short exact sequence module, which was one lemma away), two derivations rejected for a dangling hypothesis, no gate errors. The run took 271 s of wall time on a machine that was swapping; phase timings show index building and tree building slowed by the same factor as the search, and the two new computations took about 10 ms per run.
 
+
+### Referee calibration on real Mathlib theorems
+
+Both referees scored 50 Mathlib theorems through the production prompt (2026-11-25, Actions run 45547148937, scores in `bench/calibration-2026-11-25.json`): 18 named theorems and 8 trivial facts chosen by hand, and a seeded random sample of 24 theorems from the eight modules the search has explored or is benchmarked on. The 13 published results were scored again in the same run. Referee A was asked once per item and Referee B three times; 187 of Referee B's 189 calls returned a score.
+
+| Tier | Items | Referee A mean | Referee B mean | Referee B lowest and highest item | Referee B noise SD |
+|---|---|---|---|---|---|
+| Named theorems | 18 | 7.13 | 4.94 | 1.33 to 8.67 | 1.40 |
+| Random library theorems | 24 | 4.27 | 1.68 | 0.33 to 3.67 | 0.41 |
+| Trivial facts | 8 | 1.28 | 0.04 | 0.00 to 0.33 | 0.20 |
+| Published results | 13 | 3.60 | 1.18 | 1.00 to 2.00 | 0.23 |
+
+Referee B's score for an item is the mean of its repeats. The noise SD is the pooled standard deviation of the repeats on one item.
+
+**Both referees use their scale.** Referee B gives the trivial facts a 0 in 23 of 24 calls, the fundamental theorem of algebra a 9 in two of three, and the average library theorem between 1 and 2. Over the 50 Mathlib items the two referees rank alike (rank correlation 0.92). Referee A separates the hand-picked tiers completely: its highest trivial fact scores 1.91 and its lowest named theorem 6.17.
+
+**A score of 1 from Referee B is a stable verdict.** On 11 of the 13 published results every repeat equals the stored score, and the standard deviation of the repeats on one result is 0.23. Referee A returns the same expected score for the six results of the first nightly run to three decimals. The seven older results score differently today because their records were read in a different form when they were first scored.
+
+**Where the published results stand.** With Referee B they are at 1.18, below the average random library theorem (1.68) and at the level of the library's boilerplate: 10 of the 24 sampled theorems score 1 or less. With Referee A the six results of the first nightly run average 4.34, which is the level of the average library theorem (4.27), and the best of them scores above 17 of the 24. On real theorems the two referees agree; on generated ones Referee A places the result in the middle of the library and Referee B at the bottom. Referee B's reports say why: hypotheses that do no work and a subject that is decoration. Referee A does not see either.
+
+**What is within reach.** Three of the 24 sampled theorems reach a Referee B mean of 3 and none reaches 4; half reach 2. A mechanically derived statement that Referee B rated like a good library theorem would score 2 to 3. Higher scores went only to theorems the referee recognises by name.
+
+**Referee B reads the lemma list.** Named theorems that Mathlib proves in one or two steps from a stronger lemma score low: the irrationality of the square root of two 1.33 ("a two-step specialization of `Nat.Prime.irrational_sqrt`"), the mean value theorem 2.00, rank and nullity 2.67. Among the named theorems, Referee B's score follows the ratio of proof size to statement size (rank correlation 0.86), and among the library sample it follows the number of cited lemmas (0.84). Both are observations on small samples in which deeper theorems also have longer proofs, so they do not show that a longer list raises a score.
+
+**Equivalences score somewhat higher.** In the library sample, the ten equivalences average 2.03 with Referee B, the four generated projection equations 1.25, and the ten others 1.50. The generator never produces an equivalence, since the lemma index leaves them out.
+
+Limits of the comparison: every Mathlib theorem was shown with the badges of a published result ("`exact?` failed", "not routine"), which is false for the trivial facts; the lemma list and size ratio come from the real proof and are not inflated as the journal's are; and the prompt tells the referee that the journal publishes unimportant theorems, which did not stop it from giving a 9.
+
+The run also exposed a defect. Two of Referee B's replies were not valid JSON (a backslash escape inside a string), and `extract_json` raised an error that `process_editorial` does not catch, so the same reply during a nightly run would have ended the run after verification. `extract_json` now raises `LLMError`, which the editorial desk handles by falling back.
