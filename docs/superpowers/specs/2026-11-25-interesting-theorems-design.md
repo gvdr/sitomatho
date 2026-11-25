@@ -273,3 +273,20 @@ For that reason the floor is a setting with default 1, and `wander.py` gives eac
 Benchmark after the follow-up, default settings (`bench/followup.json`): 142.2 s wall, 92.0 s search, 11 candidates, 11 valid, 3 modules, 0 violations. With `--min-focus-steps 2` (`bench/followup-floor2.json`): 125.7 s wall, 84.5 s search, 9 valid, 2 modules, 0 violations. Search time at default settings is 15 s above the `final` row; whether that is the readable-size computation or variation between runs was not isolated.
 
 Still open: refitting the interest score against the candidate log, and indexing equivalences (as two implications) so that modules made mostly of `iff` statements can supply on-topic steps.
+
+### First nightly run on `main`
+
+Manual run of the nightly workflow on `main` after the merge (2026-11-25, Actions run 45519007453, results `AKCM-2026-0008` to `AKCM-2026-0013`, bot commit `022dc50`). Four modules were explored, 15 candidates screened, six published.
+
+| | Baseline (7 results) | Feature-branch run | This run |
+|---|---|---|---|
+| Referee A expected score, published, mean | 2.58 | 4.54 | 4.34 |
+| Referee A expected score, whole pool, mean | not screened | 3.84 (18) | 3.91 (15) |
+| Referee B importance, published, mean | 1.14 | 1.00 | 1.17 |
+
+The gain with Referee A holds on four modules that the feature-branch run did not visit. Referee B is where it was: five results at 1 and one at 2.
+
+Three of the four modules drew an on-topic floor of 2, and one of those three (`Mathlib.AlgebraicTopology.SimplicialObject.Split`) yielded nothing. Candidates from floor-2 modules average 3.91 with Referee A (9 candidates) and candidates from the floor-1 module average 3.91 (6 candidates). By candidate, those whose only on-topic step is the seed average 4.16 (4 candidates) and the others 3.82 (11 candidates). One run with different modules in each group settles nothing, and what it shows does not favour the floor.
+
+Referee B's reasons are now specific. In four of the six reports it names hypotheses that do no work: a hypothesis about a variable that occurs nowhere else in the statement (`PowerSeries.HasEval a` in `AKCM-2026-0008`), hypotheses that are unnecessary because the fibre of a bijection over a point is a singleton (`AKCM-2026-0012` and `AKCM-2026-0013`), and a field-extension setting around a divisibility fact about natural numbers (`AKCM-2026-0011`).
+
