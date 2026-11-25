@@ -1,0 +1,57 @@
+name: Referee Calibration
+
+# Has the referees score real Mathlib theorems through the production prompt, to learn
+# what the scale means. Writes nothing to the repository: the scores are in the job
+# summary and in the `referee-calibration` artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      repeats:
+        description: "Referee B calls per theorem"
+        required: false
+        default: "3"
+      pause:
+        description: "Seconds to wait after each referee call"
+        required: false
+        default: "0.5"
+
+permissions:
+  contents: read
+
+jobs:
+  calibrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_ENDPOINT: ${{ vars.LLM_ENDPOINT }}
+      DECISIONS_ENDPOINT: ${{ vars.DECISIONS_ENDPOINT }}
+      DECIDER_1_MODEL: ${{ vars.DECIDER_1_MODEL }}
+      DECIDER_2_MODEL: ${{ vars.DECIDER_2_MODEL }}
+      REPEATS: ${{ inputs.repeats }}
+      PAUSE: ${{ inputs.pause }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      - name: Score the calibration set with both referees
+        run: |
+          python3 scripts/calibrate_referees.py \
+            --out calibration.json \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --repeats "$REPEATS" \
+            --pause "$PAUSE"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: referee-calibration
+          path: calibration.json
+          if-no-files-found: warn

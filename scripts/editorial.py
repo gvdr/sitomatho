@@ -18,6 +18,10 @@ ANNOUNCEMENT = "Today we are proud to announce "
 REFEREE_A_PERSONA = (
     "You are a formalist inclined to reward non-routine proof depth and cross-namespace synthesis."
 )
+REFEREE_B_PERSONA = (
+    "You are a skeptical classical mathematician who is hard to impress and suspicious of "
+    "artificial hypotheses."
+)
 
 # Curated fallback invented families (all verified absent from blocklist)
 FALLBACK_FAMILIES = [
@@ -842,7 +846,7 @@ def process_editorial(
             model=llm_cfg["decider_2_model"],
             endpoint=endpoint,
             decisions_endpoint=decisions_endpoint,
-            persona_note="You are a skeptical classical mathematician who is hard to impress and suspicious of artificial hypotheses.",
+            persona_note=REFEREE_B_PERSONA,
             offline=use_offline,
             persona_bias=-1,
         )
@@ -856,7 +860,7 @@ def process_editorial(
                 model=llm_cfg["decider_1_model"],
                 endpoint=endpoint,
                 decisions_endpoint=decisions_endpoint,
-                persona_note="You are a skeptical classical mathematician who is hard to impress and suspicious of artificial hypotheses.",
+                persona_note=REFEREE_B_PERSONA,
                 offline=use_offline,
                 persona_bias=-1,
             )

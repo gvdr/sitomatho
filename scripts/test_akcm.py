@@ -747,6 +747,145 @@ def test_screening_stops_calling_a_failing_referee() -> None:
     assert [e.candidate["statement_hash"] for e in ranked][0] == "a"
 
 
+def test_calibration_set_is_well_formed() -> None:
+    import calibrate_referees as calibration
+
+    items = calibration.load_calibration_set()
+    tiers: dict[str, int] = {}
+    for item in items:
+        tiers[item["tier"]] = tiers.get(item["tier"], 0) + 1
+    assert tiers == {"famous": 18, "trivial": 8, "library": 24}
+    assert len({item["name"] for item in items}) == len(items)
+    for item in items:
+        assert "⋯" not in item["statement_pretty"] and "✝" not in item["statement_pretty"]
+        record = calibration.calibration_record(item)
+        assert record["id"] == item["tier"] + "/" + item["name"]
+        # Every published specialist result carries these badge values, so they are held
+        # constant and the statement is what varies.
+        assert record["novelty"]["level_1_exact_failed"] is True
+        assert record["novelty"]["level_2_not_routine"] is True
+        assert record["steps_taken"] == len(item["lemmas"])
+        assert record["interdisciplinarity"] == len(record["namespaces"])
+        summary = _candidate_summary_for_llm(record)
+        assert item["statement_pretty"] in summary
+        assert "theorem " + item["name"] not in summary
+
+    primes = calibration.calibration_record(next(i for i in items if i["name"] == "Nat.exists_infinite_primes"))
+    assert primes["statement_pretty"] == "∀ (n : ℕ), ∃ p, n ≤ p ∧ Nat.Prime p"
+    assert primes["namespaces"][:2] == ["ne_of_gt", "Nat"]
+    assert primes["novelty"]["level_3_ratio"] == 19.0
+    assert calibration.top_namespace("Mathlib.Tactic.Ring.add_pf") == "Tactic"
+    assert calibration.top_namespace("le_refl") == "le_refl"
+
+
+def test_calibration_includes_published_results_with_their_stored_scores() -> None:
+    import calibrate_referees as calibration
+
+    with TemporaryDirectory() as directory:
+        results = Path(directory)
+        (results / "AKCM-2026-0001").mkdir()
+        meta = {
+            "id": "AKCM-2026-0001",
+            "statement_lean": "theorem t : True",
+            "statement_pretty": "True",
+            "statement_hash": "h",
+            "editorial": {"referees": [
+                {"referee_id": "Referee A", "importance": 4},
+                {"referee_id": "Referee B", "importance": 1},
+            ]},
+        }
+        (results / "AKCM-2026-0001" / "meta.json").write_text(json.dumps(meta), encoding="utf-8")
+        (results / "AKCM-2026-0002").mkdir()
+        records = calibration.published_records(results)
+    assert [record["id"] for record in records] == ["published/AKCM-2026-0001"]
+    assert records[0]["tier"] == "published"
+    assert records[0]["stored"] == {"Referee A": 4, "Referee B": 1}
+    assert records[0]["statement_pretty"] == "True"
+
+
+def test_calibration_scores_with_production_referees_and_never_falls_back() -> None:
+    import calibrate_referees as calibration
+    import editorial
+    from llm import LLMError
+
+    cfg = {"llm": {"decider_1_model": "model-a", "decider_2_model": "model-b", "endpoint": "https://e"}}
+    record = {"id": "famous/x", "tier": "famous", "name": "x", "statement_pretty": "S"}
+    calls: list[dict] = []
+    replies = iter([5, LLMError("rate limited"), 7])
+
+    def decide(meta: dict, **kwargs: object) -> dict:
+        calls.append(kwargs)
+        if kwargs["referee_id"] == "Referee A":
+            return {"model": "model-a", "importance": 6, "kind": "Theorem",
+                    "justification": "a", "decision_metrics": {"expected_score": 6.4}}
+        reply = next(replies)
+        if isinstance(reply, Exception):
+            raise reply
+        return {"model": "model-b", "importance": reply, "kind": "Lemma", "justification": "b"}
+
+    row = calibration.score_item(record, cfg=cfg, repeats=3, decide=decide)
+    assert [call["referee_id"] for call in calls] == ["Referee A", "Referee B", "Referee B", "Referee B"]
+    assert calls[0]["model"] == "model-a" and calls[0]["persona_note"] == editorial.REFEREE_A_PERSONA
+    assert all(call["model"] == "model-b" for call in calls[1:])
+    assert all(call["persona_note"] == editorial.REFEREE_B_PERSONA for call in calls[1:])
+    assert all(call["offline"] is False for call in calls)
+    assert row["referee_a"]["importance"] == 6 and row["referee_a"]["expected_score"] == 6.4
+    assert [reply.get("importance") for reply in row["referee_b"]] == [5, None, 7]
+    assert "rate limited" in row["referee_b"][1]["error"]
+    assert row["b_scores"] == [5, 7]
+
+
+def test_calibration_summary_groups_by_tier_and_reports_noise() -> None:
+    import calibrate_referees as calibration
+
+    def row(tier: str, name: str, a: float | None, b: list[int], stored: dict | None = None) -> dict:
+        return {
+            "id": tier + "/" + name, "tier": tier, "name": name, "statement_pretty": "S",
+            "referee_a": {"expected_score": a, "importance": round(a)} if a is not None else {"error": "x"},
+            "referee_b": [{"importance": score} for score in b], "b_scores": b,
+            **({"stored": stored} if stored else {}),
+        }
+
+    rows = [
+        row("famous", "p", 7.0, [6, 8]),
+        row("famous", "q", 5.0, [2, 2]),
+        row("trivial", "r", None, []),
+        row("published", "AKCM-2026-0001", 3.0, [1, 3], {"Referee A": 3, "Referee B": 1}),
+    ]
+    summary = calibration.summarise(rows)
+    assert summary["famous"]["n"] == 2
+    assert summary["famous"]["a_mean"] == 6.0
+    assert summary["famous"]["b_mean"] == 4.5
+    assert summary["famous"]["b_min"] == 2.0 and summary["famous"]["b_max"] == 7.0
+    # Item p has sample variance 2, item q has 0; the pooled value is their mean, 1.
+    assert summary["famous"]["b_noise_sd"] == 1.0
+    assert summary["trivial"]["n"] == 1 and summary["trivial"]["b_mean"] is None
+    assert summary["trivial"]["scored"] == 0
+
+    text = calibration.render_markdown(rows, summary)
+    assert "| famous | 2 | 2 | 6.00 | 4.50 |" in text
+    assert "| trivial | 1 | 0 | n/a | n/a |" in text
+    assert "famous/p" in text and "6, 8" in text
+    assert "stored 1" in text
+
+
+def test_calibration_refuses_to_report_offline_scores_as_live() -> None:
+    import calibrate_referees as calibration
+
+    with TemporaryDirectory() as directory, patch.dict(os.environ, {}, clear=False):
+        for var in ("LLM_API_KEY", "OPENROUTER_API_KEY", "GEMINI_API_KEY", "OPENAI_API_KEY", "GROQ_API_KEY"):
+            os.environ.pop(var, None)
+        out = Path(directory) / "calibration.json"
+        assert calibration.main(["--out", str(out), "--repeats", "1", "--limit", "2"]) == 1
+        assert not out.exists()
+        assert calibration.main(["--out", str(out), "--repeats", "2", "--limit", "2", "--offline"]) == 0
+        data = json.loads(out.read_text(encoding="utf-8"))
+    assert data["offline"] is True and data["repeats"] == 2
+    assert len(data["rows"]) == 2
+    assert all(len(row["referee_b"]) == 2 for row in data["rows"])
+    assert all(reply["model"] == "offline-heuristic-referee" for row in data["rows"] for reply in row["referee_b"])
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -773,4 +912,9 @@ if __name__ == "__main__":
     test_timed_out_command_leaves_no_child_running()
     test_walk_output_survives_crash_and_is_named_per_module()
     test_screening_stops_calling_a_failing_referee()
+    test_calibration_set_is_well_formed()
+    test_calibration_includes_published_results_with_their_stored_scores()
+    test_calibration_scores_with_production_referees_and_never_falls_back()
+    test_calibration_summary_groups_by_tier_and_reports_noise()
+    test_calibration_refuses_to_report_offline_scores_as_live()
     print("All AKCM unit tests passed.")

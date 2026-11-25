@@ -25,6 +25,8 @@ lake build BabelTest               # Lean checks in Babel/Tests.lean; a failing 
 .venv/bin/python scripts/verify.py results/AKCM-2026-0001  # kernel-check one result
 .venv/bin/python scripts/pipeline.py --seed 20261124 --count 1 --offline   # generate without LLM credentials
 .venv/bin/python scripts/bench_walk.py --label try --strict --only Filter  # benchmark one module (omit --only for all four)
+.venv/bin/python scripts/calibrate_referees.py --out .tmp/calibration.json --offline   # plumbing check; live scores need the key, so run the Referee Calibration workflow
+lake env lean scripts/calibration_set.lean > scripts/calibration_set.json   # rebuild the calibration set after a Mathlib bump
 SITE_BASE_PATH="" .venv/bin/python scripts/build_site.py   # render _site/
 python3 -m http.server -d _site 8000
 ```
@@ -83,6 +85,8 @@ With `--wander` (and for the launch issue) the referee chooses what is published
 
 Every editorial step degrades to a deterministic offline heuristic. This happens with `--offline`, when no API key is found (`LLM_API_KEY`, then `OPENROUTER_API_KEY`, `GEMINI_API_KEY`, `OPENAI_API_KEY`, `GROQ_API_KEY`), and on any `LLMError`. A run therefore never fails because of the LLM, and a result whose referee `model` is `offline-heuristic-referee` was not reviewed live.
 
+`calibrate_referees.py` measures the referees themselves. It has both score real Mathlib theorems through `run_decider` with the production personas, so the request is the one a generated result gets. The theorems are in `scripts/calibration_set.json`, built by `scripts/calibration_set.lean`: named theorems and trivial facts chosen by hand, and a seeded random sample from modules the search has explored, all printed like generated statements and with the lemma list of their real proofs. The journal's own results are scored again alongside. Referee B is asked several times per item because it answers at temperature 0.85. A failed call is recorded as an error; the script never substitutes the offline heuristic or another model.
+
 `llm.py` is a `urllib`-only client, so there is no SDK dependency. Model and endpoint defaults come from `[llm]` in `akcm.toml` and can be overridden by environment variables read in `config.py` (`LLM_ENDPOINT`, `DECISIONS_ENDPOINT`, `DECIDER_1_MODEL`, `DECIDER_2_MODEL`, `NAMER_MODEL`, `GLOSS_MODEL`, plus `SITE_BASE_URL`, `SITE_BASE_PATH`, `SITE_CUSTOM_DOMAIN`, `SITE_REPO_URL`).
 
 `build_site.py` renders `site/templates/` with Jinja2 into `_site/`: one page per issue grouped by two-digit MSC section, one page per result with an inline SVG of the lemma dependency DAG, the model-family leaderboard, retractions, about, and Atom feeds. It deletes and rebuilds `_site/` on every run.
@@ -102,7 +106,7 @@ Git is the database. `results/AKCM-YYYY-NNNN/` holds `Result.lean` and `meta.jso
 
 ### CI
 
-`nightly.yml` runs the generator every night (`--wander --areas 4`), publishes an issue on Sundays (`--issue-only`), and commits `results/` and `state/` straight to `main` as "AKCM Editorial Bot". Manual dispatch inputs select the launch issue or a re-editorial pass. `pages.yml` runs on every push to `main` and after each successful nightly run: it verifies all results with the Lean kernel, then builds and deploys the site. Because the bot pushes to `main`, pull before starting local work.
+`nightly.yml` runs the generator every night (`--wander --areas 4`), publishes an issue on Sundays (`--issue-only`), and commits `results/` and `state/` straight to `main` as "AKCM Editorial Bot". Manual dispatch inputs select the launch issue or a re-editorial pass. `pages.yml` runs on every push to `main` and after each successful nightly run: it verifies all results with the Lean kernel, then builds and deploys the site. Because the bot pushes to `main`, pull before starting local work. `calibrate.yml` (manual dispatch only) runs `calibrate_referees.py` with the live referees and commits nothing: the scores are in the job summary and in the `referee-calibration` artifact (`gh run download <run> -n referee-calibration`).
 
 ## Things that are easy to get wrong
 
