@@ -16,7 +16,8 @@
     "Nat.dvd_factorial",
     "Nat.minFac_pos",
     "Nat.minFac_dvd",
-    "Nat.Prime.not_dvd_one"]},
+    "Nat.Prime.not_dvd_one"],
+   "label": "Infinitude of primes (Euclid)"},
   {"tier": "famous",
    "statement_size": 59,
    "statement_pretty":
@@ -26,7 +27,8 @@
    "name": "Subgroup.card_subgroup_dvd_card",
    "module": "Mathlib.GroupTheory.Coset.Card",
    "lemmas":
-   ["Subgroup.card_eq_card_quotient_mul_card_subgroup", "dvd_mul_left"]},
+   ["Subgroup.card_eq_card_quotient_mul_card_subgroup", "dvd_mul_left"],
+   "label": "Lagrange's theorem"},
   {"tier": "famous",
    "statement_size": 19,
    "statement_pretty": "∀ {α : Type} (f : α → Set α), ¬Function.Surjective f",
@@ -34,7 +36,8 @@
    "proof_size": 253,
    "name": "Function.cantor_surjective",
    "module": "Mathlib.Logic.Function.Basic",
-   "lemmas": []},
+   "lemmas": [],
+   "label": "Cantor's theorem"},
   {"tier": "famous",
    "statement_size": 271,
    "statement_pretty":
@@ -47,7 +50,8 @@
    ["IsPreconnected.intermediate_value",
     "isPreconnected_Icc",
     "Set.left_mem_Icc",
-    "Set.right_mem_Icc"]},
+    "Set.right_mem_Icc"],
+   "label": "Intermediate value theorem"},
   {"tier": "famous",
    "statement_size": 137,
    "statement_pretty":
@@ -62,7 +66,8 @@
     "Set.Nonempty.image",
     "Set.forall_mem_image",
     "Set.mem_image_of_mem",
-    "Set.image_id'"]},
+    "Set.image_id'"],
+   "label": "Extreme value theorem"},
   {"tier": "famous",
    "statement_size": 499,
    "statement_pretty":
@@ -77,7 +82,8 @@
     "matPolyEquiv_smul_one",
     "Polynomial.eval_mul_X_sub_C",
     "map_mul",
-    "Matrix.matPolyEquiv_charmatrix"]},
+    "Matrix.matPolyEquiv_charmatrix"],
+   "label": "Cayley–Hamilton theorem"},
   {"tier": "famous",
    "statement_size": 71,
    "statement_pretty": "∀ {f : Polynomial ℂ}, 0 < f.degree → ∃ z, f.IsRoot z",
@@ -100,7 +106,8 @@
     "Polynomial.funext",
     "inv_injective",
     "Polynomial.eval_zero",
-    "inv_zero"]},
+    "inv_zero"],
+   "label": "Fundamental theorem of algebra"},
   {"tier": "famous",
    "statement_size": 141,
    "statement_pretty":
@@ -110,9 +117,8 @@
    "name": "Sylow.exists_subgroup_card_pow_prime",
    "module": "Mathlib.GroupTheory.Sylow",
    "lemmas":
-   ["Sylow.exists_subgroup_card_pow_prime_ge",
-    "Subgroup.card_bot",
-    "pow_zero"]},
+   ["Sylow.exists_subgroup_card_pow_prime_ge", "Subgroup.card_bot", "pow_zero"],
+   "label": "Sylow: subgroups of every prime-power order"},
   {"tier": "famous",
    "statement_size": 391,
    "statement_pretty":
@@ -130,7 +136,8 @@
     "isFixedPt_of_tendsto_iterate",
     "Continuous.continuousAt",
     "LipschitzWith.continuous",
-    "edist_le_of_edist_le_geometric_of_tendsto"]},
+    "edist_le_of_edist_le_geometric_of_tendsto"],
+   "label": "Banach fixed-point theorem"},
   {"tier": "famous",
    "statement_size": 79,
    "statement_pretty":
@@ -142,7 +149,8 @@
    "lemmas":
    ["IsCompact.isClosed",
     "IsCompact.isBounded",
-    "Metric.isCompact_of_isClosed_isBounded"]},
+    "Metric.isCompact_of_isClosed_isBounded"],
+   "label": "Heine–Borel theorem"},
   {"tier": "famous",
    "statement_size": 215,
    "statement_pretty":
@@ -151,7 +159,8 @@
    "proof_size": 950,
    "name": "ZMod.pow_card_sub_one_eq_one",
    "module": "Mathlib.FieldTheory.Finite.Basic",
-   "lemmas": ["FiniteField.pow_card_sub_one_eq_one", "ZMod.card"]},
+   "lemmas": ["FiniteField.pow_card_sub_one_eq_one", "ZMod.card"],
+   "label": "Fermat's little theorem"},
   {"tier": "famous",
    "statement_size": 217,
    "statement_pretty":
@@ -160,7 +169,8 @@
    "proof_size": 15605,
    "name": "Nat.sum_four_squares",
    "module": "Mathlib.NumberTheory.SumFourSquares",
-   "lemmas": ["Nat.Prime.sum_four_squares", "Nat.euler_four_squares"]},
+   "lemmas": ["Nat.Prime.sum_four_squares", "Nat.euler_four_squares"],
+   "label": "Lagrange's four-square theorem"},
   {"tier": "famous",
    "statement_size": 317,
    "statement_pretty":
@@ -174,7 +184,8 @@
     "DifferentiableAt.hasDerivAt",
     "DifferentiableWithinAt.differentiableAt",
     "IsOpen.mem_nhds",
-    "isOpen_Ioo"]},
+    "isOpen_Ioo"],
+   "label": "Mean value theorem"},
   {"tier": "famous",
    "statement_size": 41,
    "statement_pretty": "Irrational √2",
@@ -182,7 +193,8 @@
    "proof_size": 13,
    "name": "irrational_sqrt_two",
    "module": "Mathlib.NumberTheory.Real.Irrational",
-   "lemmas": ["Nat.Prime.irrational_sqrt", "Nat.prime_two"]},
+   "lemmas": ["Nat.Prime.irrational_sqrt", "Nat.prime_two"],
+   "label": "Irrationality of √2"},
   {"tier": "famous",
    "statement_size": 237,
    "statement_pretty":
@@ -205,7 +217,8 @@
     "Polynomial.Splits.map",
     "LinearEquiv.finrank_eq",
     "IsGalois.IntermediateField.AdjoinSimple.card_aut_eq_finrank",
-    "Nat.card_congr"]},
+    "Nat.card_congr"],
+   "label": "Order of the Galois group equals the degree"},
   {"tier": "famous",
    "statement_size": 121,
    "statement_pretty":
@@ -214,7 +227,8 @@
    "proof_size": 989,
    "name": "Ideal.exists_le_maximal",
    "module": "Mathlib.RingTheory.Ideal.Maximal",
-   "lemmas": []},
+   "lemmas": [],
+   "label": "Krull's theorem"},
   {"tier": "famous",
    "statement_size": 45,
    "statement_pretty":
@@ -223,7 +237,8 @@
    "proof_size": 233,
    "name": "Function.Embedding.schroeder_bernstein",
    "module": "Mathlib.SetTheory.Cardinal.SchroederBernstein",
-   "lemmas": ["Function.Embedding.schroeder_bernstein_of_rel"]},
+   "lemmas": ["Function.Embedding.schroeder_bernstein_of_rel"],
+   "label": "Schröder–Bernstein theorem"},
   {"tier": "famous",
    "statement_size": 785,
    "statement_pretty":
@@ -233,7 +248,8 @@
    "name": "LinearMap.finrank_range_add_finrank_ker",
    "module": "Mathlib.LinearAlgebra.FiniteDimensional.Lemmas",
    "lemmas":
-   ["LinearEquiv.finrank_eq", "Submodule.finrank_quotient_add_finrank"]},
+   ["LinearEquiv.finrank_eq", "Submodule.finrank_quotient_add_finrank"],
+   "label": "Rank–nullity theorem"},
   {"tier": "trivial",
    "statement_size": 43,
    "statement_pretty": "∀ {α : Type} (a b : Set α), a ∩ b = b ∩ a",

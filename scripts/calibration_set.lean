@@ -45,25 +45,26 @@ open Lean Meta Babel
 
 namespace Calibration
 
-def famous : Array Name := #[
-  ``Nat.exists_infinite_primes,
-  ``Subgroup.card_subgroup_dvd_card,
-  ``Function.cantor_surjective,
-  ``intermediate_value_Icc,
-  ``IsCompact.exists_isMinOn,
-  ``Matrix.aeval_self_charpoly,
-  ``Complex.exists_root,
-  ``Sylow.exists_subgroup_card_pow_prime,
-  ``ContractingWith.exists_fixedPoint,
-  ``Metric.isCompact_iff_isClosed_bounded,
-  ``ZMod.pow_card_sub_one_eq_one,
-  ``Nat.sum_four_squares,
-  ``exists_deriv_eq_slope,
-  ``irrational_sqrt_two,
-  ``IsGalois.card_aut_eq_finrank,
-  ``Ideal.exists_le_maximal,
-  ``Function.Embedding.schroeder_bernstein,
-  ``LinearMap.finrank_range_add_finrank_ker
+/-- The named theorems, each with the name a reader knows it by. -/
+def famous : Array (Name × String) := #[
+  (``Nat.exists_infinite_primes, "Infinitude of primes (Euclid)"),
+  (``Subgroup.card_subgroup_dvd_card, "Lagrange's theorem"),
+  (``Function.cantor_surjective, "Cantor's theorem"),
+  (``intermediate_value_Icc, "Intermediate value theorem"),
+  (``IsCompact.exists_isMinOn, "Extreme value theorem"),
+  (``Matrix.aeval_self_charpoly, "Cayley–Hamilton theorem"),
+  (``Complex.exists_root, "Fundamental theorem of algebra"),
+  (``Sylow.exists_subgroup_card_pow_prime, "Sylow: subgroups of every prime-power order"),
+  (``ContractingWith.exists_fixedPoint, "Banach fixed-point theorem"),
+  (``Metric.isCompact_iff_isClosed_bounded, "Heine–Borel theorem"),
+  (``ZMod.pow_card_sub_one_eq_one, "Fermat's little theorem"),
+  (``Nat.sum_four_squares, "Lagrange's four-square theorem"),
+  (``exists_deriv_eq_slope, "Mean value theorem"),
+  (``irrational_sqrt_two, "Irrationality of √2"),
+  (``IsGalois.card_aut_eq_finrank, "Order of the Galois group equals the degree"),
+  (``Ideal.exists_le_maximal, "Krull's theorem"),
+  (``Function.Embedding.schroeder_bernstein, "Schröder–Bernstein theorem"),
+  (``LinearMap.finrank_range_add_finrank_ker, "Rank–nullity theorem")
 ]
 
 def trivial : Array Name := #[
@@ -185,9 +186,9 @@ def shuffle (names : Array Name) (rng : Rng) : Array Name × Rng := Id.run do
 def build : MetaM Json := do
   let env ← getEnv
   let mut items : Array Json := #[]
-  for name in famous do
+  for (name, label) in famous do
     let some item ← describe "famous" name | throwError "{name} does not print cleanly"
-    items := items.push item
+    items := items.push (item.setObjVal! "label" (Json.str label))
   for name in trivial do
     let some item ← describe "trivial" name | throwError "{name} does not print cleanly"
     items := items.push item

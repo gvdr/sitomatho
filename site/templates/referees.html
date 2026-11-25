@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}Refereeing the Referees · {{ journal.title }}{% endblock %}
+
+{% macro score(value) %}{% if value is none %}n/a{% else %}{{ "%.1f"|format(value) }}{% endif %}{% endmacro %}
+
+{% block content %}
+<article class="prose">
+  <section class="issue-banner">
+    <h2>Refereeing the referees</h2>
+    <div class="issue-meta">
+      <span>Calibration run of {{ cal.date }}</span>
+      <span>Referee A: <code>{{ cal.referee_a_model }}</code></span>
+      <span>Referee B: <code>{{ cal.referee_b_model }}</code></span>
+    </div>
+  </section>
+
+  <div class="press-box" style="margin-bottom:1.6rem">
+    <div class="section-label"><span>What this page is</span></div>
+    <p>
+      The importance scores in this journal come from two language models. To learn what their
+      scores mean, we sent them {{ cal.mathlib_count }} theorems that people wrote: classical
+      results, facts nobody would call a theorem, and theorems drawn at random from the Mathlib
+      files our generator has explored. Each was presented exactly as a result of this journal is,
+      with the same prompt, the same novelty certificate, its name removed, and the list of
+      lemmas its real proof cites. The referees were not told. This page is not satire.
+    </p>
+  </div>
+
+  <h2>The scale</h2>
+  <p>
+    Referee A answers once. Referee B was asked {{ cal.repeats }} times about each theorem, and its
+    score in this table is the mean of its answers.
+  </p>
+  <table class="journal-table">
+    <thead>
+      <tr>
+        <th>What was scored</th>
+        <th class="num">Items</th>
+        <th class="num">Referee A, mean</th>
+        <th class="num">Referee B, mean</th>
+        <th class="num">Referee B, lowest</th>
+        <th class="num">Referee B, highest</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tier in cal.tiers %}
+      <tr>
+        <td><strong>{{ tier.title }}</strong></td>
+        <td class="num">{{ tier.n }}</td>
+        <td class="num">{{ score(tier.a_mean) }}</td>
+        <td class="num">{{ score(tier.b_mean) }}</td>
+        <td class="num">{{ score(tier.b_min) }}</td>
+        <td class="num">{{ score(tier.b_max) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p>
+    Both referees use their scale. Trivial facts land at the bottom, classical theorems at the
+    top, and an ordinary library theorem in between. With Referee B the results of this journal
+    sit below the ordinary library theorem.
+    {% if cal.published_count %}
+    That verdict is stable: asked again {{ cal.repeats }} times, Referee B repeated its published
+    score every time for {{ cal.published_stable }} of our {{ cal.published_count }} results.
+    {% endif %}
+  </p>
+
+  <h2>What Referee B makes of the classics</h2>
+  <p>
+    Referee B recognises every one of these theorems, usually by name, and still spreads them
+    across most of the scale. Reading its reports, three habits explain the spread.
+  </p>
+  <ol>
+    <li>
+      <strong>It grades the proof it is shown.</strong> A classical statement that Mathlib derives
+      in a step or two from a stronger lemma is treated as a corollary of that lemma, and scored
+      like one.
+    </li>
+    <li>
+      <strong>It dislikes the dress of formalisation.</strong> Typeclass hypotheses, coercions and
+      extended metrics count against a statement, however standard they are in Lean.
+    </li>
+    <li>
+      <strong>It never pays for novelty here.</strong> It knows these results are old and says
+      so, even in its highest marks. A high score is for stature.
+    </li>
+  </ol>
+  <p>
+    Each entry gives the scores of all {{ cal.repeats }} calls and quotes the report with the
+    median score.
+  </p>
+
+  {% for row in cal.groups.famous %}
+  <div class="referee-card" style="margin-bottom:1rem">
+    <div class="referee-head">
+      <span class="referee-name">{{ row.label }}</span>
+      <span class="referee-model">{{ row.name }}</span>
+    </div>
+    <div class="referee-verdict">
+      Referee A: <strong>{{ score(row.a_score) }}</strong> ·
+      Referee B: <strong>{{ row.b_scores|join(", ") }}</strong>
+      {% if row.b_mean is not none %}(mean {{ score(row.b_mean) }}){% endif %}
+    </div>
+    <pre class="lean-code" style="margin-bottom:0.7rem">{{ row.statement_html|safe }}</pre>
+    {% if row.quote %}
+    <blockquote>{{ row.quote.text }} <span class="referee-model">({{ row.quote.score }} / 10)</span></blockquote>
+    {% endif %}
+  </div>
+  {% endfor %}
+
+  <h2>Random library theorems</h2>
+  <p>
+    Three theorems drawn at random from each Mathlib file the generator has explored or is
+    benchmarked on. Nobody chose them, so they show what an unremarkable, human-written statement
+    scores. Some are generated boilerplate, and the referees score them accordingly.
+  </p>
+  <table class="journal-table">
+    <thead>
+      <tr><th>Theorem</th><th class="num">Referee A</th><th class="num">Referee B calls</th><th class="num">Referee B, mean</th></tr>
+    </thead>
+    <tbody>
+      {% for row in cal.groups.library %}
+      <tr>
+        <td><code>{{ row.name }}</code></td>
+        <td class="num">{{ score(row.a_score) }}</td>
+        <td class="num">{{ row.b_scores|join(", ") }}</td>
+        <td class="num">{{ score(row.b_mean) }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Trivial facts</h2>
+  <table class="journal-table">
+    <thead>
+      <tr><th>Fact</th><th class="num">Referee A</th><th class="num">Referee B calls</th></tr>
+    </thead>
+    <tbody>
+      {% for row in cal.groups.trivial %}
+      <tr>
+        <td><code>{{ row.name }}</code></td>
+        <td class="num">{{ score(row.a_score) }}</td>
+        <td class="num">{{ row.b_scores|join(", ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if cal.groups.published %}
+  <h2>This journal's results, scored again</h2>
+  <table class="journal-table">
+    <thead>
+      <tr><th>Result</th><th class="num">Referee A</th><th class="num">Referee B, published</th><th class="num">Referee B, asked again</th></tr>
+    </thead>
+    <tbody>
+      {% for row in cal.groups.published %}
+      <tr>
+        <td>{% if row.name in result_ids %}<a href="{{ base_path }}/results/{{ row.name }}/">{{ row.name }}</a>{% else %}{{ row.name }}{% endif %}</td>
+        <td class="num">{{ score(row.a_score) }}</td>
+        <td class="num">{{ row.stored_b }}</td>
+        <td class="num">{{ row.b_scores|join(", ") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <h2>How to read this</h2>
+  <ul>
+    <li>Every theorem carried the certificate of a published result, including "<code>exact?</code> failed" and "not routine". For the trivial facts that certificate is false.</li>
+    <li>The lemma list and the proof-to-statement ratio come from the theorem's real Mathlib proof. The journal's own results carry an inflated ratio, by design.</li>
+    <li>The prompt tells the referee that the journal publishes unimportant theorems. It gave high marks regardless.</li>
+    <li>Referee B answers at a high temperature. On the classics its three answers can differ by several points; on our results they almost never differ.</li>
+    <li>This is one run. The theorems and the script are in the <a href="{{ repo_url }}">repository</a> (<code>scripts/calibration_set.json</code>, <code>scripts/calibrate_referees.py</code>).</li>
+  </ul>
+</article>
+{% endblock %}

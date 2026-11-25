@@ -288,6 +288,65 @@ def group_by_msc(items: list[dict[str, Any]]) -> list[tuple[str, list[dict[str, 
     return grouped
 
 
+CALIBRATION_TIERS = {
+    "famous": "Classical theorems",
+    "library": "Random library theorems",
+    "trivial": "Trivial facts",
+    "published": "This journal's results",
+}
+
+
+def build_calibration_view(data: dict[str, Any], set_items: list[dict[str, Any]]) -> dict[str, Any]:
+    """Shape one referee calibration run (`state/calibration.json`) for the Referees page."""
+    described = {item["tier"] + "/" + item["name"]: item for item in set_items}
+    groups: dict[str, list[dict[str, Any]]] = {key: [] for key in CALIBRATION_TIERS}
+    for row in data["rows"]:
+        item = described.get(row["id"], {})
+        answered = sorted(
+            (reply for reply in row["referee_b"] if "importance" in reply),
+            key=lambda reply: reply["importance"],
+        )
+        median = answered[len(answered) // 2] if answered else None
+        referee_a = row["referee_a"]
+        scores = row["b_scores"]
+        groups.setdefault(row["tier"], []).append(
+            {
+                "name": row["name"],
+                "label": item.get("label") or row["name"],
+                "module": item.get("module", ""),
+                "statement_html": highlight_lean(row["statement_pretty"]),
+                "a_score": referee_a.get("expected_score", referee_a.get("importance")),
+                "b_scores": scores,
+                "b_mean": round(sum(scores) / len(scores), 2) if scores else None,
+                "quote": {"score": median["importance"], "text": median["justification"]} if median else None,
+                "stored_b": row.get("stored", {}).get("Referee B"),
+            }
+        )
+    for key, rows in groups.items():
+        if key == "published":
+            rows.sort(key=lambda row: row["name"])
+        else:
+            rows.sort(key=lambda row: -(row["b_mean"] if row["b_mean"] is not None else -1.0))
+    published = groups["published"]
+    return {
+        "date": data.get("generated_at", ""),
+        "repeats": data["repeats"],
+        "referee_a_model": data["referee_a_model"],
+        "referee_b_model": data["referee_b_model"],
+        "mathlib_count": sum(len(rows) for key, rows in groups.items() if key != "published"),
+        "tiers": [
+            {"key": key, "title": title} | data["summary"][key]
+            for key, title in CALIBRATION_TIERS.items()
+            if key in data["summary"]
+        ],
+        "groups": groups,
+        "published_count": len(published),
+        "published_stable": sum(
+            1 for row in published if row["b_scores"] and all(score == row["stored_b"] for score in row["b_scores"])
+        ),
+    }
+
+
 def write_page(rel_path: str, content: str) -> None:
     target = SITE_DIR / rel_path
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -324,7 +383,12 @@ def main() -> int:
         loader=FileSystemLoader(str(ROOT / "site" / "templates")),
         autoescape=select_autoescape(["html", "xml"]),
     )
+    calibration_path = ROOT / "state" / "calibration.json"
+    calibration = (
+        json.loads(calibration_path.read_text(encoding="utf-8")) if calibration_path.exists() else None
+    )
     common_ctx = {
+        "has_calibration": calibration is not None,
         "journal": cfg["journal"],
         "base_url": base_url,
         "base_path": base_path,
@@ -454,7 +518,20 @@ def main() -> int:
         ),
     )
 
-    # 7. Site-wide Atom feed (latest 30 results)
+    # 7. Referee calibration
+    if calibration is not None:
+        set_items = json.loads((ROOT / "scripts" / "calibration_set.json").read_text(encoding="utf-8"))["items"]
+        write_page(
+            "referees/index.html",
+            env.get_template("referees.html").render(
+                **common_ctx,
+                nav_active="referees",
+                cal=build_calibration_view(calibration, set_items),
+                result_ids=set(all_results),
+            ),
+        )
+
+    # 8. Site-wide Atom feed (latest 30 results)
     recent = sorted(listed_results.values(), key=lambda x: x.get("generated_at", ""), reverse=True)[:30]
     global_feed = build_atom_feed(
         title=cfg["journal"]["title"],

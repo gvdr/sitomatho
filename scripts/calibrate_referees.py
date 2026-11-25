@@ -17,6 +17,7 @@ error and left out of the statistics.
 from __future__ import annotations
 
 import argparse
+import datetime as dt
 import hashlib
 import json
 import statistics
@@ -280,6 +281,7 @@ def main(argv: list[str] | None = None) -> int:
     args.out.write_text(
         json.dumps(
             {
+                "generated_at": dt.date.today().isoformat(),
                 "offline": args.offline,
                 "repeats": args.repeats,
                 "referee_a_model": cfg["llm"]["decider_1_model"],

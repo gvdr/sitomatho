@@ -98,6 +98,13 @@
     <li><strong>Standalone verification</strong>: each result is emitted as an independent <code>Result.lean</code> file, compiled by <code>lake env lean</code>, and checked with <code>#print axioms</code> to allow only <code>propext</code>, <code>Classical.choice</code>, and <code>Quot.sound</code>.</li>
     <li><strong>Editorial parody</strong>: two LLM referees independently classify the result, assign an importance score (0–10) and MSC 2020 code, and write two-sentence reports—disagreements published in full. A namer assigns an eponym from an invented AI model family (checked against a blocklist of real models and mathematicians, version-bumped each issue, and retired to "legacy" at 50 results) plus a mandatory buzzword press release that never explains the mathematics.</li>
   </ol>
+  {% if has_calibration %}
+  <p>
+    What do those importance scores mean? We asked the same two referees to score classical
+    theorems, trivial facts and random library theorems through the same prompt. The answers are
+    on the <a href="{{ base_path }}/referees/">Referees</a> page.
+  </p>
+  {% endif %}
 
   <h2>References</h2>
   <ol class="refs">

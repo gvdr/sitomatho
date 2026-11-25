@@ -900,6 +900,63 @@ def test_unparseable_reply_is_an_llm_error() -> None:
     assert extract_json('```json\n{"importance": 3}\n```') == {"importance": 3}
 
 
+def test_calibration_page_view() -> None:
+    import build_site
+
+    def reply(score: int, text: str) -> dict:
+        return {"model": "b", "importance": score, "kind": "Theorem", "justification": text}
+
+    data = {
+        "generated_at": "2026-11-25",
+        "repeats": 3,
+        "referee_a_model": "model-a",
+        "referee_b_model": "model-b",
+        "summary": {
+            "famous": {"n": 2, "scored": 2, "a_mean": 7.0, "b_mean": 5.0, "b_min": 2.0, "b_max": 8.0, "b_noise_sd": 1.0},
+            "published": {"n": 2, "scored": 2, "a_mean": 3.0, "b_mean": 1.0, "b_min": 1.0, "b_max": 1.0, "b_noise_sd": 0.0},
+        },
+        "rows": [
+            {"id": "famous/low", "tier": "famous", "name": "low", "statement_pretty": "∀ (n : ℕ), n = n",
+             "referee_a": {"importance": 6, "expected_score": 6.2},
+             "referee_b": [reply(1, "one"), reply(3, "three"), reply(2, "two")], "b_scores": [1, 3, 2]},
+            {"id": "famous/high", "tier": "famous", "name": "high", "statement_pretty": "True",
+             "referee_a": {"importance": 8, "expected_score": 7.8},
+             "referee_b": [reply(8, "eight"), {"error": "boom"}, reply(8, "again")], "b_scores": [8, 8]},
+            {"id": "published/AKCM-2026-0002", "tier": "published", "name": "AKCM-2026-0002", "statement_pretty": "S",
+             "referee_a": {"error": "x"}, "referee_b": [reply(1, "r"), reply(2, "r"), reply(1, "r")],
+             "b_scores": [1, 2, 1], "stored": {"Referee A": 3, "Referee B": 1}},
+            {"id": "published/AKCM-2026-0001", "tier": "published", "name": "AKCM-2026-0001", "statement_pretty": "S",
+             "referee_a": {"importance": 3, "expected_score": 3.0}, "referee_b": [reply(1, "r")] * 3,
+             "b_scores": [1, 1, 1], "stored": {"Referee A": 3, "Referee B": 1}},
+        ],
+    }
+    set_items = [
+        {"tier": "famous", "name": "high", "label": "The High Theorem", "module": "Mathlib.High"},
+        {"tier": "famous", "name": "low", "module": "Mathlib.Low"},
+    ]
+    view = build_site.build_calibration_view(data, set_items)
+
+    assert view["date"] == "2026-11-25" and view["repeats"] == 3
+    assert view["mathlib_count"] == 2
+    assert [tier["key"] for tier in view["tiers"]] == ["famous", "published"]
+    assert view["tiers"][0]["title"] == "Classical theorems"
+    assert view["tiers"][0]["b_mean"] == 5.0
+
+    famous = view["groups"]["famous"]
+    assert [row["name"] for row in famous] == ["high", "low"], "highest Referee B mean first"
+    assert famous[0]["label"] == "The High Theorem" and famous[1]["label"] == "low"
+    assert famous[0]["a_score"] == 7.8 and famous[0]["b_mean"] == 8.0 and famous[0]["b_scores"] == [8, 8]
+    # The quoted report is the one with the median score among the calls that answered.
+    assert famous[1]["quote"] == {"score": 2, "text": "two"}
+    assert "<span" in famous[1]["statement_html"] and "ℕ" in famous[1]["statement_html"]
+
+    published = view["groups"]["published"]
+    assert [row["name"] for row in published] == ["AKCM-2026-0001", "AKCM-2026-0002"]
+    assert published[1]["a_score"] is None and published[1]["stored_b"] == 1
+    assert view["published_stable"] == 1 and view["published_count"] == 2
+    assert view["groups"]["library"] == [] and view["groups"]["trivial"] == []
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -932,4 +989,5 @@ if __name__ == "__main__":
     test_calibration_summary_groups_by_tier_and_reports_noise()
     test_calibration_refuses_to_report_offline_scores_as_live()
     test_unparseable_reply_is_an_llm_error()
+    test_calibration_page_view()
     print("All AKCM unit tests passed.")
