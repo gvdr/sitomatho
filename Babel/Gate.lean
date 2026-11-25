@@ -86,6 +86,93 @@ def closedByAesop (stmtType : Expr) (budget : Nat) (stats : Option StatsRef := n
       return goals.isEmpty
     catch _ => return false
 
+/-- Lemma applications in a term. Instances that are theorems are not counted: they are
+    found by the elaborator and are no step of a derivation. -/
+partial def lemmaCount (env : Environment) (e : Expr) : Nat :=
+  match e with
+  | .app .. =>
+      let here := match e.getAppFn with
+        | .const c _ =>
+            if (env.find? c).any (· matches .thmInfo _) && !isInstanceCore env c then 1 else 0
+        | fn => lemmaCount env fn
+      e.getAppArgs.foldl (fun n arg => n + lemmaCount env arg) here
+  | .lam _ type body _ => lemmaCount env type + lemmaCount env body
+  | .mdata _ inner => lemmaCount env inner
+  | _ => 0
+
+/-- Every closed lemma application inside a proof with the fact it proves, outermost first. -/
+partial def lemmaFacts (e : Expr) (acc : Array (Expr × Expr) := #[]) :
+    MetaM (Array (Expr × Expr)) := do
+  match e with
+  | .app .. =>
+      let mut acc := acc
+      if let .const c _ := e.getAppFn then
+        let env ← getEnv
+        if (env.find? c).any (· matches .thmInfo _) && !isInstanceCore env c
+            && !e.hasLooseBVars then
+          acc := acc.push (e, ← instantiateMVars (← inferType e))
+      for arg in e.getAppArgs do
+        acc ← lemmaFacts arg acc
+      return acc
+  | .lam _ _ body _ => lemmaFacts body acc
+  | .mdata _ inner => lemmaFacts inner acc
+  | _ => return acc
+
+/-- A proof of `fact` from the local hypotheses by assumption, reflexivity or one library
+    lemma: what the Level 1 gate looks for, returned as a term. -/
+def oneStepProof (fact : Expr) (budget : Nat) : MetaM (Option Expr) := do
+  let saved ← saveState
+  try
+    tryCatchRuntimeEx
+      (withHeartbeatBudget budget do
+        let mvar ← mkFreshExprMVar fact
+        let goal := mvar.mvarId!
+        let mut closed ← goal.assumptionCore
+        if !closed then
+          try
+            goal.refl
+            closed := true
+          catch _ => pure ()
+        if !closed then
+          closed := (← goal.withContext (Lean.Meta.LibrarySearch.librarySearch goal)).isNone
+        let proof ← instantiateMVars mvar
+        return if closed && !proof.hasExprMVar && !proof.hasSorry then some proof else none)
+      (fun _ => pure none)
+  finally
+    restoreState saved
+
+/-- Does a derivation take a detour that its statement pays for?
+
+    `body` is the proof with the theorem's binders opened as `xs`. A shortcut is a fact that
+    the derivation reaches in two or more lemma steps although the hypotheses give it in
+    one, or are it. Steps spent inside the fact's own statement are not counted. With the
+    shortcut put in place of the detour, the proof may stop using a hypothesis, or stop
+    using any lemma of the focus area: then the statement carries a hypothesis that does no
+    work, or a subject that is decoration, and the answer is `true`. A detour that only
+    lengthens the proof is tolerated. -/
+def hasDefectiveShortcut (body : Expr) (xs : Array Expr) (isFocus : Name → Bool)
+    (budget : Nat) : MetaM Bool := do
+  let env ← getEnv
+  let hyps ← xs.filterM fun x => do
+    let decl ← x.fvarId!.getDecl
+    return decl.binderInfo != .instImplicit && (← isProp decl.type)
+  let focusLemmas := fun (e : Expr) =>
+    (e.getUsedConstants.filter fun c =>
+      (env.find? c).any (· matches .thmInfo _) && isFocus c).size
+  let mut tried : Array Expr := #[]
+  for (sub, fact) in ← lemmaFacts body do
+    if sub == body || tried.contains sub then continue
+    tried := tried.push sub
+    if lemmaCount env sub < lemmaCount env fact + 2 then continue
+    if (← isClass? fact).isSome then continue
+    let some quick ← oneStepProof fact budget | continue
+    let short := body.replace fun e => if e == sub then some quick else none
+    let losesHypothesis := hyps.any fun h =>
+      body.containsFVar h.fvarId! && !short.containsFVar h.fvarId!
+    if losesHypothesis || (focusLemmas body > 0 && focusLemmas short == 0) then
+      return true
+  return false
+
 /-- Evaluate Levels 1, 2, and 3 on a shrunk `(stmtType, proofExpr)` pair. -/
 def evaluateNovelty
     (stats : StatsRef)

@@ -290,6 +290,43 @@ def exactGateCases : TermElabM (List Bool) := do
 
 end ExactGate
 
+/-! ## Shortcuts through a derivation -/
+
+section Shortcut
+
+open Lean Meta Elab Term
+
+/-- Does the proof, read as a derivation with `nBinders` hypotheses and variables, contain a
+    shortcut that removes a hypothesis or its only focus lemma? -/
+def shortcut (proof : String) (nBinders : Nat) (focusLemma : Name) : TermElabM Bool := do
+  let term ← elabClosed proof
+  lambdaBoundedTelescope term nBinders fun xs body =>
+    Babel.hasDefectiveShortcut body xs (· == focusLemma) 150000
+
+def shortcutCases : TermElabM (List Bool) := do
+  return [
+    -- `s ⊆ t` is derived in two steps and is a hypothesis: `t ⊆ s` does no work.
+    ← shortcut ("fun (α : Type) (s t u : Set α) (h : s ⊆ t) (h' : t ⊆ s) (hu : t ⊆ u) => "
+        ++ "Set.Subset.trans (subset_of_eq (Set.Subset.antisymm h h')) hu") 7 `none,
+    -- The same detour with no hypothesis lost still loses the only focus lemma.
+    ← shortcut ("fun (α : Type) (s t u : Set α) (h : s ⊆ t) (h' : t ⊆ s) (hu : t ⊆ u) => "
+        ++ "And.intro (Set.Subset.trans (subset_of_eq (Set.Subset.antisymm h h')) hu) h'")
+        7 ``Set.Subset.antisymm,
+    -- An honest chain: no intermediate fact is one lemma away from the hypotheses.
+    ← shortcut ("fun (α : Type) (s t u v w : Set α) (h₁ : s ⊆ t) (h₂ : t ⊆ u) (h₃ : u ⊆ v) "
+        ++ "(h₄ : v ⊆ w) => Set.Subset.trans (Set.Subset.trans (Set.Subset.trans h₁ h₂) h₃) h₄") 10 `none,
+    -- A detour that costs steps and leaves every hypothesis in use is tolerated.
+    ← shortcut ("fun (α : Type) (s t : Set α) (h : s ⊆ t) => Set.Subset.trans "
+        ++ "(Set.Subset.trans (Set.Subset.refl s) (Set.Subset.refl s)) h") 4 `none]
+
+/-- info: [true, true, false, false] -/
+#guard_msgs in
+#eval shortcutCases
+
+end Shortcut
+
+#guard Reject.shortcut.key == "shortcut"
+
 /-! ## Gate errors are counted -/
 
 /-- A gate that throws is reported as "not closed", which is how the `exact?` gate stayed

@@ -807,14 +807,16 @@ def insertKept (kept : Array KeptDerivation) (k : KeptDerivation) (cap : Nat) : 
 
 /-- Run the gates on a kept derivation, cheapest first: duplicate statement, rendering,
     kernel and axiom check, `exact?`, then `simp` and `aesop`. With `specialist` set, a
-    statement closed by `simp` or `aesop` is rejected and the statement is rendered explicitly. -/
+    statement closed by `simp` or `aesop` is rejected, so is a derivation with a defective
+    shortcut (`hasDefectiveShortcut`), and the statement is rendered explicitly. -/
 def gateKept
     (kept : KeptDerivation)
     (seed stepsRequested exactBudget aesopBudget convoluteDepth : Nat)
     (specialist : Bool)
     (seen : Std.HashSet String)
     (rng : Rng)
-    (stats : StatsRef) : MetaM (Option WalkCandidate × Rng) := do
+    (stats : StatsRef)
+    (focus : Option Name := none) : MetaM (Option WalkCandidate × Rng) := do
   if seen.contains kept.stmtHash then
     stats.reject .duplicateHash
     return (none, rng)
@@ -855,6 +857,17 @@ def gateKept
   if specialist && !nov.level2NotRoutine then
     stats.reject (if nov.level2ClosedBy == some "simp" then .closedBySimp else .closedByAesop)
     return (none, rngConv)
+  -- The Level 1 question again, asked of every intermediate fact. It runs last because it
+  -- costs one library search per fact.
+  if specialist then
+    let env ← getEnv
+    let isFocus := fun (c : Name) => focus.any fun root => (definingModule env c).any root.isPrefixOf
+    let detour ← timed stats "gate_shortcut" <|
+      forallBoundedTelescope kept.stmtClosed (some kept.nBinders) fun xs _ =>
+        hasDefectiveShortcut (kept.proofClosed.beta xs) xs isFocus exactBudget
+    if detour then
+      stats.reject .shortcut
+      return (none, rngConv)
 
   let mut nsArr : Array String := #[]
   for (_, _, ns) in kept.stepLabels do
@@ -1187,7 +1200,8 @@ def runSingleWalk
       let mut gateRng := nextRng
       for derivation in (← kept.get) do
         let (candidate, r') ← tryCatchRuntimeEx
-          (gateKept derivation seed maxSteps exactBudget aesopBudget convoluteDepth true seen gateRng stats)
+          (gateKept derivation seed maxSteps exactBudget aesopBudget convoluteDepth true seen gateRng stats
+            (some search.focus))
           (fun _ => do stats.reject .heartbeat; pure (none, gateRng))
         gateRng := r'
         if candidate.isSome then

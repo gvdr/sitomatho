@@ -11,7 +11,7 @@ inductive Reject
   | unresolved | dullConclusion
   | fewSteps | fewConcepts | fewFocusSteps | noFocusSymbol | danglingHypothesis
   | kernelCheck | badAxioms
-  | closedByExact | closedBySimp | closedByAesop | unrenderable | duplicateHash | gateError
+  | closedByExact | closedBySimp | closedByAesop | shortcut | unrenderable | duplicateHash | gateError
 deriving Inhabited, BEq, Repr
 
 def Reject.key : Reject → String
@@ -33,6 +33,7 @@ def Reject.key : Reject → String
   | .closedByExact => "closed_by_exact"
   | .closedBySimp => "closed_by_simp"
   | .closedByAesop => "closed_by_aesop"
+  | .shortcut => "shortcut"
   | .unrenderable => "unrenderable"
   | .duplicateHash => "duplicate_hash"
   | .gateError => "gate_error"
