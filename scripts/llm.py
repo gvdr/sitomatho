@@ -202,7 +202,10 @@ def extract_json(text: str) -> dict[str, Any]:
         end = cleaned.rfind("}")
         if start != -1 and end != -1 and end > start:
             cleaned = cleaned[start : end + 1]
-    obj = json.loads(cleaned)
+    try:
+        obj = json.loads(cleaned)
+    except json.JSONDecodeError as exc:
+        raise LLMError(f"Reply is not valid JSON ({exc})") from exc
     if not isinstance(obj, dict):
-        raise ValueError("Expected JSON object")
+        raise LLMError("Reply is not a JSON object")
     return obj

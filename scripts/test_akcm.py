@@ -886,6 +886,20 @@ def test_calibration_refuses_to_report_offline_scores_as_live() -> None:
     assert all(reply["model"] == "offline-heuristic-referee" for row in data["rows"] for reply in row["referee_b"])
 
 
+def test_unparseable_reply_is_an_llm_error() -> None:
+    from llm import LLMError, extract_json
+
+    # Seen live: a referee reply with a LaTeX-style escape inside a JSON string. Callers
+    # catch `LLMError` to fall back, so any other exception would end a nightly run.
+    for reply in ('{"justification": "the set \\{x\\} is a singleton"}', "no json here", "[1, 2]"):
+        try:
+            extract_json(reply)
+        except LLMError:
+            continue
+        raise AssertionError(f"expected LLMError for {reply!r}")
+    assert extract_json('```json\n{"importance": 3}\n```') == {"importance": 3}
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -917,4 +931,5 @@ if __name__ == "__main__":
     test_calibration_scores_with_production_referees_and_never_falls_back()
     test_calibration_summary_groups_by_tier_and_reports_noise()
     test_calibration_refuses_to_report_offline_scores_as_live()
+    test_unparseable_reply_is_an_llm_error()
     print("All AKCM unit tests passed.")
