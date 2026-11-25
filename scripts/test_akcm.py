@@ -957,6 +957,25 @@ def test_calibration_page_view() -> None:
     assert view["groups"]["library"] == [] and view["groups"]["trivial"] == []
 
 
+def test_walk_time_limit_is_a_pipeline_setting() -> None:
+    import pipeline
+    from walk_runner import WalkRun
+    from wander import TopicProfile
+
+    profile = TopicProfile("Mathlib.Topology.Sheaves.A", "Mathlib.Topology.Sheaves", "Topology", 40)
+    seen: list[int] = []
+
+    def fake_run_walk(**kwargs: object) -> WalkRun:
+        seen.append(kwargs["timeout"])
+        return WalkRun(candidates=[{"statement_hash": "h"}])
+
+    common = dict(batch_seed=1, count=2, max_attempts=10, exact_heartbeats=1, aesop_heartbeats=1)
+    with patch("pipeline.run_walk", fake_run_walk):
+        pipeline._walk_mutated_profile(profile, **common)
+        pipeline._walk_mutated_profile(profile, walk_timeout=900, **common)
+    assert seen == [240, 900]
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -990,4 +1009,5 @@ if __name__ == "__main__":
     test_calibration_refuses_to_report_offline_scores_as_live()
     test_unparseable_reply_is_an_llm_error()
     test_calibration_page_view()
+    test_walk_time_limit_is_a_pipeline_setting()
     print("All AKCM unit tests passed.")

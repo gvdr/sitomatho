@@ -34,6 +34,18 @@ on:
         required: false
         type: boolean
         default: false
+      areas:
+        description: "Launch issue: Mathlib areas to explore"
+        required: false
+        default: "6"
+      pool_factor:
+        description: "Launch issue: candidates screened per published result"
+        required: false
+        default: "4"
+      walk_timeout:
+        description: "Launch issue: seconds one specialist walk may run"
+        required: false
+        default: "240"
       reeditorial_issue:
         description: "Optional issue number to re-run live GitHub Models editorial on (e.g. 1)"
         required: false
@@ -49,7 +61,8 @@ concurrency:
 jobs:
   generate-or-publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    # A hosted runner stops a job at six hours. The launch issue may be given long walks.
+    timeout-minutes: 300
     env:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_ENDPOINT: ${{ vars.LLM_ENDPOINT }}
@@ -90,9 +103,12 @@ jobs:
       - name: Generate and verify launch Issue 1
         if: ${{ inputs.launch_issue }}
         run: |
-          python3 scripts/pipeline.py --launch-issue --wander --areas 6 \
+          python3 scripts/pipeline.py --launch-issue --wander \
+            --areas "${{ inputs.areas || '6' }}" \
             --seed "$(( $(date -u +%s) + GITHUB_RUN_NUMBER ))" \
-            --count 7 --max-attempts 260 --pool-factor 4
+            --count 7 --max-attempts 260 \
+            --pool-factor "${{ inputs.pool_factor || '4' }}" \
+            --walk-timeout "${{ inputs.walk_timeout || '240' }}"
 
       - name: Run Mutating Specialist Generator, Baroque Convoluter, Verifier & Editorial Desk
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}

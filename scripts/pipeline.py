@@ -222,6 +222,7 @@ def _walk_mutated_profile(
     max_attempts: int,
     exact_heartbeats: int,
     aesop_heartbeats: int,
+    walk_timeout: int = 240,
 ) -> WalkRun:
     """Run specialist search on a mutated Mathlib profile, relaxing the concept minimum once."""
     print(
@@ -251,7 +252,7 @@ def _walk_mutated_profile(
                 min_concepts=min_concepts,
                 max_statement_size=profile.max_statement_size,
                 min_focus_steps=profile.min_focus_steps,
-                timeout=240,
+                timeout=walk_timeout,
             )
         except RuntimeError as exc:
             print(f"  [wander] Walk error on {profile.module} (min_concepts={min_concepts}): {exc}")
@@ -388,6 +389,7 @@ def run_wander(
     publish_issue: bool,
     pool_factor: int = 4,
     workers: int = 1,
+    walk_timeout: int = 240,
 ) -> int:
     """Search mutated Mathlib modules for a pool of candidates and publish the referee's top picks."""
     profiles = mutate_profiles(
@@ -417,6 +419,7 @@ def run_wander(
             max_attempts=max_attempts,
             exact_heartbeats=exact_heartbeats,
             aesop_heartbeats=aesop_heartbeats,
+            walk_timeout=walk_timeout,
         )
 
     runs = run_walks_parallel(
@@ -470,6 +473,7 @@ def run_launch(
     areas: int = 6,
     pool_factor: int = 4,
     workers: int = 1,
+    walk_timeout: int = 240,
 ) -> int:
     """Build a complete, verified launch issue before replacing Issue 1."""
     issues_path = ROOT / "state" / "issues.json"
@@ -522,6 +526,7 @@ def run_launch(
                 max_attempts=max_attempts,
                 exact_heartbeats=150000,
                 aesop_heartbeats=150000,
+                walk_timeout=walk_timeout,
             )
         return lambda: run_walk(
             seed=batch_seed,
@@ -646,6 +651,7 @@ def main() -> int:
     parser.add_argument("--areas", type=int, default=4, help="Number of mutated Mathlib domains to explore per --wander run")
     parser.add_argument("--pool-factor", type=int, default=4, help="Candidates screened by Referee A per published result")
     parser.add_argument("--workers", type=int, default=default_workers(), help="Walk processes to run at once")
+    parser.add_argument("--walk-timeout", type=int, default=240, help="Seconds one specialist walk may run under --wander or --launch-issue")
     args = parser.parse_args()
 
     if args.launch_issue:
@@ -663,6 +669,7 @@ def main() -> int:
             areas=max(4, args.areas),
             pool_factor=args.pool_factor,
             workers=args.workers,
+            walk_timeout=args.walk_timeout,
         )
 
     if args.issue_only:
@@ -683,6 +690,7 @@ def main() -> int:
             publish_issue=args.publish_issue,
             pool_factor=args.pool_factor,
             workers=args.workers,
+            walk_timeout=args.walk_timeout,
         )
 
     if args.focus and (args.min_proof_depth < 3 or args.max_steps <= args.min_proof_depth):
