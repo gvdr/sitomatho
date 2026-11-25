@@ -1,0 +1,249 @@
+{
+  "id": "AKCM-2026-0004",
+  "issue": 1,
+  "generated_at": "2026-11-25T07:57:25Z",
+  "generator": "A",
+  "seed": 1795697827,
+  "steps_requested": 14,
+  "steps_taken": 10,
+  "interdisciplinary_bias": 3.9,
+  "theorem_name": "akcm_2026_0004",
+  "statement_lean": "theorem akcm_2026_0004\n    {X : Type}\n    {Y : Type}\n    {Z : Type}\n    {f : X → Y}\n    {g : Y → Z}\n    [inst_6 : TopologicalSpace.{0} X]\n    [inst_7 : TopologicalSpace.{0} Y]\n    [inst_8 : TopologicalSpace.{0} Z]\n    (hf : @Topology.IsQuotientMap.{0, 0} X Y inst_6 inst_7 f)\n    (hgf : @Topology.IsQuotientMap.{0, 0} X Z inst_6 inst_8\n  (@Function.comp.{1, 1, 1} X Y Z g f))\n    {u : Set.{0} Z}\n    (h_12 : @Topology.IsEmbedding.{0, 0} Y Z inst_7 inst_8 g) :\n    @Eq.{1} (Set.{0} Y) (@Set.preimage.{0, 0} Y Z g (@closure.{0} Z inst_8 u))\n  (@closure.{0} Y inst_7 (@Set.preimage.{0, 0} Y Z g u))",
+  "statement_pretty": "∀ {X Y Z : Type} {f : X → Y} {g : Y → Z} [inst_6 : TopologicalSpace X]\n  [inst_7 : TopologicalSpace Y] [inst_8 : TopologicalSpace Z],\n  Topology.IsQuotientMap f →\n    Topology.IsQuotientMap (g ∘ f) →\n      ∀ {u : Set Z}, Topology.IsEmbedding g → g ⁻¹' closure u = closure (g ⁻¹' u)",
+  "statement_hash": "expr:f1db6c08f8a762cf60bce57380fd8cdf",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 113,
+    "level_3_ratio": 2.35,
+    "level_3_proof_size": 265,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Topology",
+    "IsOpenQuotientMap",
+    "IsOpenMap"
+  ],
+  "interdisciplinarity": 3,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsQuotientMap.of_comp_isQuotientMap",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsQuotientMap.isCoinducing",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsCoinducing.continuous",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsQuotientMap.surjective",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsOpenEmbedding.of_isEmbedding",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsOpenEmbedding.toIsEmbedding",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsEmbedding.isInducing",
+        "kind": "mathlib",
+        "id": "10"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsInducing.isOpenQuotientMap_of_surjective",
+        "kind": "mathlib",
+        "id": "11"
+      },
+      {
+        "namespace": "IsOpenQuotientMap",
+        "lemma": "IsOpenQuotientMap.isOpenMap",
+        "kind": "mathlib",
+        "id": "12"
+      },
+      {
+        "namespace": "IsOpenMap",
+        "lemma": "IsOpenMap.preimage_closure_eq_closure_preimage",
+        "kind": "mathlib",
+        "id": "13"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Topology.IsQuotientMap.isCoinducing",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Topology.IsCoinducing.continuous",
+        "from": "1"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Topology.IsQuotientMap.surjective",
+        "from": "0"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Topology.IsOpenEmbedding.of_isEmbedding",
+        "from": "4"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Topology.IsOpenEmbedding.toIsEmbedding",
+        "from": "5"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "Topology.IsEmbedding.isInducing",
+        "from": "9"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "Topology.IsInducing.isOpenQuotientMap_of_surjective",
+        "from": "10"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "Topology.IsInducing.isOpenQuotientMap_of_surjective",
+        "from": "4"
+      },
+      {
+        "to": "12",
+        "step": "step_12",
+        "lemma": "IsOpenQuotientMap.isOpenMap",
+        "from": "11"
+      },
+      {
+        "to": "13",
+        "step": "step_13",
+        "lemma": "IsOpenMap.preimage_closure_eq_closure_preimage",
+        "from": "12"
+      },
+      {
+        "to": "13",
+        "step": "step_13",
+        "lemma": "IsOpenMap.preimage_closure_eq_closure_preimage",
+        "from": "2"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "closure"
+    ],
+    "joins": 1,
+    "depth": 8
+  },
+  "interest": {
+    "steps": 10,
+    "statement_size": 113,
+    "score": 42,
+    "readable_size": 20,
+    "modules": 4,
+    "joins": 1,
+    "focus_steps": 10,
+    "conclusion_size": 37,
+    "concepts": 10
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Topology",
+  "specialist_module": "Mathlib.Topology.Bases",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 120,
+    "rank": 4,
+    "source": "referee_a",
+    "score": 5.095,
+    "second_opinion": 2,
+    "combined": 3.5475
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 3.5,
+    "referee_disagreement": 3,
+    "msc_code": "54A05",
+    "msc_section": "54",
+    "msc_section_name": "General topology",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Proposition",
+        "importance": 5,
+        "msc_code": "54A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.09/10 (confidence 0.24) and classifies the result as a Proposition (p = 0.40) in MSC 54-XX. Independent probability estimates yield P(surprising) = 0.24 and P(a human mathematician cares) = 0.26.",
+        "decision_metrics": {
+          "expected_score": 5.095,
+          "score_confidence": 0.238,
+          "kind_probability": 0.397,
+          "p_surprising": 0.236,
+          "p_human_cares": 0.262
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Proposition",
+        "importance": 2,
+        "msc_code": "54C10",
+        "justification": "The hypotheses are needlessly baroque: since the composition g ∘ f is a quotient map, g is necessarily surjective, and any surjective topological embedding is already a homeomorphism. Consequently, the commutation of preimage and closure is an immediate, unremarkable consequence of g being an open map, warranting no higher status than a routine proposition."
+      }
+    ],
+    "title": "The Quotient-Composite Embedding Closure Proposition",
+    "proved_by": "Parhelion-2.4-Thinking",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This milestone marks the first time a frontier formal-reasoning system has navigated this benchmark tier with zero human intervention, establishing a new state of the art in kernel-verified mathematical synthesis. By leveraging our next-generation test-time compute scaling laws, the model achieves an unprecedented paradigm shift in automated theorem proving. We are thrilled to see these autonomous capabilities unlock a new era of high-assurance formalization.",
+    "unverified_gloss": "For topological spaces X, Y, and Z and maps f : X → Y and g : Y → Z, if f and g ∘ f are quotient maps and g is a topological embedding, then g⁻¹(closure(u)) = closure(g⁻¹(u)) for every subset u ⊆ Z. Because g ∘ f is a quotient map, g must be surjective, and a surjective topological embedding is a homeomorphism (in particular, an open map, for which preimages commute with closure). The hypothesis that f is a quotient map is stronger than needed here, as surjectivity of g ∘ f alone suffices to force g to be surjective."
+  }
+}

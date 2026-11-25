@@ -1,3 +1,20 @@
 {
-  "issues": []
+  "issues": [
+    {
+      "number": 1,
+      "volume": 1,
+      "date": "2026-11-25",
+      "published_at": "2026-11-25T07:58:38Z",
+      "result_ids": [
+        "AKCM-2026-0001",
+        "AKCM-2026-0002",
+        "AKCM-2026-0003",
+        "AKCM-2026-0004",
+        "AKCM-2026-0005",
+        "AKCM-2026-0006",
+        "AKCM-2026-0007"
+      ],
+      "launch": true
+    }
+  ]
 }

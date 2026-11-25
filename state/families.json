@@ -1,3 +1,16 @@
 {
-  "families": {}
+  "families": {
+    "Parhelion": {
+      "deprecated": false,
+      "major": 2,
+      "minor": 5,
+      "result_count": 4
+    },
+    "Tephra": {
+      "deprecated": false,
+      "major": 1,
+      "minor": 1,
+      "result_count": 3
+    }
+  }
 }

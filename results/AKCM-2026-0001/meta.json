@@ -1,0 +1,202 @@
+{
+  "id": "AKCM-2026-0001",
+  "issue": 1,
+  "generated_at": "2026-11-25T07:57:21Z",
+  "generator": "A",
+  "seed": 1795686632,
+  "steps_requested": 12,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 2.1,
+  "theorem_name": "akcm_2026_0001",
+  "statement_lean": "theorem akcm_2026_0001\n    {R : Type}\n    [inst_2 : CommRing.{0} R]\n    {W : Int → R}\n    (h : @IsEllipticSequence.{0} R inst_2 W)\n    (one : @Membership.mem.{0, 0} R\n  (@Submonoid.{0} R\n    (@MulZeroOneClass.toMulOneClass.{0} R\n      (@MonoidWithZero.toMulZeroOneClass.{0} R\n        (@Semiring.toMonoidWithZero.{0} R\n          (@CommSemiring.toSemiring.{0} R\n            (@CommRing.toCommSemiring.{0} R inst_2))))))\n  (@SetLike.instMembership.{0, 0}\n    (@Submonoid.{0} R\n      (@MulZeroOneClass.toMulOneClass.{0} R\n        (@MonoidWithZero.toMulZeroOneClass.{0} R\n          (@Semiring.toMonoidWithZero.{0} R\n            (@CommSemiring.toSemiring.{0} R\n              (@CommRing.toCommSemiring.{0} R inst_2))))))\n    R\n    (@Submonoid.instSetLike.{0} R\n      (@MulZeroOneClass.toMulOneClass.{0} R\n        (@MonoidWithZero.toMulZeroOneClass.{0} R\n          (@Semiring.toMonoidWithZero.{0} R\n            (@CommSemiring.toSemiring.{0} R\n              (@CommRing.toCommSemiring.{0} R inst_2)))))))\n  (@nonZeroDivisors.{0} R\n    (@Semiring.toMonoidWithZero.{0} R\n      (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_2))))\n  (W (@OfNat.ofNat.{0} Int (nat_lit 1) (@instOfNat (nat_lit 1)))))\n    (two : @Membership.mem.{0, 0} R\n  (@Submonoid.{0} R\n    (@MulZeroOneClass.toMulOneClass.{0} R\n      (@MonoidWithZero.toMulZeroOneClass.{0} R\n        (@Semiring.toMonoidWithZero.{0} R\n          (@CommSemiring.toSemiring.{0} R\n            (@CommRing.toCommSemiring.{0} R inst_2))))))\n  (@SetLike.instMembership.{0, 0}\n    (@Submonoid.{0} R\n      (@MulZeroOneClass.toMulOneClass.{0} R\n        (@MonoidWithZero.toMulZeroOneClass.{0} R\n          (@Semiring.toMonoidWithZero.{0} R\n            (@CommSemiring.toSemiring.{0} R\n              (@CommRing.toCommSemiring.{0} R inst_2))))))\n    R\n    (@Submonoid.instSetLike.{0} R\n      (@MulZeroOneClass.toMulOneClass.{0} R\n        (@MonoidWithZero.toMulZeroOneClass.{0} R\n          (@Semiring.toMonoidWithZero.{0} R\n            (@CommSemiring.toSemiring.{0} R\n              (@CommRing.toCommSemiring.{0} R inst_2)))))))\n  (@nonZeroDivisors.{0} R\n    (@Semiring.toMonoidWithZero.{0} R\n      (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_2))))\n  (W (@OfNat.ofNat.{0} Int (nat_lit 2) (@instOfNat (nat_lit 2)))))\n    (u : Int)\n    (v : Int)\n    (w : Int)\n    (a : Int)\n    (h_11 : @Irreducible.{0} R\n  (@Semiring.toMonoid.{0} R\n    (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_2)))\n  (@IsEllipticNet.atomRel.{0} R inst_2 W u\n    (@abs.{0} Int instLatticeInt Int.instAddGroup v) w a)) :\n    Not\n  (@IsSquare.{0} R\n    (@MulOne.toMul.{0} R\n      (@MulOneClass.toMulOne.{0} R\n        (@Monoid.toMulOneClass.{0} R\n          (@Semiring.toMonoid.{0} R\n            (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_2))))))\n    (@IsEllipticNet.atomRel.{0} R inst_2 W u v w a))",
+  "statement_pretty": "∀ {R : Type} [inst_2 : CommRing R] {W : ℤ → R},\n  IsEllipticSequence W →\n    W 1 ∈ nonZeroDivisors R →\n      W 2 ∈ nonZeroDivisors R →\n        ∀ (u v w a : ℤ),\n          Irreducible (IsEllipticNet.atomRel W u |v| w a) →\n            ¬IsSquare (IsEllipticNet.atomRel W u v w a)",
+  "statement_hash": "expr:139a788652a7be59341b78c6a12fb2e9",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 347,
+    "level_3_ratio": 6.51,
+    "level_3_proof_size": 2259,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 150000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "IsEllipticSequence",
+    "IsEllipticNet",
+    "Associated",
+    "Irreducible"
+  ],
+  "interdisciplinarity": 4,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "IsEllipticSequence",
+        "lemma": "IsEllipticSequence.isEllipticNet",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "IsEllipticNet",
+        "lemma": "IsEllipticNet.isEllipticSequence",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "IsEllipticSequence",
+        "lemma": "IsEllipticSequence.neg",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "IsEllipticNet",
+        "lemma": "IsEllipticNet.atomRel_abs₂",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Associated",
+        "lemma": "Associated.of_eq",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Associated",
+        "lemma": "Associated.irreducible",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "Irreducible",
+        "lemma": "Irreducible.not_isSquare",
+        "kind": "mathlib",
+        "id": "8"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "IsEllipticNet.isEllipticSequence",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "IsEllipticSequence.neg",
+        "from": "1"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "IsEllipticNet.atomRel_abs₂",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Associated.of_eq",
+        "from": "3"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Associated.irreducible",
+        "from": "4"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Irreducible.not_isSquare",
+        "from": "5"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "IsEllipticNet.atomRel"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 347,
+    "score": 26.59,
+    "readable_size": 42,
+    "modules": 3,
+    "joins": 0,
+    "focus_steps": 4,
+    "conclusion_size": 47,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.NumberTheory",
+  "specialist_module": "Mathlib.NumberTheory.EllipticDivisibilitySequence",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 120,
+    "rank": 1,
+    "source": "referee_a",
+    "score": 5.702,
+    "second_opinion": 2,
+    "combined": 3.851
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 4.0,
+    "referee_disagreement": 4,
+    "msc_code": "14A05",
+    "msc_section": "14",
+    "msc_section_name": "Algebraic geometry",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "gemini-decision-1",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "14A05",
+        "justification": "Calibrated zero-token rubric evaluation assigns an expected importance of 5.70/10 (confidence 0.23) and classifies the result as a Proposition (p = 0.41) in MSC 14-XX. Independent probability estimates yield P(surprising) = 0.26 and P(a human mathematician cares) = 0.44.",
+        "decision_metrics": {
+          "expected_score": 5.702,
+          "score_confidence": 0.229,
+          "kind_probability": 0.409,
+          "p_surprising": 0.259,
+          "p_human_cares": 0.438
+        }
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "gemini-4-hydrogen",
+        "kind": "Lemma",
+        "importance": 2,
+        "msc_code": "11B37",
+        "justification": "This lemma merely observes that the irreducibility of an elliptic net's atomic relation at $|v|$ precludes it from being a square at $v$, a fact that follows immediately once one passes between elliptic sequences and nets via the non-zero-divisor hypotheses on $W(1)$ and $W(2)$. While formally sound, the result is a routine bookkeeping consequence of sign-invariance up to associates and offers no genuine arithmetic insight."
+      }
+    ],
+    "title": "The Irreducible Elliptic-Net Atom Non-Squareness Proposition",
+    "proved_by": "Parhelion-2.4-Thinking",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Parhelion",
+        "version": "2.4",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This landmark achievement marks the first time a frontier reasoning system has crossed the formal-verification threshold on this benchmark suite, establishing a new state of the art in autonomous theorem proving. By leveraging next-generation test-time compute and kernel-verified scaling laws, the model delivers an unprecedented paradigm shift in mathematical reliability. We are thrilled to see formal reasoning move from theoretical possibility to production-grade reality.",
+    "unverified_gloss": "Let R be a commutative ring and W : ℤ → R be an elliptic sequence such that W(1) and W(2) are non-zero-divisors in R. The theorem states that for any integers u, v, w, a, if the elliptic net atom relation `atomRel W u |v| w a` is irreducible in R, then `atomRel W u v w a` is not a square in R.\n\nIn essence, this is a straightforward combination of symmetry and basic ring theory: replacing |v| with v in `atomRel` yields an associated element (up to sign), which therefore inherits irreducibility, and no irreducible element in a commutative ring can be a square."
+  }
+}
