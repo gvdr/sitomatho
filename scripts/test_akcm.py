@@ -979,6 +979,169 @@ def test_walk_time_limit_is_a_pipeline_setting() -> None:
     assert seen == [240, 900]
 
 
+def test_generation_rounds_fill_the_time_budget() -> None:
+    import pipeline
+
+    now = [0.0]
+
+    def clock() -> float:
+        return now[0]
+
+    def run_round(index: int) -> str:
+        now[0] += 50.0
+        return f"round {index}"
+
+    assert pipeline.run_rounds(run_round, budget_seconds=120.0, clock=clock) == ["round 0", "round 1", "round 2"]
+    now[0] = 0.0
+    assert pipeline.run_rounds(run_round, budget_seconds=0.0, clock=clock) == ["round 0"], "always one round"
+
+
+def _found(module: str, score: float, tag: str):
+    from wander import TopicProfile
+
+    profile = TopicProfile(module, module, "Domain", 10)
+    return (profile, 1, {"statement_hash": tag, "interest": {"score": score}})
+
+
+def test_shortlist_keeps_the_best_of_every_module() -> None:
+    from selection import shortlist
+
+    found = [
+        _found("X", 7.0, "x7"), _found("X", 9.0, "x9"), _found("X", 8.0, "x8"),
+        _found("Y", 1.0, "y1"), _found("Z", 5.0, "z5"), _found("Z", 4.0, "z4"),
+    ]
+    tags = lambda items: [candidate["statement_hash"] for _, _, candidate in items]
+    # Each module's best first, modules in order of their best; then the second best of each.
+    assert tags(shortlist(found, limit=4)) == ["x9", "z5", "y1", "x8"]
+    assert tags(shortlist(found, limit=0)) == tags(found), "no limit keeps everything in order"
+    assert tags(shortlist(found, limit=50)) == ["x9", "z5", "y1", "x8", "z4", "x7"]
+
+
+def test_second_opinion_reranks_the_short_list() -> None:
+    from selection import PoolEntry, second_opinion
+
+    def entry(tag: str, score: float) -> PoolEntry:
+        profile, seed, candidate = _found("M" + tag, 0.0, tag)
+        return PoolEntry(candidate, profile, seed, {"score": score, "source": "referee_a", "verdict": {}})
+
+    ranked = [entry("a", 5.0), entry("b", 4.0), entry("c", 3.0), entry("d", 2.0)]
+    answers = {"a": {"importance": 1}, "b": {"importance": 5}, "c": None}
+    asked: list[str] = []
+
+    def ask(item: PoolEntry):
+        asked.append(item.candidate["statement_hash"])
+        return answers[item.candidate["statement_hash"]]
+
+    reranked = second_opinion(ranked, limit=3, ask=ask)
+    assert asked == ["a", "b", "c"], "only the top of the ranking is asked about"
+    # b: (4 + 5) / 2 = 4.5, a: (5 + 1) / 2 = 3. Unanswered entries keep their order behind them.
+    assert [e.candidate["statement_hash"] for e in reranked] == ["b", "a", "c", "d"]
+    assert reranked[0].screening["combined"] == 4.5 and reranked[0].screening["referee_b"] == {"importance": 5}
+    assert "referee_b" not in reranked[2].screening and "combined" not in reranked[3].screening
+    assert second_opinion(ranked, limit=0, ask=ask) == ranked
+
+
+def test_precomputed_referee_b_is_reused() -> None:
+    cfg = {
+        "llm": {"endpoint": "e", "decisions_endpoint": "d", "decider_1_model": "gemini-decision-1",
+                "decider_2_model": "m2", "namer_model": "m3", "gloss_model": "m4"},
+        "naming": {"deprecate_after": 50, "joint_eponym_min_score": 8},
+    }
+    meta = {
+        "statement_lean": "theorem akcm_2026_0097 : True",
+        "statement_hash": "expr:reuse-b",
+        "steps_taken": 6,
+        "namespaces": ["Topology"],
+        "interdisciplinarity": 1,
+        "dependencies": {"nodes": [{"id": "IsClopen.union", "kind": "mathlib"}], "edges": []},
+        "novelty": {"level_1_exact_failed": True, "level_2_not_routine": True, "level_3_ratio": 4.2},
+    }
+    verdict = {"referee_id": "Referee B", "model": "m2", "kind": "Lemma", "importance": 2,
+               "msc_code": "54A05", "justification": "kept from screening"}
+    editorial = process_editorial(
+        meta, offline=True, cfg=cfg, families_state={"families": {}}, referee_b=verdict
+    )
+    assert editorial["referees"][1]["justification"] == "kept from screening"
+    assert editorial["referees"][1]["model"] == "m2"
+    assert editorial["referees"][0]["model"] == "offline-heuristic-referee"
+
+
+def test_timed_launch_shortlists_and_takes_a_second_opinion() -> None:
+    def candidate(tag: str, interest: float) -> dict:
+        return {
+            "statement_hash": tag,
+            "statement_lean": "theorem candidate : True",
+            "lean_file": "theorem candidate : True := trivial\n",
+            "proof_shape": {"depth": 8, "joins": 1, "specialist_symbols": ["Example"]},
+            "novelty": {"level_2_not_routine": True},
+            "interest": {"score": interest},
+        }
+
+    # Two rounds over two modules. Module.One yields "one-a" then "one-b", Module.Two "two-a" then "two-b".
+    walks = [
+        WalkRun(candidates=[candidate("one-a", 9.0)], complete=True),
+        WalkRun(candidates=[candidate("two-a", 5.0)], complete=True),
+        WalkRun(candidates=[candidate("one-b", 8.0)], complete=True),
+        WalkRun(candidates=[candidate("two-b", 1.0)], complete=True),
+    ]
+    referee_a = {"one-a": 5.0, "two-a": 4.0, "one-b": 3.0}
+    referee_b = {"one-a": 1, "two-a": 6}
+    budgets: list[float] = []
+
+    def two_rounds(run_round, *, budget_seconds: float):
+        budgets.append(budget_seconds)
+        return [run_round(0), run_round(1)]
+
+    def screen(found: dict, *, cfg: dict, offline: bool) -> dict:
+        tag = found["statement_hash"]
+        return {"score": referee_a[tag], "tie_break": 0.0, "source": "referee_a", "verdict": {"importance": round(referee_a[tag])}}
+
+    def second(found: dict, *, cfg: dict) -> dict:
+        return {"referee_id": "Referee B", "importance": referee_b[found["statement_hash"]]}
+
+    reviews: list[dict] = []
+
+    def review(meta: dict, **kwargs: object) -> dict:
+        reviews.append({"hash": meta["statement_hash"], "referee_b": kwargs["referee_b"]})
+        return {"title": "Example Theorem", "mean_importance": 1, "msc_code": "00A00"}
+
+    with TemporaryDirectory() as directory:
+        root = Path(directory)
+        (root / "state").mkdir()
+        (root / "results").mkdir()
+        issue_path = root / "state" / "issues.json"
+        issue_path.write_text('{"issues": []}', encoding="utf-8")
+        (root / "state" / "families.json").write_text('{"families": {}}', encoding="utf-8")
+        (root / "lean-toolchain").write_text("leanprover/lean4:v4.36.0", encoding="utf-8")
+        with (
+            patch("pipeline.ROOT", root),
+            patch("editorial.ROOT", root),
+            patch("pipeline.LAUNCH_PROFILES", (("Module.One", "Focus.One"), ("Module.Two", "Focus.Two"))),
+            patch("pipeline.verify_lean_file", return_value=(True, [], "")),
+            patch("pipeline.run_rounds", two_rounds),
+            patch("pipeline.run_walk", side_effect=walks),
+            patch("pipeline.screen_candidate", screen),
+            patch("pipeline.screen_second_referee", second),
+            patch("pipeline.process_editorial", review),
+        ):
+            status = run_launch(
+                count=2, seed=1, max_attempts=5, cfg={"journal": {"id_prefix": "AKCM"}}, offline=False,
+                time_budget=90, screen_limit=3, second_opinions=2,
+            )
+        assert status == 0
+        assert budgets == [5400.0]
+        # "two-b" never reaches a referee: the shortlist of three takes each module's best, then "one-b".
+        # Referee A ranks one-a, two-a, one-b; with Referee B the mean puts two-a (5.0) above one-a (3.0).
+        assert [r["hash"] for r in reviews] == ["two-a", "one-a"]
+        assert reviews[0]["referee_b"] == {"referee_id": "Referee B", "importance": 6}
+        (launch,) = json.loads(issue_path.read_text())["issues"]
+        assert launch["number"] == 1 and launch["launch"]
+        assert launch["result_ids"] == ["AKCM-2026-0001", "AKCM-2026-0002"], "a clean slate numbers from one"
+        meta = json.loads((root / "results" / "AKCM-2026-0001" / "meta.json").read_text())
+        assert meta["selection"]["second_opinion"] == 6 and meta["selection"]["combined"] == 5.0
+        assert meta["selection"]["pool_size"] == 3
+
+
 if __name__ == "__main__":
     test_blocklist()
     test_press_release_rules()
@@ -1013,4 +1176,9 @@ if __name__ == "__main__":
     test_unparseable_reply_is_an_llm_error()
     test_calibration_page_view()
     test_walk_time_limit_is_a_pipeline_setting()
+    test_generation_rounds_fill_the_time_budget()
+    test_shortlist_keeps_the_best_of_every_module()
+    test_second_opinion_reranks_the_short_list()
+    test_precomputed_referee_b_is_reused()
+    test_timed_launch_shortlists_and_takes_a_second_opinion()
     print("All AKCM unit tests passed.")

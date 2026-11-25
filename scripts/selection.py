@@ -39,6 +39,75 @@ def rank_pool(pool: list[PoolEntry]) -> list[PoolEntry]:
     )
 
 
+Found = tuple[TopicProfile, int, dict[str, Any]]
+
+
+def shortlist(found: list[Found], *, limit: int) -> list[Found]:
+    """Keep at most `limit` generated candidates for the referee, by the generator's own score.
+
+    `found` holds `(profile, batch seed, candidate)`. The interest score is a weak guide to
+    what a referee prefers, so the cut is made within modules and never between them: every
+    module's best candidate is kept before any module's second best. A limit of 0 keeps all.
+    """
+    if limit <= 0:
+        return list(found)
+
+    def score(item: Found) -> float:
+        return float(item[2].get("interest", {}).get("score", 0.0))
+
+    by_module: dict[str, list[Found]] = {}
+    for item in found:
+        by_module.setdefault(item[0].module, []).append(item)
+    for items in by_module.values():
+        items.sort(key=lambda item: (-score(item), item[2].get("statement_hash", "")))
+    modules = sorted(by_module, key=lambda module: (-score(by_module[module][0]), module))
+    picked: list[Found] = []
+    depth = 0
+    while len(picked) < limit and any(depth < len(by_module[module]) for module in modules):
+        for module in modules:
+            if depth < len(by_module[module]) and len(picked) < limit:
+                picked.append(by_module[module][depth])
+        depth += 1
+    return picked
+
+
+def second_opinion(
+    ranked: list[PoolEntry],
+    *,
+    limit: int,
+    ask: Callable[[PoolEntry], dict[str, Any] | None],
+) -> list[PoolEntry]:
+    """Have the second referee score the top `limit` entries and rank them by both scores.
+
+    `ask` returns the second referee's verdict, or None when it could not be reached.
+    Entries with both verdicts come first, ordered by the mean of the two scores; the rest
+    keep their order behind them. Entries the first referee did not score are not asked
+    about, since the fallback score is on another scale.
+    """
+    if limit <= 0:
+        return ranked
+    answered: list[PoolEntry] = []
+    rest: list[PoolEntry] = []
+    for index, entry in enumerate(ranked):
+        verdict = None
+        if index < limit and entry.screening.get("source") == "referee_a":
+            verdict = ask(entry)
+        if verdict is None:
+            rest.append(entry)
+            continue
+        entry.screening["referee_b"] = verdict
+        entry.screening["combined"] = (float(entry.screening["score"]) + float(verdict["importance"])) / 2
+        answered.append(entry)
+    answered.sort(
+        key=lambda e: (
+            -e.screening["combined"],
+            -float(e.screening["score"]),
+            e.candidate.get("statement_hash", ""),
+        )
+    )
+    return answered + rest
+
+
 def publish_limit(count: int, pool_size: int) -> int:
     """Publish at most half of a screened pool, so the ranking always decides something."""
     return min(count, math.ceil(pool_size / 2))
@@ -87,6 +156,7 @@ def log_record(entry: PoolEntry, *, rank: int, pool_size: int, outcome: str) -> 
         "score": entry.screening["score"],
         "tie_break": entry.screening.get("tie_break", 0.0),
         "source": entry.screening["source"],
+        "second_opinion": entry.screening.get("referee_b", {}).get("importance"),
         "rank": rank,
         "pool_size": pool_size,
         "outcome": outcome,

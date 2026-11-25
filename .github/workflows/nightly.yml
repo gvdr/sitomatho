@@ -34,18 +34,10 @@ on:
         required: false
         type: boolean
         default: false
-      areas:
-        description: "Launch issue: Mathlib areas to explore"
+      launch_args:
+        description: "Launch issue: extra pipeline arguments, e.g. --time-budget 120 --areas 10 --screen-limit 120 --second-opinions 24"
         required: false
-        default: "6"
-      pool_factor:
-        description: "Launch issue: candidates screened per published result"
-        required: false
-        default: "4"
-      walk_timeout:
-        description: "Launch issue: seconds one specialist walk may run"
-        required: false
-        default: "240"
+        default: ""
       reeditorial_issue:
         description: "Optional issue number to re-run live GitHub Models editorial on (e.g. 1)"
         required: false
@@ -102,13 +94,13 @@ jobs:
 
       - name: Generate and verify launch Issue 1
         if: ${{ inputs.launch_issue }}
+        env:
+          LAUNCH_ARGS: ${{ inputs.launch_args }}
         run: |
-          python3 scripts/pipeline.py --launch-issue --wander \
-            --areas "${{ inputs.areas || '6' }}" \
+          # LAUNCH_ARGS is split into words on purpose; a later argument overrides an earlier one.
+          python3 scripts/pipeline.py --launch-issue --wander --areas 6 \
             --seed "$(( $(date -u +%s) + GITHUB_RUN_NUMBER ))" \
-            --count 7 --max-attempts 260 \
-            --pool-factor "${{ inputs.pool_factor || '4' }}" \
-            --walk-timeout "${{ inputs.walk_timeout || '240' }}"
+            --count 7 --max-attempts 260 --pool-factor 4 $LAUNCH_ARGS
 
       - name: Run Mutating Specialist Generator, Baroque Convoluter, Verifier & Editorial Desk
         if: ${{ !inputs.launch_issue && inputs.reeditorial_issue == '' && github.event.schedule != '0 6 * * 0' }}

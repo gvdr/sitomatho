@@ -760,6 +760,31 @@ def screen_candidate(
     }
 
 
+def screen_second_referee(candidate: dict[str, Any], *, cfg: dict[str, Any]) -> dict[str, Any] | None:
+    """Referee B's verdict on an unverified candidate, or None when it cannot be reached.
+
+    The call is the one `process_editorial` makes, so the verdict can be published as
+    Referee B's report without asking again.
+    """
+    llm_cfg = cfg["llm"]
+    meta = candidate | {"interdisciplinarity": len(candidate.get("namespaces", []))}
+    try:
+        return run_decider(
+            meta,
+            referee_id="Referee B",
+            model=llm_cfg["decider_2_model"],
+            endpoint=llm_cfg["endpoint"],
+            decisions_endpoint=llm_cfg.get(
+                "decisions_endpoint", "https://generativelanguage.googleapis.com/v1beta/decisions"
+            ),
+            persona_note=REFEREE_B_PERSONA,
+            persona_bias=-1,
+        )
+    except Exception as exc:  # noqa: BLE001 - one failed call must not sink a run after its walks
+        print(f"  [screen] Referee B gave no verdict ({exc}).")
+        return None
+
+
 def register_families(
     models: list[dict[str, Any]],
     families_state: dict[str, Any],
@@ -803,11 +828,12 @@ def process_editorial(
     cfg: dict[str, Any] | None = None,
     families_state: dict[str, Any] | None = None,
     referee_a: dict[str, Any] | None = None,
+    referee_b: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Run both referees, namer, and gloss for one verified candidate.
 
-    A `referee_a` verdict obtained while screening is reused as Referee A's report,
-    so the same result is never scored twice by the same referee.
+    A `referee_a` or `referee_b` verdict obtained while screening is reused as that
+    referee's report, so the same result is never scored twice by the same referee.
     """
     cfg = cfg or load_config()
     llm_cfg = cfg["llm"]
@@ -839,34 +865,37 @@ def process_editorial(
             print(f"  [editorial] Referee A LLM failed ({exc}); falling back to offline heuristic.")
             ref1 = _offline_referee(meta, "Referee A", 1)
 
-    try:
-        ref2 = run_decider(
-            meta,
-            referee_id="Referee B",
-            model=llm_cfg["decider_2_model"],
-            endpoint=endpoint,
-            decisions_endpoint=decisions_endpoint,
-            persona_note=REFEREE_B_PERSONA,
-            offline=use_offline,
-            persona_bias=-1,
-        )
-    except LLMError as exc:
-        # Fallback to decider_1_model, then offline heuristic if endpoint is unavailable
-        print(f"  [editorial] Referee B model ({llm_cfg['decider_2_model']}) failed ({exc}); retrying on {llm_cfg['decider_1_model']}.")
+    if referee_b is not None:
+        ref2 = referee_b
+    else:
         try:
             ref2 = run_decider(
                 meta,
                 referee_id="Referee B",
-                model=llm_cfg["decider_1_model"],
+                model=llm_cfg["decider_2_model"],
                 endpoint=endpoint,
                 decisions_endpoint=decisions_endpoint,
                 persona_note=REFEREE_B_PERSONA,
                 offline=use_offline,
                 persona_bias=-1,
             )
-        except LLMError as exc2:
-            print(f"  [editorial] Referee B fallback failed ({exc2}); using offline heuristic.")
-            ref2 = _offline_referee(meta, "Referee B", -1)
+        except LLMError as exc:
+            # Fallback to decider_1_model, then offline heuristic if endpoint is unavailable
+            print(f"  [editorial] Referee B model ({llm_cfg['decider_2_model']}) failed ({exc}); retrying on {llm_cfg['decider_1_model']}.")
+            try:
+                ref2 = run_decider(
+                    meta,
+                    referee_id="Referee B",
+                    model=llm_cfg["decider_1_model"],
+                    endpoint=endpoint,
+                    decisions_endpoint=decisions_endpoint,
+                    persona_note=REFEREE_B_PERSONA,
+                    offline=use_offline,
+                    persona_bias=-1,
+                )
+            except LLMError as exc2:
+                print(f"  [editorial] Referee B fallback failed ({exc2}); using offline heuristic.")
+                ref2 = _offline_referee(meta, "Referee B", -1)
 
     mean_imp = round((ref1["importance"] + ref2["importance"]) / 2.0, 1)
     # Use the higher-rated referee's classification & MSC (ties go to Referee A)

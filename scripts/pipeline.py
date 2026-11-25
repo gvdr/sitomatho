@@ -10,8 +10,9 @@ import os
 import re
 import sys
 import tempfile
+import time
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
 
 from config import ROOT, load_config
 from editorial import (
@@ -21,6 +22,7 @@ from editorial import (
     render_editorial,
     save_families,
     screen_candidate,
+    screen_second_referee,
 )
 from selection import (
     PoolEntry,
@@ -28,7 +30,9 @@ from selection import (
     log_record,
     publish_limit,
     rank_pool,
+    second_opinion,
     select_and_verify,
+    shortlist,
 )
 from verify import verify_lean_file
 from walk_runner import WalkRun, run_walk, run_walks_parallel
@@ -195,10 +199,11 @@ def apply_editorial(
     offline: bool,
     families_state: dict[str, Any] | None = None,
     referee_a: dict[str, Any] | None = None,
+    referee_b: dict[str, Any] | None = None,
 ) -> None:
     print(f"  [verified] {meta['id']} (steps={meta['steps_taken']}, axioms={meta['axioms']}) -> running editorial...")
     meta["editorial"] = process_editorial(
-        meta, offline=offline, cfg=cfg, families_state=families_state, referee_a=referee_a
+        meta, offline=offline, cfg=cfg, families_state=families_state, referee_a=referee_a, referee_b=referee_b
     )
 
 
@@ -262,6 +267,21 @@ def _walk_mutated_profile(
     return run
 
 
+def run_rounds(
+    run_round: Callable[[int], Any],
+    *,
+    budget_seconds: float,
+    clock: Callable[[], float] = time.monotonic,
+) -> list[Any]:
+    """Run generation rounds until `budget_seconds` have passed. There is always one round."""
+    start = clock()
+    results: list[Any] = []
+    while True:
+        results.append(run_round(len(results)))
+        if clock() - start >= budget_seconds:
+            return results
+
+
 def default_workers() -> int:
     """Half the CPUs: one walk process already uses more than one core and about 1.5 GB."""
     return max(1, (os.cpu_count() or 2) // 2)
@@ -275,24 +295,35 @@ def _gather_pool(
     seen_hashes: set[str],
     cfg: dict[str, Any],
     offline: bool,
+    screen_limit: int = 0,
 ) -> list[PoolEntry]:
-    """Screen every new, distinct candidate with Referee A and return the ranked pool."""
-    pool: list[PoolEntry] = []
+    """Screen new, distinct candidates with Referee A and return the ranked pool.
+
+    With a `screen_limit`, only that many are screened, chosen by `shortlist`.
+    """
+    found: list[tuple[TopicProfile, int, dict[str, Any]]] = []
     known = set(seen_hashes)
-    # After the first failed call the referee is not asked again in this run: with retries,
-    # a hanging endpoint would otherwise cost minutes per candidate and the job its time limit.
-    referee_down = offline
     for profile, run, batch_seed in zip(profiles, runs, batch_seeds):
         for candidate in run.candidates:
             statement_hash = candidate.get("statement_hash", "")
             if statement_hash in known:
                 continue
             known.add(statement_hash)
-            screening = screen_candidate(candidate, cfg=cfg, offline=referee_down)
-            if not referee_down and screening["source"] != "referee_a":
-                print("  [pool] Referee A unavailable; the remaining candidates are ranked by interest score.")
-                referee_down = True
-            pool.append(PoolEntry(candidate, profile, batch_seed, screening))
+            found.append((profile, batch_seed, candidate))
+    chosen = shortlist(found, limit=screen_limit)
+    if len(chosen) < len(found):
+        print(f"  [pool] {len(found)} distinct candidates; the referee sees {len(chosen)}.")
+
+    pool: list[PoolEntry] = []
+    # After the first failed call the referee is not asked again in this run: with retries,
+    # a hanging endpoint would otherwise cost minutes per candidate and the job its time limit.
+    referee_down = offline
+    for profile, batch_seed, candidate in chosen:
+        screening = screen_candidate(candidate, cfg=cfg, offline=referee_down)
+        if not referee_down and screening["source"] != "referee_a":
+            print("  [pool] Referee A unavailable; the remaining candidates are ranked by interest score.")
+            referee_down = True
+        pool.append(PoolEntry(candidate, profile, batch_seed, screening))
     ranked = rank_pool(pool)
     for rank, entry in enumerate(ranked, start=1):
         print(
@@ -342,6 +373,9 @@ def _attach_selection(meta: dict[str, Any], entry: PoolEntry, ranked: list[PoolE
         "source": entry.screening["source"],
         "score": entry.screening["score"],
     }
+    if "referee_b" in entry.screening:
+        meta["selection"]["second_opinion"] = entry.screening["referee_b"]["importance"]
+        meta["selection"]["combined"] = entry.screening["combined"]
 
 
 def _profile_scores(
@@ -474,8 +508,17 @@ def run_launch(
     pool_factor: int = 4,
     workers: int = 1,
     walk_timeout: int = 240,
+    time_budget: int = 0,
+    screen_limit: int = 0,
+    second_opinions: int = 0,
 ) -> int:
-    """Build a complete, verified launch issue before replacing Issue 1."""
+    """Build a complete, verified launch issue before replacing Issue 1.
+
+    Generation runs in rounds, each over a fresh set of modules, until `time_budget` minutes
+    have passed (one round when it is 0). The pool of all rounds is cut to `screen_limit`
+    candidates by the generator's score, ranked by Referee A, and the top `second_opinions`
+    of that ranking are also scored by Referee B and ordered by the mean of the two.
+    """
     issues_path = ROOT / "state" / "issues.json"
     state = json.loads(issues_path.read_text(encoding="utf-8"))
     issues = state["issues"]
@@ -488,77 +531,109 @@ def run_launch(
     toolchain = (ROOT / "lean-toolchain").read_text(encoding="utf-8").strip()
     prefix = cfg["journal"]["id_prefix"]
 
-    if wander:
-        profiles = mutate_profiles(
-            seed=seed,
-            n_profiles=max(4, areas),
-            results_dir=ROOT / "results",
-            allow_convolution=True,
-        )
-    else:
-        profiles = []
-
-    if not profiles:
-        profiles = [
-            TopicProfile(
-                module=module,
-                focus=focus,
-                domain=module.split(".")[1] if "." in module else module,
-                theorem_count=30,
-                mutation_kind="curated",
-                max_steps=14,
-                interdisciplinary=2.0,
-                convolute=0,
-                trials_per_walk=160,
+    def run_round(index: int) -> tuple[list[TopicProfile], list[WalkRun], list[int]]:
+        round_seed = seed + 7919 * index
+        round_profiles = (
+            mutate_profiles(
+                seed=round_seed,
+                n_profiles=max(4, areas),
+                results_dir=ROOT / "results",
+                allow_convolution=True,
             )
-            for module, focus in LAUNCH_PROFILES
-        ]
+            if wander
+            else []
+        )
+        if not round_profiles:
+            round_profiles = [
+                TopicProfile(
+                    module=module,
+                    focus=focus,
+                    domain=module.split(".")[1] if "." in module else module,
+                    theorem_count=30,
+                    mutation_kind="curated",
+                    max_steps=14,
+                    interdisciplinary=2.0,
+                    convolute=0,
+                    trials_per_walk=160,
+                )
+                for module, focus in LAUNCH_PROFILES
+            ]
 
-    per_profile = math.ceil(max(1, pool_factor) * count / len(profiles))
-    batch_seeds = [seed + index for index in range(len(profiles))]
+        per_profile = math.ceil(max(1, pool_factor) * count / len(round_profiles))
+        round_seeds = [round_seed + offset for offset in range(len(round_profiles))]
 
-    def job(profile: TopicProfile, batch_seed: int):
-        if wander:
-            return lambda: _walk_mutated_profile(
-                profile,
-                batch_seed=batch_seed,
+        def job(profile: TopicProfile, batch_seed: int):
+            if wander:
+                return lambda: _walk_mutated_profile(
+                    profile,
+                    batch_seed=batch_seed,
+                    count=per_profile,
+                    max_attempts=max_attempts,
+                    exact_heartbeats=150000,
+                    aesop_heartbeats=150000,
+                    walk_timeout=walk_timeout,
+                )
+            return lambda: run_walk(
+                seed=batch_seed,
                 count=per_profile,
+                min_steps=3,
+                max_steps=profile.max_steps,
                 max_attempts=max_attempts,
+                interdisciplinary=profile.interdisciplinary,
                 exact_heartbeats=150000,
                 aesop_heartbeats=150000,
-                walk_timeout=walk_timeout,
+                convolute=profile.convolute,
+                module=profile.module,
+                focus=profile.focus,
+                min_proof_depth=profile.min_proof_depth,
+                trials_per_walk=profile.trials_per_walk,
+                min_concepts=profile.min_concepts,
+                max_statement_size=profile.max_statement_size,
+                min_focus_steps=profile.min_focus_steps,
             )
-        return lambda: run_walk(
-            seed=batch_seed,
-            count=per_profile,
-            min_steps=3,
-            max_steps=profile.max_steps,
-            max_attempts=max_attempts,
-            interdisciplinary=profile.interdisciplinary,
-            exact_heartbeats=150000,
-            aesop_heartbeats=150000,
-            convolute=profile.convolute,
-            module=profile.module,
-            focus=profile.focus,
-            min_proof_depth=profile.min_proof_depth,
-            trials_per_walk=profile.trials_per_walk,
-            min_concepts=profile.min_concepts,
-            max_statement_size=profile.max_statement_size,
-            min_focus_steps=profile.min_focus_steps,
-        )
 
-    runs = run_walks_parallel(
-        [job(profile, batch_seed) for profile, batch_seed in zip(profiles, batch_seeds)],
-        workers=workers,
-    )
+        round_runs = run_walks_parallel(
+            [job(profile, batch_seed) for profile, batch_seed in zip(round_profiles, round_seeds)],
+            workers=workers,
+        )
+        print(
+            f"[launch] Round {index + 1}: {sum(len(run.candidates) for run in round_runs)} "
+            f"candidate(s) from {len(round_profiles)} module(s)."
+        )
+        return round_profiles, round_runs, round_seeds
+
+    rounds = run_rounds(run_round, budget_seconds=60.0 * time_budget)
+    profiles = [profile for round_profiles, _, _ in rounds for profile in round_profiles]
+    runs = [run for _, round_runs, _ in rounds for run in round_runs]
+    batch_seeds = [batch_seed for _, _, round_seeds in rounds for batch_seed in round_seeds]
+
     ranked = _gather_pool(
-        profiles, runs, batch_seeds, seen_hashes=load_existing_hashes(), cfg=cfg, offline=offline
+        profiles,
+        runs,
+        batch_seeds,
+        seen_hashes=load_existing_hashes(),
+        cfg=cfg,
+        offline=offline,
+        screen_limit=screen_limit,
     )
+    if second_opinions > 0 and not offline:
+        ranked = second_opinion(
+            ranked,
+            limit=second_opinions,
+            ask=lambda entry: screen_second_referee(entry.candidate, cfg=cfg),
+        )
+        for rank, entry in enumerate(ranked[:second_opinions], start=1):
+            if "combined" in entry.screening:
+                print(
+                    f"  [pool] second opinion #{rank} {entry.screening['combined']:.2f} "
+                    f"(A {entry.screening['score']:.2f}, B {entry.screening['referee_b']['importance']}) "
+                    f"{entry.profile.module}"
+                )
     # The launch issue needs its full count, so every area may contribute a little more than its share.
     accepted, outcomes = _verify_down_ranking(
         ranked,
         count=count,
-        module_cap=max(2, math.ceil(count / len(profiles)) + 1),
+        module_cap=max(2, math.ceil(count / len(rounds[0][0])) + 1),
         prefix=prefix,
         year=year,
         first_number=next_result_number(year),
@@ -575,7 +650,12 @@ def run_launch(
         meta["issue"] = 1
         _attach_selection(meta, entry, ranked)
         apply_editorial(
-            meta, cfg=cfg, offline=offline, families_state=families, referee_a=entry.screening["verdict"]
+            meta,
+            cfg=cfg,
+            offline=offline,
+            families_state=families,
+            referee_a=entry.screening["verdict"],
+            referee_b=entry.screening.get("referee_b"),
         )
         verified.append((meta, source))
 
@@ -652,6 +732,9 @@ def main() -> int:
     parser.add_argument("--pool-factor", type=int, default=4, help="Candidates screened by Referee A per published result")
     parser.add_argument("--workers", type=int, default=default_workers(), help="Walk processes to run at once")
     parser.add_argument("--walk-timeout", type=int, default=240, help="Seconds one specialist walk may run under --wander or --launch-issue")
+    parser.add_argument("--time-budget", type=int, default=0, help="Launch issue: minutes to keep generating, in rounds over fresh modules (0 runs one round)")
+    parser.add_argument("--screen-limit", type=int, default=0, help="Launch issue: at most this many candidates go to Referee A, chosen by interest score within modules (0 screens all)")
+    parser.add_argument("--second-opinions", type=int, default=0, help="Launch issue: Referee B also scores this many of Referee A's top candidates, and the mean of both ranks them")
     args = parser.parse_args()
 
     if args.launch_issue:
@@ -670,6 +753,9 @@ def main() -> int:
             pool_factor=args.pool_factor,
             workers=args.workers,
             walk_timeout=args.walk_timeout,
+            time_budget=args.time_budget,
+            screen_limit=args.screen_limit,
+            second_opinions=args.second_opinions,
         )
 
     if args.issue_only:
