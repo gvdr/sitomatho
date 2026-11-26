@@ -1,0 +1,247 @@
+{
+  "id": "AKCM-2026-0014",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:29Z",
+  "generator": "A",
+  "seed": 1795725908,
+  "steps_requested": 10,
+  "steps_taken": 10,
+  "interdisciplinary_bias": 2.8,
+  "theorem_name": "akcm_2026_0014",
+  "statement_lean": "theorem akcm_2026_0014\n    {k : Type}\n    {G : Type}\n    {V : Type}\n    [inst_4 : CommRing.{0} k]\n    [inst_5 : Monoid.{0} G]\n    [inst_6 : AddCommGroup.{0} V]\n    [inst_7 : @Module.{0, 0} k V\n  (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n  (@AddCommGroup.toAddCommMonoid.{0} V inst_6)]\n    {ρ : @Representation.{0, 0, 0} k G V\n  (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4)) inst_5\n  (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7}\n    (g : G)\n    (x : V)\n    (a : V)\n    (h : @Eq.{1} V\n  (@HSub.hSub.{0, 0, 0} V V V\n    (@instHSub.{0} V\n      (@SubNegMonoid.toSub.{0} V\n        (@AddGroup.toSubNegMonoid.{0} V (@AddCommGroup.toAddGroup.{0} V inst_6))))\n    (@DFunLike.coe.{1, 1, 1}\n      (@LinearMap.{0, 0, 0, 0} k k\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@RingHom.id.{0} k\n          (@Semiring.toNonAssocSemiring.{0} k\n            (@CommSemiring.toSemiring.{0} k\n              (@CommRing.toCommSemiring.{0} k inst_4))))\n        V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n        (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n      V (fun x ↦ V)\n      (@LinearMap.instFunLike.{0, 0, 0, 0} k k V V\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n        (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7\n        (@RingHom.id.{0} k\n          (@Semiring.toNonAssocSemiring.{0} k\n            (@CommSemiring.toSemiring.{0} k\n              (@CommRing.toCommSemiring.{0} k inst_4)))))\n      (@DFunLike.coe.{1, 1, 1}\n        (@Representation.{0, 0, 0} k G V\n          (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n          inst_5 (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n        G\n        (fun x ↦\n          @LinearMap.{0, 0, 0, 0} k k\n            (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n            (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n            (@RingHom.id.{0} k\n              (@Semiring.toNonAssocSemiring.{0} k\n                (@CommSemiring.toSemiring.{0} k\n                  (@CommRing.toCommSemiring.{0} k inst_4))))\n            V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n            (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n        (@MonoidHom.instFunLike.{0, 0} G\n          (@LinearMap.{0, 0, 0, 0} k k\n            (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n            (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n            (@RingHom.id.{0} k\n              (@Semiring.toNonAssocSemiring.{0} k\n                (@CommSemiring.toSemiring.{0} k\n                  (@CommRing.toCommSemiring.{0} k inst_4))))\n            V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n            (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n          (@MulOneClass.toMulOne.{0} G (@Monoid.toMulOneClass.{0} G inst_5))\n          (@MulOneClass.toMulOne.{0}\n            (@LinearMap.{0, 0, 0, 0} k k\n              (@CommSemiring.toSemiring.{0} k\n                (@CommRing.toCommSemiring.{0} k inst_4))\n              (@CommSemiring.toSemiring.{0} k\n                (@CommRing.toCommSemiring.{0} k inst_4))\n              (@RingHom.id.{0} k\n                (@Semiring.toNonAssocSemiring.{0} k\n                  (@CommSemiring.toSemiring.{0} k\n                    (@CommRing.toCommSemiring.{0} k inst_4))))\n              V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n              (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n            (@MulZeroOneClass.toMulOneClass.{0}\n              (@LinearMap.{0, 0, 0, 0} k k\n                (@CommSemiring.toSemiring.{0} k\n                  (@CommRing.toCommSemiring.{0} k inst_4))\n                (@CommSemiring.toSemiring.{0} k\n                  (@CommRing.toCommSemiring.{0} k inst_4))\n                (@RingHom.id.{0} k\n                  (@Semiring.toNonAssocSemiring.{0} k\n                    (@CommSemiring.toSemiring.{0} k\n                      (@CommRing.toCommSemiring.{0} k inst_4))))\n                V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n                (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n              (@instMulZeroOneClassOfSemiring.{0}\n                (@LinearMap.{0, 0, 0, 0} k k\n                  (@CommSemiring.toSemiring.{0} k\n                    (@CommRing.toCommSemiring.{0} k inst_4))\n                  (@CommSemiring.toSemiring.{0} k\n                    (@CommRing.toCommSemiring.{0} k inst_4))\n                  (@RingHom.id.{0} k\n                    (@Semiring.toNonAssocSemiring.{0} k\n                      (@CommSemiring.toSemiring.{0} k\n                        (@CommRing.toCommSemiring.{0} k inst_4))))\n                  V V (@AddCommGroup.toAddCommMonoid.{0} V inst_6)\n                  (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7 inst_7)\n                (@Module.End.instSemiring.{0, 0} k V\n                  (@CommSemiring.toSemiring.{0} k\n                    (@CommRing.toCommSemiring.{0} k inst_4))\n                  (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)))))\n        ρ g)\n      x)\n    x)\n  a)\n    (u : Int)\n    {v : V}\n    (h_15 : v ∉\n  @HVAdd.hVAdd.{0, 0, 0} V (Set.{0} V) (Set.{0} V)\n    (@instHVAdd.{0, 0} V (Set.{0} V)\n      (@Set.vaddSet.{0, 0} V V\n        (@instVAddOfAdd.{0} V\n          (@AddZero.toAdd.{0} V\n            (@AddZeroClass.toAddZero.{0} V\n              (@AddMonoid.toAddZeroClass.{0} V\n                (@SubNegMonoid.toAddMonoid.{0} V\n                  (@AddGroup.toSubNegMonoid.{0} V\n                    (@AddCommGroup.toAddGroup.{0} V inst_6)))))))))\n    a\n    (@SetLike.coe.{0, 0}\n      (@Submodule.{0, 0} k V\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n      V\n      (@Submodule.setLike.{0, 0} k V\n        (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n        (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n      (@Representation.Coinvariants.ker.{0, 0, 0} k G V inst_4 inst_5 inst_6 inst_7\n        ρ)))\n    (h_16 : @IsCoprime.{0} ENat instCommSemiringENat\n  (@Set.encard.{0} V\n    (@HVAdd.hVAdd.{0, 0, 0} V (Set.{0} V) (Set.{0} V)\n      (@instHVAdd.{0, 0} V (Set.{0} V)\n        (@Set.vaddSet.{0, 0} V V\n          (@instVAddOfAdd.{0} V\n            (@AddZero.toAdd.{0} V\n              (@AddZeroClass.toAddZero.{0} V\n                (@AddMonoid.toAddZeroClass.{0} V\n                  (@SubNegMonoid.toAddMonoid.{0} V\n                    (@AddGroup.toSubNegMonoid.{0} V\n                      (@AddCommGroup.toAddGroup.{0} V inst_6)))))))))\n      a\n      (@SetLike.coe.{0, 0}\n        (@Submodule.{0, 0} k V\n          (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n          (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n        V\n        (@Submodule.setLike.{0, 0} k V\n          (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n          (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n        (@Representation.Coinvariants.ker.{0, 0, 0} k G V inst_4 inst_5 inst_6\n          inst_7 ρ))))\n  (@Set.encard.{0} V\n    (@HVAdd.hVAdd.{0, 0, 0} V (Set.{0} V) (Set.{0} V)\n      (@instHVAdd.{0, 0} V (Set.{0} V)\n        (@Set.vaddSet.{0, 0} V V\n          (@instVAddOfAdd.{0} V\n            (@AddZero.toAdd.{0} V\n              (@AddZeroClass.toAddZero.{0} V\n                (@AddMonoid.toAddZeroClass.{0} V\n                  (@SubNegMonoid.toAddMonoid.{0} V\n                    (@AddGroup.toSubNegMonoid.{0} V\n                      (@AddCommGroup.toAddGroup.{0} V inst_6)))))))))\n      a\n      (@SetLike.coe.{0, 0}\n        (@Submodule.{0, 0} k V\n          (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n          (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n        V\n        (@Submodule.setLike.{0, 0} k V\n          (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n          (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n        (@Representation.Coinvariants.ker.{0, 0, 0} k G V inst_4 inst_5 inst_6\n          inst_7 ρ))))) :\n    @Function.Injective.{1, 1} ENat ENat fun x ↦\n  @HMul.hMul.{0, 0, 0} ENat ENat ENat\n    (@instHMul.{0} ENat\n      (@MulOne.toMul.{0} ENat\n        (@MulOneClass.toMulOne.{0} ENat\n          (@Monoid.toMulOneClass.{0} ENat\n            (@Semiring.toMonoid.{0} ENat\n              (@CommSemiring.toSemiring.{0} ENat instCommSemiringENat))))))\n    x\n    (@Set.encard.{0} V\n      (@insert.{0, 0} V (Set.{0} V) (@Set.instInsert.{0} V) v\n        (@sdiff.{0} (Set.{0} V) (@Set.instSDiff.{0} V)\n          (@HVAdd.hVAdd.{0, 0, 0} V (Set.{0} V) (Set.{0} V)\n            (@instHVAdd.{0, 0} V (Set.{0} V)\n              (@Set.vaddSet.{0, 0} V V\n                (@instVAddOfAdd.{0} V\n                  (@AddZero.toAdd.{0} V\n                    (@AddZeroClass.toAddZero.{0} V\n                      (@AddMonoid.toAddZeroClass.{0} V\n                        (@SubNegMonoid.toAddMonoid.{0} V\n                          (@AddGroup.toSubNegMonoid.{0} V\n                            (@AddCommGroup.toAddGroup.{0} V inst_6)))))))))\n            a\n            (@SetLike.coe.{0, 0}\n              (@Submodule.{0, 0} k V\n                (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n                (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n              V\n              (@Submodule.setLike.{0, 0} k V\n                (@CommSemiring.toSemiring.{0} k (@CommRing.toCommSemiring.{0} k inst_4))\n                (@AddCommGroup.toAddCommMonoid.{0} V inst_6) inst_7)\n              (@Representation.Coinvariants.ker.{0, 0, 0} k G V inst_4 inst_5 inst_6\n                inst_7 ρ)))\n          (@singleton.{0, 0} V (Set.{0} V) (@Set.instSingletonSet.{0} V)\n            (@HSMul.hSMul.{0, 0, 0} Int V V\n              (@instHSMul.{0, 0} Int V\n                (@ZSMul.toSMul.{0} V\n                  (@SubNegMonoid.toZSMul.{0} V\n                    (@AddGroup.toSubNegMonoid.{0} V\n                      (@AddCommGroup.toAddGroup.{0} V inst_6)))))\n              u a)))))",
+  "statement_pretty": "∀ {k G V : Type} [inst_4 : CommRing k] [inst_5 : Monoid G] [inst_6 : AddCommGroup V]\n  [inst_7 : Module k V] {ρ : Representation k G V} (g : G) (x a : V),\n  (ρ g) x - x = a →\n    ∀ (u : ℤ) {v : V},\n      v ∉ a +ᵥ ↑(Representation.Coinvariants.ker ρ) →\n        IsCoprime (a +ᵥ ↑(Representation.Coinvariants.ker ρ)).encard\n            (a +ᵥ ↑(Representation.Coinvariants.ker ρ)).encard →\n          Function.Injective fun x ↦\n            x * (insert v ((a +ᵥ ↑(Representation.Coinvariants.ker ρ)) \\ {u • a})).encard",
+  "statement_hash": "expr:c2051a7f567964f147b8c0f4312e6701",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 1313,
+    "level_3_ratio": 8.04,
+    "level_3_proof_size": 10557,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Representation",
+    "zsmul_mem",
+    "vadd_coe_set",
+    "Eq",
+    "mem_of_le_of_mem",
+    "Set",
+    "dvd_of_eq",
+    "exists_eq_mul_right_of_dvd",
+    "IsCoprime",
+    "IsUnit"
+  ],
+  "interdisciplinarity": 10,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Representation",
+        "lemma": "Representation.Coinvariants.mem_ker_of_eq",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "zsmul_mem",
+        "lemma": "zsmul_mem",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "vadd_coe_set",
+        "lemma": "vadd_coe_set",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "Eq",
+        "lemma": "Eq.superset",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "mem_of_le_of_mem",
+        "lemma": "mem_of_le_of_mem",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.encard_exchange",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "exists_eq_mul_right_of_dvd",
+        "lemma": "exists_eq_mul_right_of_dvd",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "IsCoprime",
+        "lemma": "IsCoprime.isUnit_of_dvd'",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "IsUnit",
+        "lemma": "IsUnit.mul_left_injective",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "zsmul_mem",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "vadd_coe_set",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "Eq.superset",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "mem_of_le_of_mem",
+        "from": "3"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "mem_of_le_of_mem",
+        "from": "1"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Set.encard_exchange",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "dvd_of_eq",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "exists_eq_mul_right_of_dvd",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "IsCoprime.isUnit_of_dvd'",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "IsCoprime.isUnit_of_dvd'",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "IsUnit.mul_left_injective",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Representation.Coinvariants.ker"
+    ],
+    "joins": 1,
+    "depth": 9
+  },
+  "interest": {
+    "steps": 10,
+    "statement_size": 1313,
+    "score": 28.1,
+    "readable_size": 58,
+    "modules": 9,
+    "joins": 1,
+    "focus_steps": 1,
+    "conclusion_size": 247,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.RepresentationTheory",
+  "specialist_module": "Mathlib.RepresentationTheory.Coinvariants",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 1,
+    "source": "interest_score",
+    "score": 7.025
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.5,
+    "referee_disagreement": 3,
+    "msc_code": "11A41",
+    "msc_section": "11",
+    "msc_section_name": "Number theory",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "11A41",
+        "justification": "The 10-step synthesis across Representation, zsmul_mem, vadd_coe_set resists single-lemma lookup and yields a proof-to-statement ratio of 8.04, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 7,
+        "msc_code": "11A41",
+        "justification": "Although the statement clears the Level 1 lookup gate across Representation, zsmul_mem, vadd_coe_set, the conclusion reads primarily as an accidental consequence of chaining 10 library facts. I recommend publication solely as a theorem of modest significance (7/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Primality Persistence Theorem",
+    "proved_by": "Kestrel-3.4-Instruct",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Kestrel",
+        "version": "3.4",
+        "tier": "Instruct",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 10 verified forward inferences drawn from Representation, zsmul_mem, vadd_coe_set, Eq (including Representation.Coinvariants.mem_ker_of_eq, zsmul_mem, vadd_coe_set). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

@@ -1,0 +1,178 @@
+{
+  "id": "AKCM-2026-0018",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:36Z",
+  "generator": "A",
+  "seed": 1795700814,
+  "steps_requested": 12,
+  "steps_taken": 5,
+  "interdisciplinary_bias": 3.2,
+  "theorem_name": "akcm_2026_0018",
+  "statement_lean": "theorem akcm_2026_0018\n    {R : Type}\n    [inst_2 : TopologicalSpace.{0} R]\n    [inst_3 : NonUnitalRing.{0} R]\n    [inst_4 : @IsSemitopologicalRing.{0} R inst_2\n  (@NonUnitalRing.toNonUnitalNonAssocRing.{0} R inst_3)]\n    (s : @NonUnitalSubring.{0} R (@NonUnitalRing.toNonUnitalNonAssocRing.{0} R inst_3))\n    (u : @NonUnitalSubsemiring.{0} R\n  (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n    (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n    (h_7 : @LE.le.{0}\n  (@NonUnitalSubsemiring.{0} R\n    (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n      (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n  (@Preorder.toLE.{0}\n    (@NonUnitalSubsemiring.{0} R\n      (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n        (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n    (@PartialOrder.toPreorder.{0}\n      (@NonUnitalSubsemiring.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n      (@NonUnitalSubsemiring.instPartialOrder.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))))\n  u\n  (@NonUnitalSubring.toNonUnitalSubsemiring.{0} R\n    (@NonUnitalRing.toNonUnitalNonAssocRing.{0} R inst_3)\n    (@NonUnitalSubring.topologicalClosure.{0} R inst_2 inst_3 inst_4 s)))\n    {v : Filter.{0}\n  (@NonUnitalSubsemiring.{0} R\n    (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n      (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))} :\n    @Filter.EventuallySubset.{0}\n  (@NonUnitalSubsemiring.{0} R\n    (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n      (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n  v\n  (@EmptyCollection.emptyCollection.{0}\n    (Set.{0}\n      (@NonUnitalSubsemiring.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3))))\n    (@Set.instEmptyCollection.{0}\n      (@NonUnitalSubsemiring.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))))\n  (@Set.Ico.{0}\n    (@NonUnitalSubsemiring.{0} R\n      (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n        (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n    (@PartialOrder.toPreorder.{0}\n      (@NonUnitalSubsemiring.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)))\n      (@NonUnitalSubsemiring.instPartialOrder.{0} R\n        (@NonUnitalSemiring.toNonUnitalNonAssocSemiring.{0} R\n          (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3))))\n    (@NonUnitalSubring.toNonUnitalSubsemiring.{0} R\n      (@NonUnitalRing.toNonUnitalNonAssocRing.{0} R inst_3)\n      (@NonUnitalSubring.topologicalClosure.{0} R inst_2 inst_3 inst_4 s))\n    (@NonUnitalSubsemiring.topologicalClosure.{0} R inst_2\n      (@NonUnitalRing.toNonUnitalSemiring.{0} R inst_3)\n      (@IsSemitopologicalRing.toIsSemitopologicalSemiring.{0} R inst_2\n        (@NonUnitalRing.toNonUnitalNonAssocRing.{0} R inst_3) inst_4)\n      u))",
+  "statement_pretty": "∀ {R : Type} [inst_2 : TopologicalSpace R] [inst_3 : NonUnitalRing R]\n  [inst_4 : IsSemitopologicalRing R] (s : NonUnitalSubring R),\n  ∀ u ≤ s.topologicalClosure.toNonUnitalSubsemiring,\n    ∀ {v : Filter (NonUnitalSubsemiring R)},\n      ∅ ≤ᶠ[v] Set.Ico s.topologicalClosure.toNonUnitalSubsemiring u.topologicalClosure",
+  "statement_hash": "expr:e8c2e8d62b1122f8f102bbe94fe97268",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 295,
+    "level_3_ratio": 28.92,
+    "level_3_proof_size": 8531,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "NonUnitalSubring",
+    "NonUnitalSubsemiring",
+    "Set",
+    "Eq",
+    "Filter"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "NonUnitalSubring",
+        "lemma": "NonUnitalSubring.isClosed_topologicalClosure",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "NonUnitalSubsemiring",
+        "lemma": "NonUnitalSubsemiring.topologicalClosure_minimal",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Ico_eq_empty_of_le",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Eq",
+        "lemma": "Eq.eventuallyEqSet",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.EventuallyEqSet.superset",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "NonUnitalSubsemiring.topologicalClosure_minimal",
+        "from": "0"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Set.Ico_eq_empty_of_le",
+        "from": "1"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Eq.eventuallyEqSet",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Filter.EventuallyEqSet.superset",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "IsSemitopologicalRing.toIsSemitopologicalSemiring",
+      "NonUnitalSubring.topologicalClosure",
+      "NonUnitalSubsemiring.topologicalClosure"
+    ],
+    "joins": 0,
+    "depth": 5
+  },
+  "interest": {
+    "steps": 5,
+    "statement_size": 295,
+    "score": 21,
+    "readable_size": 21,
+    "modules": 3,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 147,
+    "concepts": 5
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Topology.Algebra",
+  "specialist_module": "Mathlib.Topology.Algebra.Module.ContinuousLinearMap.PiProd",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 6,
+    "source": "interest_score",
+    "score": 5.25
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 10.0,
+    "referee_disagreement": 0,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03E20",
+        "justification": "The 5-step synthesis across NonUnitalSubring, NonUnitalSubsemiring, Set resists single-lemma lookup and yields a proof-to-statement ratio of 28.92, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across NonUnitalSubring, NonUnitalSubsemiring, Set, the conclusion reads primarily as an accidental consequence of chaining 5 library facts. I recommend publication solely as a theorem of modest significance (10/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Filter Convergence Inequality",
+    "proved_by": "Gnomon-1.3-Ultra & Rhea-3.2-405B-preview-1123",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Gnomon",
+        "version": "1.3",
+        "tier": "Ultra",
+        "legacy": false
+      },
+      {
+        "family": "Rhea",
+        "version": "3.2",
+        "tier": "405B-preview-1123",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 5 verified forward inferences drawn from NonUnitalSubring, NonUnitalSubsemiring, Set, Eq (including NonUnitalSubring.isClosed_topologicalClosure, NonUnitalSubsemiring.topologicalClosure_minimal, Set.Ico_eq_empty_of_le). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

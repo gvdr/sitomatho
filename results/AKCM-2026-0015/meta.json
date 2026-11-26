@@ -1,0 +1,227 @@
+{
+  "id": "AKCM-2026-0015",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:31Z",
+  "generator": "A",
+  "seed": 1795706999,
+  "steps_requested": 14,
+  "steps_taken": 9,
+  "interdisciplinary_bias": 2.2,
+  "theorem_name": "akcm_2026_0015",
+  "statement_lean": "theorem akcm_2026_0015\n    {α : Type}\n    {β : Type}\n    {x_3 : Type}\n    [inst_4 : SMul.{0, 0} x_3 β]\n    {l : Filter.{0} α}\n    {f : α → x_3}\n    {f' : α → x_3}\n    {g : α → β}\n    {g' : α → β}\n    (hf : @Filter.EventuallyEq.{0, 0} α x_3 l f f')\n    (hg : @Filter.EventuallyEq.{0, 0} α β l g g')\n    {u : Filter.{0} (Prod.{0, 0} β β)}\n    (h_13 : @Filter.Tendsto.{0, 0} α (Prod.{0, 0} β β)\n  (fun x ↦\n    @Prod.mk.{0, 0} β β\n      (@HSMul.hSMul.{0, 0, 0} x_3 β β (@instHSMul.{0, 0} x_3 β inst_4) (f' x)\n        (g' x))\n      (g' x))\n  l u) :\n    @Eq.{1} (OrderDual.{0} (Filter.{0} α))\n  (@sSup.{0} (OrderDual.{0} (Filter.{0} α))\n    (@OrderSupSet.toSupSet.{0} (OrderDual.{0} (Filter.{0} α))\n      (@Preorder.toLE.{0} (OrderDual.{0} (Filter.{0} α))\n        (@PartialOrder.toPreorder.{0} (OrderDual.{0} (Filter.{0} α))\n          (@OrderDual.instPartialOrder.{0} (Filter.{0} α)\n            (@Filter.instPartialOrder.{0} α))))\n      (@OrderDual.orderSupSet.{0} (Filter.{0} α)\n        (@PartialOrder.toPreorder.{0} (Filter.{0} α) (@Filter.instPartialOrder.{0} α))\n        (@CompleteSemilatticeInf.toOrderInfSet.{0} (Filter.{0} α)\n          (@CompleteLattice.toCompleteSemilatticeInf.{0} (Filter.{0} α)\n            (@Filter.instCompleteLatticeFilter.{0} α)))))\n    (@Set.preimage.{0, 0} (OrderDual.{0} (Filter.{0} α)) (Filter.{0} α)\n      (@DFunLike.coe.{1, 1, 1}\n        (Equiv.{1, 1} (OrderDual.{0} (Filter.{0} α)) (Filter.{0} α))\n        (OrderDual.{0} (Filter.{0} α)) (fun x ↦ Filter.{0} α)\n        (@EquivLike.toFunLike.{1, 1, 1}\n          (Equiv.{1, 1} (OrderDual.{0} (Filter.{0} α)) (Filter.{0} α))\n          (OrderDual.{0} (Filter.{0} α)) (Filter.{0} α)\n          (@Equiv.instEquivLike.{1, 1} (OrderDual.{0} (Filter.{0} α)) (Filter.{0} α)))\n        (@OrderDual.ofDual.{0} (Filter.{0} α)))\n      (@Set.Icc.{0} (Filter.{0} α)\n        (@PartialOrder.toPreorder.{0} (Filter.{0} α) (@Filter.instPartialOrder.{0} α)) l\n        (@Filter.comap.{0, 0} α (Prod.{0, 0} β β)\n          (fun x ↦\n            @Prod.mk.{0, 0} β β\n              (@HSMul.hSMul.{0, 0, 0} x_3 β β (@instHSMul.{0, 0} x_3 β inst_4) (f x)\n                (g x))\n              (g x))\n          u))))\n  (@DFunLike.coe.{1, 1, 1} (Equiv.{1, 1} (Filter.{0} α) (OrderDual.{0} (Filter.{0} α)))\n    (Filter.{0} α) (fun x ↦ OrderDual.{0} (Filter.{0} α))\n    (@EquivLike.toFunLike.{1, 1, 1}\n      (Equiv.{1, 1} (Filter.{0} α) (OrderDual.{0} (Filter.{0} α))) (Filter.{0} α)\n      (OrderDual.{0} (Filter.{0} α))\n      (@Equiv.instEquivLike.{1, 1} (Filter.{0} α) (OrderDual.{0} (Filter.{0} α))))\n    (@OrderDual.toDual.{0} (Filter.{0} α)) l)",
+  "statement_pretty": "∀ {α β x_3 : Type} [inst_4 : SMul x_3 β] {l : Filter α} {f f' : α → x_3} {g g' : α → β},\n  f =ᶠ[l] f' →\n    g =ᶠ[l] g' →\n      ∀ {u : Filter (β × β)},\n        Filter.Tendsto (fun x ↦ (f' x • g' x, g' x)) l u →\n          sSup\n              (⇑OrderDual.ofDual ⁻¹'\n                Set.Icc l (Filter.comap (fun x ↦ (f x • g x, g x)) u)) =\n            OrderDual.toDual l",
+  "statement_hash": "expr:12bd763a2a9f111df2abd0eb19858ced",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 417,
+    "level_3_ratio": 10.66,
+    "level_3_proof_size": 4447,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Filter",
+    "isLeast_Icc",
+    "IsLeast",
+    "IsGLB",
+    "IsLUB"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.EventuallyEq.smul",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.EventuallyEq.prodMk",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.EventuallyEq.symm",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.Tendsto.congr'",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.Tendsto.le_comap",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "isLeast_Icc",
+        "lemma": "isLeast_Icc",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "IsLeast",
+        "lemma": "IsLeast.isGLB",
+        "kind": "mathlib",
+        "id": "10"
+      },
+      {
+        "namespace": "IsGLB",
+        "lemma": "IsGLB.dual",
+        "kind": "mathlib",
+        "id": "11"
+      },
+      {
+        "namespace": "IsLUB",
+        "lemma": "IsLUB.sSup_eq",
+        "kind": "mathlib",
+        "id": "12"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Filter.EventuallyEq.prodMk",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "Filter.EventuallyEq.symm",
+        "from": "1"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Filter.Tendsto.congr'",
+        "from": "3"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Filter.Tendsto.le_comap",
+        "from": "4"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "isLeast_Icc",
+        "from": "8"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "IsLeast.isGLB",
+        "from": "9"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "IsGLB.dual",
+        "from": "10"
+      },
+      {
+        "to": "12",
+        "step": "step_12",
+        "lemma": "IsLUB.sSup_eq",
+        "from": "11"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Filter.instCompleteLatticeFilter",
+      "Filter",
+      "Filter.comap",
+      "Filter.instPartialOrder"
+    ],
+    "joins": 0,
+    "depth": 9
+  },
+  "interest": {
+    "steps": 9,
+    "statement_size": 417,
+    "score": 26.32,
+    "readable_size": 44,
+    "modules": 3,
+    "joins": 0,
+    "focus_steps": 5,
+    "conclusion_size": 303,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Order.Filter",
+  "specialist_module": "Mathlib.Order.Filter.Prod",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 2,
+    "source": "interest_score",
+    "score": 6.58
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 9.0,
+    "referee_disagreement": 0,
+    "msc_code": "54A20",
+    "msc_section": "54",
+    "msc_section_name": "General topology",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 9,
+        "msc_code": "54A20",
+        "justification": "The 9-step synthesis across Filter, isLeast_Icc, IsLeast resists single-lemma lookup and yields a proof-to-statement ratio of 10.66, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 9,
+        "msc_code": "54A20",
+        "justification": "Although the statement clears the Level 1 lookup gate across Filter, isLeast_Icc, IsLeast, the conclusion reads primarily as an accidental consequence of chaining 9 library facts. I recommend publication solely as a theorem of modest significance (9/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Filter Convergence Theorem",
+    "proved_by": "Rhea-3.2-70B-Base & Parhelion-2.5-Max",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Rhea",
+        "version": "3.2",
+        "tier": "70B-Base",
+        "legacy": false
+      },
+      {
+        "family": "Parhelion",
+        "version": "2.5",
+        "tier": "Max",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 9 verified forward inferences drawn from Filter, isLeast_Icc, IsLeast, IsGLB (including Filter.EventuallyEq.smul, Filter.EventuallyEq.prodMk, Filter.EventuallyEq.symm). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

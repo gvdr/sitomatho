@@ -1,0 +1,187 @@
+{
+  "id": "AKCM-2026-0019",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:38Z",
+  "generator": "A",
+  "seed": 1795760345,
+  "steps_requested": 12,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.2,
+  "theorem_name": "akcm_2026_0019",
+  "statement_lean": "theorem akcm_2026_0019\n    {α : Type}\n    {β : Type}\n    {γ : Type}\n    {δ : Type}\n    [inst_5 : TopologicalSpace.{0} α]\n    [inst_6 : Zero.{0} β]\n    [inst_7 : Zero.{0} γ]\n    [inst_8 : Zero.{0} δ]\n    {f : α → β}\n    {x_10 : α → γ}\n    {m : β → γ → δ}\n    (hf : @HasCompactSupport.{0, 0} α β inst_5 inst_6 f)\n    (h_13 : @HasCompactSupport.{0, 0} α γ inst_5 inst_7 x_10)\n    (hm : @Eq.{1} δ\n  (m (@OfNat.ofNat.{0} β (nat_lit 0) (@Zero.toOfNat0.{0} β inst_6))\n    (@OfNat.ofNat.{0} γ (nat_lit 0) (@Zero.toOfNat0.{0} γ inst_7)))\n  (@OfNat.ofNat.{0} δ (nat_lit 0) (@Zero.toOfNat0.{0} δ inst_8)))\n    {u : Filter.{0} α}\n    (h_16 : ∀ (x : α),\n  @Membership.mem.{0, 0} α (Set.{0} α) (@Set.instMembership.{0} α)\n      (@tsupport.{0, 0} α δ inst_8 inst_5 fun x ↦ m (f x) (x_10 x)) x →\n    @Membership.mem.{0, 0} (Set.{0} α) (Filter.{0} α) (@Filter.instMembership.{0} α)\n      (@min.{0} (Filter.{0} α) (@Filter.instInf.{0} α) (@nhds.{0} α inst_5 x) u)\n      (@compl.{0} (Set.{0} α) (@Set.instCompl.{0} α)\n        (@tsupport.{0, 0} α δ inst_8 inst_5 fun x ↦ m (f x) (x_10 x))))\n    {v : Filter.{0} α}\n    (h_18 : @Filter.NeBot.{0} α (@min.{0} (Filter.{0} α) (@Filter.instInf.{0} α) u v)) :\n    Nonempty.{1}\n  (@Set.Elem.{0} α\n    (@compl.{0} (Set.{0} α) (@Set.instCompl.{0} α)\n      (@tsupport.{0, 0} α δ inst_8 inst_5 fun x ↦ m (f x) (x_10 x))))",
+  "statement_pretty": "∀ {α β γ δ : Type} [inst_5 : TopologicalSpace α] [inst_6 : Zero β] [inst_7 : Zero γ]\n  [inst_8 : Zero δ] {f : α → β} {x_10 : α → γ} {m : β → γ → δ},\n  HasCompactSupport f →\n    HasCompactSupport x_10 →\n      m 0 0 = 0 →\n        ∀ {u : Filter α},\n          (∀ x ∈ tsupport fun x ↦ m (f x) (x_10 x),\n              (tsupport fun x ↦ m (f x) (x_10 x))ᶜ ∈ nhds x ⊓ u) →\n            ∀ {v : Filter α}, (u ⊓ v).NeBot → Nonempty ↑(tsupport fun x ↦ m (f x) (x_10 x))ᶜ",
+  "statement_hash": "expr:092ca46fdb4073233b7263cd90d11593",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 271,
+    "level_3_ratio": 8.49,
+    "level_3_proof_size": 2301,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "HasCompactSupport",
+    "IsCompact",
+    "Filter",
+    "Set"
+  ],
+  "interdisciplinarity": 4,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "HasCompactSupport",
+        "lemma": "HasCompactSupport.comp₂_left",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "HasCompactSupport",
+        "lemma": "HasCompactSupport.isCompact",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "IsCompact",
+        "lemma": "IsCompact.compl_mem_sets",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.mem_inf_of_left",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.NeBot.nonempty_of_mem",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Nonempty.to_subtype",
+        "kind": "mathlib",
+        "id": "6"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "HasCompactSupport.isCompact",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "IsCompact.compl_mem_sets",
+        "from": "1"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Filter.mem_inf_of_left",
+        "from": "3"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Filter.NeBot.nonempty_of_mem",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "Set.Nonempty.to_subtype",
+        "from": "5"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "tsupport"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 271,
+    "score": 18.73,
+    "readable_size": 56,
+    "modules": 4,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 37,
+    "concepts": 5
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Topology.Algebra",
+  "specialist_module": "Mathlib.Topology.Algebra.Module.ContinuousLinearMap.PiProd",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 7,
+    "source": "interest_score",
+    "score": 4.6825
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 9.0,
+    "referee_disagreement": 2,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "03E20",
+        "justification": "The 6-step synthesis across HasCompactSupport, IsCompact, Filter resists single-lemma lookup and yields a proof-to-statement ratio of 8.49, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across HasCompactSupport, IsCompact, Filter, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (10/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Filter Convergence Theorem",
+    "proved_by": "Hoatzin-2.4-Turbo & Pumice-4.4-Thinking",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Hoatzin",
+        "version": "2.4",
+        "tier": "Turbo",
+        "legacy": false
+      },
+      {
+        "family": "Pumice",
+        "version": "4.4",
+        "tier": "Thinking",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from HasCompactSupport, IsCompact, Filter, Set (including HasCompactSupport.comp₂_left, HasCompactSupport.isCompact, IsCompact.compl_mem_sets). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

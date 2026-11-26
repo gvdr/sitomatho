@@ -1,0 +1,201 @@
+{
+  "id": "AKCM-2026-0017",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:34Z",
+  "generator": "A",
+  "seed": 1795697656,
+  "steps_requested": 10,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 2.8,
+  "theorem_name": "akcm_2026_0017",
+  "statement_lean": "theorem akcm_2026_0017\n    {A : Type}\n    {G : Type}\n    {W : Type}\n    [inst_4 : Semiring.{0} A]\n    [inst_5 : Monoid.{0} G]\n    [inst_6 : AddCommMonoid.{0} W]\n    [inst_7 : @Module.{0, 0} A W inst_4 inst_6]\n    {ρ : @Representation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7}\n    (x_9 : @Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n    (x_10 : @Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n    {u : Set.{0} W}\n    (h_12 : @LT.lt.{0} (Set.{0} W)\n  (@Preorder.toLT.{0} (Set.{0} W)\n    (@PartialOrder.toPreorder.{0} (Set.{0} W)\n      (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n          (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n            (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} W)\n              (@Set.instCompleteAtomicBooleanAlgebra.{0} W)))))))\n  (@HAdd.hAdd.{0, 0, 0} (Set.{0} W) (Set.{0} W) (Set.{0} W)\n    (@instHAdd.{0} (Set.{0} W)\n      (@Set.add.{0} W\n        (@AddCommMagma.toAdd.{0} W\n          (@AddCommSemigroup.toAddCommMagma.{0} W\n            (@AddCommMonoid.toAddCommSemigroup.{0} W inst_6)))))\n    (@SetLike.coe.{0, 0}\n      (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n      (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n      x_9)\n    (@SetLike.coe.{0, 0}\n      (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n      (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n      x_10))\n  u)\n    {v : Set.{0} W}\n    {w : Set.{0} W}\n    (h_15 : @LE.le.{0} (Set.{0} W)\n  (@Preorder.toLE.{0} (Set.{0} W)\n    (@PartialOrder.toPreorder.{0} (Set.{0} W)\n      (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n          (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n            (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} W)\n              (@Set.instCompleteAtomicBooleanAlgebra.{0} W)))))))\n  v w)\n    (h_16 : @Set.Nonempty.{0} (Set.{0} W)\n  (@max.{0} (Set.{0} (Set.{0} W)) (@Set.instMax.{0} (Set.{0} W))\n    (@Set.Ico.{0} (Set.{0} W)\n      (@PartialOrder.toPreorder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n          (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n            (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n              (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                (Set.{0} W) (@Set.instCompleteAtomicBooleanAlgebra.{0} W))))))\n      u v)\n    (@Set.Ioo.{0} (Set.{0} W)\n      (@PartialOrder.toPreorder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n          (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n            (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n              (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                (Set.{0} W) (@Set.instCompleteAtomicBooleanAlgebra.{0} W))))))\n      (@SetLike.coe.{0, 0}\n        (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n        (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7\n          ρ)\n        (@max.{0} (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n          (@Subrepresentation.instMax.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n          x_9 x_10))\n      w))) :\n    Nonempty.{1}\n  (@Set.Elem.{0} (Set.{0} W)\n    (@Set.Ioo.{0} (Set.{0} W)\n      (@PartialOrder.toPreorder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n          (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n            (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n              (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} W)\n                (@Set.instCompleteAtomicBooleanAlgebra.{0} W))))))\n      (@SetLike.coe.{0, 0}\n        (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n        (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n        (@max.{0} (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n          (@Subrepresentation.instMax.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) x_9\n          x_10))\n      w))",
+  "statement_pretty": "∀ {A G W : Type} [inst_4 : Semiring A] [inst_5 : Monoid G] [inst_6 : AddCommMonoid W]\n  [inst_7 : Module A W] {ρ : Representation A G W} (x_9 x_10 : Subrepresentation ρ)\n  {u : Set W},\n  ↑x_9 + ↑x_10 ⊂ u →\n    ∀ {v w : Set W},\n      v ⊆ w →\n        (Set.Ico u v ∪ Set.Ioo (↑(x_9 ⊔ x_10)) w).Nonempty →\n          Nonempty ↑(Set.Ioo (↑(x_9 ⊔ x_10)) w)",
+  "statement_hash": "expr:a1ddb6a38eeb1607abc43b055201c197",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 631,
+    "level_3_ratio": 9.06,
+    "level_3_proof_size": 5719,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Subrepresentation",
+    "ssubset_of_eq_of_ssubset",
+    "Set",
+    "IsCofinalFor"
+  ],
+  "interdisciplinarity": 4,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Subrepresentation",
+        "lemma": "Subrepresentation.coe_sup",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "ssubset_of_eq_of_ssubset",
+        "lemma": "ssubset_of_eq_of_ssubset",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Ico_subset_Ioo",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "IsCofinalFor",
+        "lemma": "IsCofinalFor.of_subset",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "IsCofinalFor",
+        "lemma": "IsCofinalFor.union_left",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "IsCofinalFor",
+        "lemma": "IsCofinalFor.nonempty",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Nonempty.to_subtype",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "ssubset_of_eq_of_ssubset",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Set.Ico_subset_Ioo",
+        "from": "1"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "IsCofinalFor.of_subset",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "IsCofinalFor.union_left",
+        "from": "3"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "IsCofinalFor.nonempty",
+        "from": "4"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Set.Nonempty.to_subtype",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Subrepresentation",
+      "Subrepresentation.instSetLike",
+      "Subrepresentation.instMax"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 631,
+    "score": 23.27,
+    "readable_size": 38,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 131,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.RepresentationTheory",
+  "specialist_module": "Mathlib.RepresentationTheory.Coinvariants",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 5,
+    "source": "interest_score",
+    "score": 5.8175
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.0,
+    "referee_disagreement": 0,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "03E20",
+        "justification": "The 7-step synthesis across Subrepresentation, ssubset_of_eq_of_ssubset, Set resists single-lemma lookup and yields a proof-to-statement ratio of 9.06, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across Subrepresentation, ssubset_of_eq_of_ssubset, Set, the conclusion reads primarily as an accidental consequence of chaining 7 library facts. I recommend publication solely as a theorem of modest significance (8/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Subrepresentation To Subtype Theorem",
+    "proved_by": "Tui-4.3-Instruct & Parhelion-2.5-405B-preview-1123",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Tui",
+        "version": "4.3",
+        "tier": "Instruct",
+        "legacy": false
+      },
+      {
+        "family": "Parhelion",
+        "version": "2.5",
+        "tier": "405B-preview-1123",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 7 verified forward inferences drawn from Subrepresentation, ssubset_of_eq_of_ssubset, Set, IsCofinalFor (including Subrepresentation.coe_sup, ssubset_of_eq_of_ssubset, Set.Ico_subset_Ioo). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

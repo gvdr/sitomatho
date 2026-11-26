@@ -1,0 +1,182 @@
+{
+  "id": "AKCM-2026-0016",
+  "issue": null,
+  "generated_at": "2026-11-26T12:04:32Z",
+  "generator": "A",
+  "seed": 1795704981,
+  "steps_requested": 14,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 2.2,
+  "theorem_name": "akcm_2026_0016",
+  "statement_lean": "theorem akcm_2026_0016\n    {α : Type}\n    {β : Type}\n    {f : α → β}\n    {x_4 : Filter.{0} α}\n    {x_5 : Filter.{0} α}\n    {y : Filter.{0} β}\n    (h : @Filter.Tendsto.{0, 0} α β f x_4 y)\n    {u : Set.{0} (Filter.{0} α)}\n    (h_9 : @LT.lt.{0} (Set.{0} (Filter.{0} α))\n  (@Preorder.toLT.{0} (Set.{0} (Filter.{0} α))\n    (@PartialOrder.toPreorder.{0} (Set.{0} (Filter.{0} α))\n      (@SemilatticeInf.toPartialOrder.{0} (Set.{0} (Filter.{0} α))\n        (@Lattice.toSemilatticeInf.{0} (Set.{0} (Filter.{0} α))\n          (@DistribLattice.toLattice.{0} (Set.{0} (Filter.{0} α))\n            (@Set.instDistribLattice.{0} (Filter.{0} α)))))))\n  u\n  (@Set.Iic.{0} (Filter.{0} α)\n    (@PartialOrder.toPreorder.{0} (Filter.{0} α) (@Filter.instPartialOrder.{0} α))\n    (@min.{0} (Filter.{0} α) (@Filter.instInf.{0} α) x_4 x_5))) :\n    @Eq.{1} (Set.{0} (Set.{0} (Filter.{0} α)))\n  (@Set.Ioc.{0} (Set.{0} (Filter.{0} α))\n    (@PartialOrder.toPreorder.{0} (Set.{0} (Filter.{0} α))\n      (@CompleteSemilatticeInf.toPartialOrder.{0} (Set.{0} (Filter.{0} α))\n        (@CompleteLattice.toCompleteSemilatticeInf.{0} (Set.{0} (Filter.{0} α))\n          (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} (Filter.{0} α))\n            (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n              (Set.{0} (Filter.{0} α))\n              (@Set.instCompleteAtomicBooleanAlgebra.{0} (Filter.{0} α)))))))\n    (@Set.preimage.{0, 0} (Filter.{0} α) (Filter.{0} β) (@Filter.map.{0, 0} α β f)\n      (@Set.Iic.{0} (Filter.{0} β)\n        (@PartialOrder.toPreorder.{0} (Filter.{0} β) (@Filter.instPartialOrder.{0} β))\n        y))\n    u)\n  (@EmptyCollection.emptyCollection.{0} (Set.{0} (Set.{0} (Filter.{0} α)))\n    (@Set.instEmptyCollection.{0} (Set.{0} (Filter.{0} α))))",
+  "statement_pretty": "∀ {α β : Type} {f : α → β} {x_4 x_5 : Filter α} {y : Filter β},\n  Filter.Tendsto f x_4 y →\n    ∀ {u : Set (Filter α)},\n      u ⊂ Set.Iic (x_4 ⊓ x_5) → Set.Ioc (Filter.map f ⁻¹' Set.Iic y) u = ∅",
+  "statement_hash": "expr:fde8a9a94d6985ea755ee1019f12525a",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 243,
+    "level_3_ratio": 6.88,
+    "level_3_proof_size": 1671,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Filter",
+    "Set",
+    "ssubset_asymm"
+  ],
+  "interdisciplinarity": 3,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.tendsto_inf_left",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.Tendsto.map_mapsTo_Iic",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.MapsTo.subset_preimage",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.ssubset_of_ssubset_of_subset",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "ssubset_asymm",
+        "lemma": "ssubset_asymm",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Ioc_eq_empty",
+        "kind": "mathlib",
+        "id": "7"
+      }
+    ],
+    "edges": [
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Filter.Tendsto.map_mapsTo_Iic",
+        "from": "0"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "Set.MapsTo.subset_preimage",
+        "from": "2"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Set.ssubset_of_ssubset_of_subset",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "ssubset_asymm",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Set.Ioc_eq_empty",
+        "from": "6"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Filter.map",
+      "Filter",
+      "Filter.instPartialOrder"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 243,
+    "score": 25.73,
+    "readable_size": 21,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 119,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Order.Filter",
+  "specialist_module": "Mathlib.Order.Filter.Prod",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 14,
+    "rank": 3,
+    "source": "interest_score",
+    "score": 6.4325
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.0,
+    "referee_disagreement": 4,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03E20",
+        "justification": "The 6-step synthesis across Filter, Set, ssubset_asymm resists single-lemma lookup and yields a proof-to-statement ratio of 6.88, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 6,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across Filter, Set, ssubset_asymm, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Iterated Preimage Injectivity Theorem",
+    "proved_by": "Tephra-1.1-Lite",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Tephra",
+        "version": "1.1",
+        "tier": "Lite",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from Filter, Set, ssubset_asymm (including Filter.tendsto_inf_left, Filter.Tendsto.map_mapsTo_Iic, Set.MapsTo.subset_preimage). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}
