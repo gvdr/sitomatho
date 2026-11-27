@@ -1,0 +1,196 @@
+{
+  "id": "AKCM-2026-0020",
+  "issue": null,
+  "generated_at": "2026-11-27T11:57:55Z",
+  "generator": "A",
+  "seed": 1795802903,
+  "steps_requested": 14,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 3.5,
+  "theorem_name": "akcm_2026_0020",
+  "statement_lean": "theorem akcm_2026_0020\n    {ι : Type}\n    {R : Type}\n    {M : Type}\n    {N : Type}\n    [inst_5 : CommRing.{0} R]\n    [inst_6 : AddCommGroup.{0} M]\n    [inst_7 : @Module.{0, 0} R M\n  (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))\n  (@AddCommGroup.toAddCommMonoid.{0} M inst_6)]\n    [inst_8 : AddCommGroup.{0} N]\n    [inst_9 : @Module.{0, 0} R N\n  (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))\n  (@AddCommGroup.toAddCommMonoid.{0} N inst_8)]\n    (P : @RootPairing.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8 inst_9)\n    (S : Type)\n    [inst_12 : CommRing.{0} S]\n    [inst_13 : @Module.{0, 0} S M\n  (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n  (@AddCommGroup.toAddCommMonoid.{0} M inst_6)]\n    [inst_14 : Nonempty.{1} ι]\n    [inst_15 : @NeZero.{0} R\n  (@MulZeroClass.toZero.{0} R\n    (@instMulZeroClassOfSemiring.{0} R\n      (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))))\n  (@OfNat.ofNat.{0} R (nat_lit 2)\n    (@instOfNatAtLeastTwo.{0} R (nat_lit 2)\n      (@AddMonoidWithOne.toNatCast.{0} R\n        (@AddGroupWithOne.toAddMonoidWithOne.{0} R\n          (@Ring.toAddGroupWithOne.{0} R (@CommRing.toRing.{0} R inst_5))))\n      (@Nat.instAtLeastTwoHAddOfNat\n        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))\n        (@Nat.instNeZeroSucc\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))]\n    (u : Multiset.{0}\n  (@Submodule.{0, 0} S M\n    (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n    (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13))\n    (h_17 : @IsRelPrime.{0} Nat (@CommMonoid.toMonoid.{0} Nat Nat.instCommMonoid)\n  (@Multiset.count.{0}\n    (@Submodule.{0, 0} S M\n      (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n      (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n    (@Submodule.decidableEq.{0, 0} S M\n      (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n      (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n    (@RootPairing.rootSpan.{0, 0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n      inst_9 P S inst_12 inst_13)\n    (@Multiset.cons.{0}\n      (@Submodule.{0, 0} S M\n        (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n        (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n      (@Bot.bot.{0}\n        (@Submodule.{0, 0} S M\n          (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n          (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n        (@Submodule.instBot.{0, 0} S M\n          (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n          (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13))\n      u))\n  (@Multiset.count.{0}\n    (@Submodule.{0, 0} S M\n      (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n      (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n    (@Submodule.decidableEq.{0, 0} S M\n      (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n      (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n    (@RootPairing.rootSpan.{0, 0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n      inst_9 P S inst_12 inst_13)\n    u)) :\n    Not\n  (@BddAbove.{0} Nat (@Preorder.toLE.{0} Nat Nat.instPreorder)\n    (@Set.range.{0, 1} Nat Nat fun x ↦\n      @HMul.hMul.{0, 0, 0} Nat Nat Nat\n        (@instHMul.{0} Nat\n          (@MulOne.toMul.{0} Nat\n            (@MulOneClass.toMulOne.{0} Nat\n              (@Monoid.toMulOneClass.{0} Nat\n                (@CommMonoid.toMonoid.{0} Nat Nat.instCommMonoid)))))\n        x\n        (@Multiset.count.{0}\n          (@Submodule.{0, 0} S M\n            (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n            (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n          (@Submodule.decidableEq.{0, 0} S M\n            (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n            (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n          (@RootPairing.rootSpan.{0, 0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n            inst_9 P S inst_12 inst_13)\n          (@Multiset.cons.{0}\n            (@Submodule.{0, 0} S M\n              (@CommSemiring.toSemiring.{0} S (@CommRing.toCommSemiring.{0} S inst_12))\n              (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n            (@Bot.bot.{0}\n              (@Submodule.{0, 0} S M\n                (@CommSemiring.toSemiring.{0} S\n                  (@CommRing.toCommSemiring.{0} S inst_12))\n                (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13)\n              (@Submodule.instBot.{0, 0} S M\n                (@CommSemiring.toSemiring.{0} S\n                  (@CommRing.toCommSemiring.{0} S inst_12))\n                (@AddCommGroup.toAddCommMonoid.{0} M inst_6) inst_13))\n            u))))",
+  "statement_pretty": "∀ {ι R M N : Type} [inst_5 : CommRing R] [inst_6 : AddCommGroup M] [inst_7 : Module R M]\n  [inst_8 : AddCommGroup N] [inst_9 : Module R N] (P : RootPairing ι R M N) (S : Type)\n  [inst_12 : CommRing S] [inst_13 : Module S M] [inst_14 : Nonempty ι] [inst_15 : NeZero 2]\n  (u : Multiset (Submodule S M)),\n  IsRelPrime (Multiset.count (P.rootSpan S) (⊥ ::ₘ u)) (Multiset.count (P.rootSpan S) u) →\n    ¬BddAbove (Set.range fun x ↦ x * Multiset.count (P.rootSpan S) (⊥ ::ₘ u))",
+  "statement_hash": "expr:60a45dd1750f7a00b55d24eb3949a470",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 671,
+    "level_3_ratio": 7.63,
+    "level_3_proof_size": 5123,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "RootPairing",
+    "Multiset",
+    "dvd_of_eq",
+    "IsRelPrime",
+    "IsUnit",
+    "Function",
+    "Filter"
+  ],
+  "interdisciplinarity": 7,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "RootPairing",
+        "lemma": "RootPairing.rootSpan_ne_bot",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Multiset",
+        "lemma": "Multiset.count_cons_of_ne",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "IsRelPrime",
+        "lemma": "IsRelPrime.isUnit_of_dvd",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "IsUnit",
+        "lemma": "IsUnit.mul_left_injective",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "Function",
+        "lemma": "Function.Injective.nat_tendsto_atTop",
+        "kind": "mathlib",
+        "id": "10"
+      },
+      {
+        "namespace": "Filter",
+        "lemma": "Filter.not_bddAbove_of_tendsto_atTop",
+        "kind": "mathlib",
+        "id": "11"
+      }
+    ],
+    "edges": [
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "Multiset.count_cons_of_ne",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "dvd_of_eq",
+        "from": "2"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "IsRelPrime.isUnit_of_dvd",
+        "from": "3"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "IsUnit.mul_left_injective",
+        "from": "8"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "Function.Injective.nat_tendsto_atTop",
+        "from": "9"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "Filter.not_bddAbove_of_tendsto_atTop",
+        "from": "10"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "RootPairing.rootSpan"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 671,
+    "score": 27.07,
+    "readable_size": 40,
+    "modules": 7,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 207,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.LinearAlgebra.RootSystem",
+  "specialist_module": "Mathlib.LinearAlgebra.RootSystem.Finite.Nondegenerate",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 1,
+    "source": "interest_score",
+    "score": 6.7675
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.0,
+    "referee_disagreement": 4,
+    "msc_code": "11A41",
+    "msc_section": "11",
+    "msc_section_name": "Number theory",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "11A41",
+        "justification": "The 7-step synthesis across RootPairing, Multiset, dvd_of_eq resists single-lemma lookup and yields a proof-to-statement ratio of 7.63, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "11A41",
+        "justification": "Although the statement clears the Level 1 lookup gate across RootPairing, Multiset, dvd_of_eq, the conclusion reads primarily as an accidental consequence of chaining 7 library facts. I recommend publication solely as a proposition of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Primality Persistence Theorem",
+    "proved_by": "Gnomon-1.3-Reasoning",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Gnomon",
+        "version": "1.3",
+        "tier": "Reasoning",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 7 verified forward inferences drawn from RootPairing, Multiset, dvd_of_eq, IsRelPrime (including RootPairing.rootSpan_ne_bot, Multiset.count_cons_of_ne, dvd_of_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

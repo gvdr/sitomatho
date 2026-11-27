@@ -1,0 +1,205 @@
+{
+  "id": "AKCM-2026-0021",
+  "issue": null,
+  "generated_at": "2026-11-27T11:57:56Z",
+  "generator": "A",
+  "seed": 1795861294,
+  "steps_requested": 10,
+  "steps_taken": 8,
+  "interdisciplinary_bias": 3.7,
+  "theorem_name": "akcm_2026_0021",
+  "statement_lean": "theorem akcm_2026_0021\n    {T : Type}\n    {N : Type}\n    {r : ContextFreeRule.{0, 0} T N}\n    {u : List.{0} (Symbol.{0, 0} T N)}\n    {v : List.{0} (Symbol.{0, 0} T N)}\n    (hvw : @ContextFreeRule.Rewrites.{0, 0} T N r u v)\n    (p : List.{0} (Symbol.{0, 0} T N))\n    {w : List.{0} (Symbol.{0, 0} T N)}\n    (h_9 : @Symbol.nonterminal.{0, 0} T N (@ContextFreeRule.input.{0, 0} T N r) ∉ w)\n    (h_10 : @List.Subperm.{0} (Symbol.{0, 0} T N) w\n  (@HAppend.hAppend.{0, 0, 0} (List.{0} (Symbol.{0, 0} T N))\n    (List.{0} (Symbol.{0, 0} T N)) (List.{0} (Symbol.{0, 0} T N))\n    (@instHAppendOfAppend.{0} (List.{0} (Symbol.{0, 0} T N))\n      (@List.instAppend.{0} (Symbol.{0, 0} T N)))\n    (@HAppend.hAppend.{0, 0, 0} (List.{0} (Symbol.{0, 0} T N))\n      (List.{0} (Symbol.{0, 0} T N)) (List.{0} (Symbol.{0, 0} T N))\n      (@instHAppendOfAppend.{0} (List.{0} (Symbol.{0, 0} T N))\n        (@List.instAppend.{0} (Symbol.{0, 0} T N)))\n      p u)\n    p))\n    (a : Symbol.{0, 0} T N → Bool)\n    {b : Nat} :\n    @Ne.{1} (Set.{0} Nat)\n  (@Set.Ioc.{0} Nat Nat.instPreorder\n    (@List.countP.{0} (Symbol.{0, 0} T N) a\n      (@HAppend.hAppend.{0, 0, 0} (List.{0} (Symbol.{0, 0} T N))\n        (List.{0} (Symbol.{0, 0} T N)) (List.{0} (Symbol.{0, 0} T N))\n        (@instHAppendOfAppend.{0} (List.{0} (Symbol.{0, 0} T N))\n          (@List.instAppend.{0} (Symbol.{0, 0} T N)))\n        (@HAppend.hAppend.{0, 0, 0} (List.{0} (Symbol.{0, 0} T N))\n          (List.{0} (Symbol.{0, 0} T N)) (List.{0} (Symbol.{0, 0} T N))\n          (@instHAppendOfAppend.{0} (List.{0} (Symbol.{0, 0} T N))\n            (@List.instAppend.{0} (Symbol.{0, 0} T N)))\n          p u)\n        p))\n    b)\n  (@Top.top.{0} (Set.{0} Nat)\n    (@OrderTop.toTop.{0} (Set.{0} Nat)\n      (@Preorder.toLE.{0} (Set.{0} Nat)\n        (@PartialOrder.toPreorder.{0} (Set.{0} Nat)\n          (@CompleteSemilatticeInf.toPartialOrder.{0} (Set.{0} Nat)\n            (@CompleteLattice.toCompleteSemilatticeInf.{0} (Set.{0} Nat)\n              (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} Nat)\n                (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                  (Set.{0} Nat) (@Set.instCompleteAtomicBooleanAlgebra.{0} Nat)))))))\n      (@Set.instOrderTop.{0} Nat)))",
+  "statement_pretty": "∀ {T N : Type} {r : ContextFreeRule T N} {u v : List (Symbol T N)},\n  r.Rewrites u v →\n    ∀ (p : List (Symbol T N)) {w : List (Symbol T N)},\n      Symbol.nonterminal r.input ∉ w →\n        w.Subperm (p ++ u ++ p) →\n          ∀ (a : Symbol T N → Bool) {b : ℕ}, Set.Ioc (List.countP a (p ++ u ++ p)) b ≠ ⊤",
+  "statement_hash": "expr:f22e66fd8dd9dca8bc455c896e43beb8",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 383,
+    "level_3_ratio": 3.62,
+    "level_3_proof_size": 1387,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "ContextFreeRule",
+    "List",
+    "Set",
+    "LT"
+  ],
+  "interdisciplinarity": 4,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "ContextFreeRule",
+        "lemma": "ContextFreeRule.Rewrites.append_left",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "ContextFreeRule",
+        "lemma": "ContextFreeRule.Rewrites.append_right",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "ContextFreeRule",
+        "lemma": "ContextFreeRule.Rewrites.nonterminal_input_mem",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "List",
+        "lemma": "List.cons_subperm_of_not_mem_of_mem",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "List",
+        "lemma": "List.Subperm.countP_le",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.notMem_Ioc_of_le",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.ssubset_insert",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "LT",
+        "lemma": "LT.lt.ne_top",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "ContextFreeRule.Rewrites.append_right",
+        "from": "0"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "ContextFreeRule.Rewrites.nonterminal_input_mem",
+        "from": "3"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "List.cons_subperm_of_not_mem_of_mem",
+        "from": "4"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "List.Subperm.countP_le",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Set.notMem_Ioc_of_le",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Set.ssubset_insert",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "LT.lt.ne_top",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Symbol"
+    ],
+    "joins": 0,
+    "depth": 8
+  },
+  "interest": {
+    "steps": 8,
+    "statement_size": 383,
+    "score": 26.8,
+    "readable_size": 42,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 3,
+    "conclusion_size": 173,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Computability",
+  "specialist_module": "Mathlib.Computability.ContextFreeGrammar",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 2,
+    "source": "interest_score",
+    "score": 6.7
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 7.0,
+    "referee_disagreement": 4,
+    "msc_code": "05A05",
+    "msc_section": "05",
+    "msc_section_name": "Combinatorics",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 9,
+        "msc_code": "05A05",
+        "justification": "The 8-step synthesis across ContextFreeRule, List, Set resists single-lemma lookup and yields a proof-to-statement ratio of 3.62, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Lemma",
+        "importance": 5,
+        "msc_code": "05A05",
+        "justification": "Although the statement clears the Level 1 lookup gate across ContextFreeRule, List, Set, the conclusion reads primarily as an accidental consequence of chaining 8 library facts. I recommend publication solely as a lemma of modest significance (5/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The ContextFreeRule Ne Top Theorem",
+    "proved_by": "Chiaroscuro-1.4-Turbo",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Chiaroscuro",
+        "version": "1.4",
+        "tier": "Turbo",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 8 verified forward inferences drawn from ContextFreeRule, List, Set, LT (including ContextFreeRule.Rewrites.append_left, ContextFreeRule.Rewrites.append_right, ContextFreeRule.Rewrites.nonterminal_input_mem). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

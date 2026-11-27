@@ -1,0 +1,184 @@
+{
+  "id": "AKCM-2026-0025",
+  "issue": null,
+  "generated_at": "2026-11-27T11:58:01Z",
+  "generator": "A",
+  "seed": 1795823830,
+  "steps_requested": 12,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0025",
+  "statement_lean": "theorem akcm_2026_0025\n    {p : Nat}\n    [inst_2 : Fact (Nat.Prime p)]\n    {q : Rat}\n    (hq : @Ne.{1} Rat q (@OfNat.ofNat.{0} Rat (nat_lit 0) (@Rat.instOfNat (nat_lit 0))))\n    (h_5 : @Ne.{1} Rat\n  (@HPow.hPow.{0, 0, 0} Rat Int Rat (@instHPow.{0, 0} Rat Int Rat.instPowInt)\n    (@Nat.cast.{0} Rat Rat.instNatCast p)\n    (@Neg.neg.{0} Int Int.instNegInt\n      (@PadicSeq.valuation p inst_2\n        (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n          Rat.instIsStrictOrderedRing\n          (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n          (@padicNorm.instIsAbsoluteValueRat p inst_2) q))))\n  (@OfNat.ofNat.{0} Rat (nat_lit 0)\n    (@Zero.toOfNat0.{0} Rat\n      (@MulZeroClass.toZero.{0} Rat\n        (@MulZeroOneClass.toMulZeroClass.{0} Rat\n          (@MonoidWithZero.toMulZeroOneClass.{0} Rat\n            (@Semiring.toMonoidWithZero.{0} Rat Rat.semiring)))))))\n    (h_6 : @IsClosedMap.{0, 0} Rat Rat\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  fun g ↦\n  @HMul.hMul.{0, 0, 0} Rat Rat Rat\n    (@instHMul.{0} Rat\n      (@MulZeroClass.toMul.{0} Rat\n        (@MulZeroOneClass.toMulZeroClass.{0} Rat\n          (@MonoidWithZero.toMulZeroOneClass.{0} Rat\n            (@GroupWithZero.toMonoidWithZero.{0} Rat\n              (@DivisionSemiring.toGroupWithZero.{0} Rat\n                (@Semifield.toDivisionSemiring.{0} Rat\n                  (@Field.toSemifield.{0} Rat Rat.instField))))))))\n    g\n    (@PadicSeq.norm p inst_2\n      (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n        Rat.instIsStrictOrderedRing\n        (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n        (@padicNorm.instIsAbsoluteValueRat p inst_2) q)))\n    (h_7 : @Continuous.{0, 0} Rat Rat\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  fun g ↦\n  @HMul.hMul.{0, 0, 0} Rat Rat Rat\n    (@instHMul.{0} Rat\n      (@MulZeroClass.toMul.{0} Rat\n        (@MulZeroOneClass.toMulZeroClass.{0} Rat\n          (@MonoidWithZero.toMulZeroOneClass.{0} Rat\n            (@GroupWithZero.toMonoidWithZero.{0} Rat\n              (@DivisionSemiring.toGroupWithZero.{0} Rat\n                (@Semifield.toDivisionSemiring.{0} Rat\n                  (@Field.toSemifield.{0} Rat Rat.instField))))))))\n    g\n    (@PadicSeq.norm p inst_2\n      (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n        Rat.instIsStrictOrderedRing\n        (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n        (@padicNorm.instIsAbsoluteValueRat p inst_2) q))) :\n    @Topology.IsQuotientMap.{0, 0} Rat Rat\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  fun g ↦\n  @HMul.hMul.{0, 0, 0} Rat Rat Rat\n    (@instHMul.{0} Rat\n      (@MulZeroClass.toMul.{0} Rat\n        (@MulZeroOneClass.toMulZeroClass.{0} Rat\n          (@MonoidWithZero.toMulZeroOneClass.{0} Rat\n            (@GroupWithZero.toMonoidWithZero.{0} Rat\n              (@DivisionSemiring.toGroupWithZero.{0} Rat\n                (@Semifield.toDivisionSemiring.{0} Rat\n                  (@Field.toSemifield.{0} Rat Rat.instField))))))))\n    g\n    (@PadicSeq.norm p inst_2\n      (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n        Rat.instIsStrictOrderedRing (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing)\n        (padicNorm p) (@padicNorm.instIsAbsoluteValueRat p inst_2) q))",
+  "statement_pretty": "∀ {p : ℕ} [inst_2 : Fact (Nat.Prime p)] {q : ℚ},\n  q ≠ 0 →\n    ↑p ^ (-PadicSeq.valuation (CauSeq.const (padicNorm p) q)) ≠ 0 →\n      (IsClosedMap fun g ↦ g * PadicSeq.norm (CauSeq.const (padicNorm p) q)) →\n        (Continuous fun g ↦ g * PadicSeq.norm (CauSeq.const (padicNorm p) q)) →\n          Topology.IsQuotientMap fun g ↦ g * PadicSeq.norm (CauSeq.const (padicNorm p) q)",
+  "statement_hash": "expr:97d96f419c2ac779054f4d414ddd3169",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 543,
+    "level_3_ratio": 1.6,
+    "level_3_proof_size": 869,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "PadicSeq",
+    "dvd_of_eq",
+    "ne_zero_of_dvd_ne_zero",
+    "mul_right_surjective₀",
+    "IsClosedMap"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "PadicSeq",
+        "lemma": "PadicSeq.not_equiv_zero_const_of_ne_zero",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "PadicSeq",
+        "lemma": "PadicSeq.norm_eq_zpow_neg_valuation",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "ne_zero_of_dvd_ne_zero",
+        "lemma": "ne_zero_of_dvd_ne_zero",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "mul_right_surjective₀",
+        "lemma": "mul_right_surjective₀",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "IsClosedMap",
+        "lemma": "IsClosedMap.isQuotientMap",
+        "kind": "mathlib",
+        "id": "10"
+      }
+    ],
+    "edges": [
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "PadicSeq.norm_eq_zpow_neg_valuation",
+        "from": "0"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "dvd_of_eq",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "ne_zero_of_dvd_ne_zero",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "mul_right_surjective₀",
+        "from": "8"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "IsClosedMap.isQuotientMap",
+        "from": "9"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "padicNorm.instIsAbsoluteValueRat",
+      "padicNorm",
+      "PadicSeq.norm"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 543,
+    "score": 23.13,
+    "readable_size": 47,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 139,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.NumberTheory.Padics",
+  "specialist_module": "Mathlib.NumberTheory.Padics.PadicNumbers",
+  "mutation_kind": "drift",
+  "selection": {
+    "pool_size": 15,
+    "rank": 6,
+    "source": "interest_score",
+    "score": 5.7825
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.5,
+    "referee_disagreement": 3,
+    "msc_code": "03B05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03B05",
+        "justification": "The 6-step synthesis across PadicSeq, dvd_of_eq, ne_zero_of_dvd_ne_zero resists single-lemma lookup and yields a proof-to-statement ratio of 1.60, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 7,
+        "msc_code": "03B05",
+        "justification": "Although the statement clears the Level 1 lookup gate across PadicSeq, dvd_of_eq, ne_zero_of_dvd_ne_zero, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a proposition of modest significance (7/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Primality Persistence Theorem",
+    "proved_by": "Hoatzin-2.4-Lite",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Hoatzin",
+        "version": "2.4",
+        "tier": "Lite",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from PadicSeq, dvd_of_eq, ne_zero_of_dvd_ne_zero, mul_right_surjective₀ (including PadicSeq.not_equiv_zero_const_of_ne_zero, PadicSeq.norm_eq_zpow_neg_valuation, dvd_of_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

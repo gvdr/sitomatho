@@ -1,0 +1,194 @@
+{
+  "id": "AKCM-2026-0022",
+  "issue": null,
+  "generated_at": "2026-11-27T11:57:57Z",
+  "generator": "A",
+  "seed": 1795899636,
+  "steps_requested": 10,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 3.7,
+  "theorem_name": "akcm_2026_0022",
+  "statement_lean": "theorem akcm_2026_0022\n    {T : Type}\n    {N : Type}\n    {r : ContextFreeRule.{0, 0} T N}\n    {u : List.{0} (Symbol.{0, 0} T N)}\n    {v : List.{0} (Symbol.{0, 0} T N)}\n    (h_6 : @ContextFreeRule.Rewrites.{0, 0} T N r u v)\n    {w : List.{0} (Symbol.{0, 0} T N)}\n    (h_8 : @Symbol.nonterminal.{0, 0} T N (@ContextFreeRule.input.{0, 0} T N r) ∉ w)\n    (h_9 : @List.Subperm.{0} (Symbol.{0, 0} T N) w u)\n    (a : Symbol.{0, 0} T N → Bool)\n    {b : Nat}\n    (h_12 : @IsLUB.{0} Nat\n  (@Preorder.toLE.{0} Nat (@PartialOrder.toPreorder.{0} Nat Nat.instPartialOrder))\n  (@Set.Icc.{0} Nat Nat.instPreorder\n    (@List.countP.{0} (Symbol.{0, 0} T N) a\n      (@List.cons.{0} (Symbol.{0, 0} T N)\n        (@Symbol.nonterminal.{0, 0} T N (@ContextFreeRule.input.{0, 0} T N r)) w))\n    (@List.countP.{0} (Symbol.{0, 0} T N) a u))\n  b) :\n    ∃ c,\n  @Eq.{1} Nat b\n    (@HMul.hMul.{0, 0, 0} Nat Nat Nat\n      (@instHMul.{0} Nat\n        (@CommMagma.toMul.{0} Nat\n          (@CommSemigroup.toCommMagma.{0} Nat Nat.instCommSemigroup)))\n      c (@List.countP.{0} (Symbol.{0, 0} T N) a u))",
+  "statement_pretty": "∀ {T N : Type} {r : ContextFreeRule T N} {u v : List (Symbol T N)},\n  r.Rewrites u v →\n    ∀ {w : List (Symbol T N)},\n      Symbol.nonterminal r.input ∉ w →\n        w.Subperm u →\n          ∀ (a : Symbol T N → Bool) {b : ℕ},\n            IsLUB\n                (Set.Icc (List.countP a (Symbol.nonterminal r.input :: w))\n                  (List.countP a u))\n                b →\n              ∃ c, b = c * List.countP a u",
+  "statement_hash": "expr:4e5af5364ac45cab3435daee0d4b84bb",
+  "axioms": [
+    "propext",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 225,
+    "level_3_ratio": 1.88,
+    "level_3_proof_size": 423,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "ContextFreeRule",
+    "List",
+    "isLUB_Icc",
+    "IsLUB",
+    "dvd_of_eq",
+    "exists_eq_mul_left_of_dvd"
+  ],
+  "interdisciplinarity": 6,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "ContextFreeRule",
+        "lemma": "ContextFreeRule.Rewrites.nonterminal_input_mem",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "List",
+        "lemma": "List.cons_subperm_of_not_mem_of_mem",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "List",
+        "lemma": "List.Subperm.countP_le",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "isLUB_Icc",
+        "lemma": "isLUB_Icc",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "IsLUB",
+        "lemma": "IsLUB.unique",
+        "kind": "mathlib",
+        "id": "4"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "exists_eq_mul_left_of_dvd",
+        "lemma": "exists_eq_mul_left_of_dvd",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "List.cons_subperm_of_not_mem_of_mem",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "List.Subperm.countP_le",
+        "from": "1"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "isLUB_Icc",
+        "from": "2"
+      },
+      {
+        "to": "4",
+        "step": "step_4",
+        "lemma": "IsLUB.unique",
+        "from": "3"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "dvd_of_eq",
+        "from": "4"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "exists_eq_mul_left_of_dvd",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Symbol"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 225,
+    "score": 25.07,
+    "readable_size": 45,
+    "modules": 4,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 47,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.Computability",
+  "specialist_module": "Mathlib.Computability.ContextFreeGrammar",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 3,
+    "source": "interest_score",
+    "score": 6.2675
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 6.5,
+    "referee_disagreement": 3,
+    "msc_code": "05A05",
+    "msc_section": "05",
+    "msc_section_name": "Combinatorics",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "05A05",
+        "justification": "The 7-step synthesis across ContextFreeRule, List, isLUB_Icc resists single-lemma lookup and yields a proof-to-statement ratio of 1.88, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 5,
+        "msc_code": "05A05",
+        "justification": "Although the statement clears the Level 1 lookup gate across ContextFreeRule, List, isLUB_Icc, the conclusion reads primarily as an accidental consequence of chaining 7 library facts. I recommend publication solely as a proposition of modest significance (5/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The ContextFreeRule Exists Eq Mul Left Of Dvd Theorem",
+    "proved_by": "Kestrel-3.4-70B-Base",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Kestrel",
+        "version": "3.4",
+        "tier": "70B-Base",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 7 verified forward inferences drawn from ContextFreeRule, List, isLUB_Icc, IsLUB (including ContextFreeRule.Rewrites.nonterminal_input_mem, List.cons_subperm_of_not_mem_of_mem, List.Subperm.countP_le). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

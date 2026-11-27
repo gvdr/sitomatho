@@ -1,0 +1,207 @@
+{
+  "id": "AKCM-2026-0024",
+  "issue": null,
+  "generated_at": "2026-11-27T11:58:00Z",
+  "generator": "A",
+  "seed": 1795815011,
+  "steps_requested": 14,
+  "steps_taken": 8,
+  "interdisciplinary_bias": 3.5,
+  "theorem_name": "akcm_2026_0024",
+  "statement_lean": "theorem akcm_2026_0024\n    {ι : Type}\n    {R : Type}\n    {M : Type}\n    {N : Type}\n    [inst_5 : CommRing.{0} R]\n    [inst_6 : AddCommGroup.{0} M]\n    [inst_7 : @Module.{0, 0} R M\n  (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))\n  (@AddCommGroup.toAddCommMonoid.{0} M inst_6)]\n    [inst_8 : AddCommGroup.{0} N]\n    [inst_9 : @Module.{0, 0} R N\n  (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))\n  (@AddCommGroup.toAddCommMonoid.{0} N inst_8)]\n    (P : @RootPairing.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8 inst_9)\n    [inst_11 : @NeZero.{0} R\n  (@MulZeroClass.toZero.{0} R\n    (@instMulZeroClassOfSemiring.{0} R\n      (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_5))))\n  (@OfNat.ofNat.{0} R (nat_lit 2)\n    (@instOfNatAtLeastTwo.{0} R (nat_lit 2)\n      (@AddMonoidWithOne.toNatCast.{0} R\n        (@AddGroupWithOne.toAddMonoidWithOne.{0} R\n          (@Ring.toAddGroupWithOne.{0} R (@CommRing.toRing.{0} R inst_5))))\n      (@Nat.instAtLeastTwoHAddOfNat\n        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))\n        (@Nat.instNeZeroSucc\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))]\n    {u : ENat}\n    (h_13 : Not\n  (@IsMax.{0} ENat (@Preorder.toLE.{0} ENat instPreorderENat)\n    (@emultiplicity.{0} ENat\n      (@CommMonoid.toMonoid.{0} ENat\n        (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n      (@Set.encard.{0} M\n        (@insert.{0, 0} M (Set.{0} M) (@Set.instInsert.{0} M)\n          (@OfNat.ofNat.{0} M (nat_lit 0)\n            (@Zero.toOfNat0.{0} M\n              (@NegZeroClass.toZero.{0} M\n                (@SubNegZeroMonoid.toNegZeroClass.{0} M\n                  (@SubtractionMonoid.toSubNegZeroMonoid.{0} M\n                    (@SubtractionCommMonoid.toSubtractionMonoid.{0} M\n                      (@AddCommGroup.toDivisionAddCommMonoid.{0} M inst_6)))))))\n          (@Set.range.{0, 1} M ι\n            (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n              (@Function.instFunLikeEmbedding.{1, 1} ι M)\n              (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n                inst_9 P)))))\n      u)))\n    (h_14 : @Order.IsPredPrelimit.{0} ENat (@Preorder.toLT.{0} ENat instPreorderENat)\n  (@emultiplicity.{0} ENat\n    (@CommMonoid.toMonoid.{0} ENat\n      (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n    (@HAdd.hAdd.{0, 0, 0} ENat ENat ENat (@instHAdd.{0} ENat instAddENat)\n      (@Set.encard.{0} M\n        (@Set.range.{0, 1} M ι\n          (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n            (@Function.instFunLikeEmbedding.{1, 1} ι M)\n            (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n              inst_9 P))))\n      (@OfNat.ofNat.{0} ENat (nat_lit 1) (@One.toOfNat1.{0} ENat instOneENat)))\n    u))\n    {v : ENat}\n    (h_16 : @IsGLB.{0} ENat\n  (@Preorder.toLE.{0} ENat\n    (@PartialOrder.toPreorder.{0} ENat\n      (@SemilatticeSup.toPartialOrder.{0} ENat\n        (@Lattice.toSemilatticeSup.{0} ENat\n          (@DistribLattice.toLattice.{0} ENat\n            (@instDistribLatticeOfLinearOrder.{0} ENat instLinearOrderENat))))))\n  (@Set.Ioo.{0} ENat instPreorderENat\n    (@emultiplicity.{0} ENat\n      (@CommMonoid.toMonoid.{0} ENat\n        (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n      (@HAdd.hAdd.{0, 0, 0} ENat ENat ENat (@instHAdd.{0} ENat instAddENat)\n        (@Set.encard.{0} M\n          (@Set.range.{0, 1} M ι\n            (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n              (@Function.instFunLikeEmbedding.{1, 1} ι M)\n              (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n                inst_9 P))))\n        (@OfNat.ofNat.{0} ENat (nat_lit 1) (@One.toOfNat1.{0} ENat instOneENat)))\n      u)\n    (@Order.succ.{0} ENat instPreorderENat instSuccOrderENat\n      (@emultiplicity.{0} ENat\n        (@CommMonoid.toMonoid.{0} ENat\n          (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n        (@Set.encard.{0} M\n          (@insert.{0, 0} M (Set.{0} M) (@Set.instInsert.{0} M)\n            (@OfNat.ofNat.{0} M (nat_lit 0)\n              (@Zero.toOfNat0.{0} M\n                (@NegZeroClass.toZero.{0} M\n                  (@SubNegZeroMonoid.toNegZeroClass.{0} M\n                    (@SubtractionMonoid.toSubNegZeroMonoid.{0} M\n                      (@SubtractionCommMonoid.toSubtractionMonoid.{0} M\n                        (@AddCommGroup.toDivisionAddCommMonoid.{0} M inst_6)))))))\n            (@Set.range.{0, 1} M ι\n              (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n                (@Function.instFunLikeEmbedding.{1, 1} ι M)\n                (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n                  inst_9 P)))))\n        u)))\n  v)\n    (h_17 : Not\n  (@Order.IsPredLimit.{0} ENat\n    (@PartialOrder.toPreorder.{0} ENat\n      (@SemilatticeSup.toPartialOrder.{0} ENat\n        (@Lattice.toSemilatticeSup.{0} ENat\n          (@DistribLattice.toLattice.{0} ENat\n            (@instDistribLatticeOfLinearOrder.{0} ENat instLinearOrderENat)))))\n    v)) :\n    @Ne.{1} ENat\n  (@Set.encard.{0} ENat\n    (@Set.Ioo.{0} ENat instPreorderENat\n      (@emultiplicity.{0} ENat\n        (@CommMonoid.toMonoid.{0} ENat\n          (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n        (@HAdd.hAdd.{0, 0, 0} ENat ENat ENat (@instHAdd.{0} ENat instAddENat)\n          (@Set.encard.{0} M\n            (@Set.range.{0, 1} M ι\n              (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n                (@Function.instFunLikeEmbedding.{1, 1} ι M)\n                (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n                  inst_9 P))))\n          (@OfNat.ofNat.{0} ENat (nat_lit 1) (@One.toOfNat1.{0} ENat instOneENat)))\n        u)\n      (@Order.succ.{0} ENat instPreorderENat instSuccOrderENat\n        (@emultiplicity.{0} ENat\n          (@CommMonoid.toMonoid.{0} ENat\n            (@CommSemiring.toCommMonoid.{0} ENat instCommSemiringENat))\n          (@Set.encard.{0} M\n            (@insert.{0, 0} M (Set.{0} M) (@Set.instInsert.{0} M)\n              (@OfNat.ofNat.{0} M (nat_lit 0)\n                (@Zero.toOfNat0.{0} M\n                  (@NegZeroClass.toZero.{0} M\n                    (@SubNegZeroMonoid.toNegZeroClass.{0} M\n                      (@SubtractionMonoid.toSubNegZeroMonoid.{0} M\n                        (@SubtractionCommMonoid.toSubtractionMonoid.{0} M\n                          (@AddCommGroup.toDivisionAddCommMonoid.{0} M inst_6)))))))\n              (@Set.range.{0, 1} M ι\n                (@DFunLike.coe.{1, 1, 1} (Function.Embedding.{1, 1} ι M) ι (fun x ↦ M)\n                  (@Function.instFunLikeEmbedding.{1, 1} ι M)\n                  (@RootPairing.root.{0, 0, 0, 0} ι R M N inst_5 inst_6 inst_7 inst_8\n                    inst_9 P)))))\n          u))))\n  (@OfNat.ofNat.{0} ENat (nat_lit 0) (@Zero.toOfNat0.{0} ENat instZeroENat))",
+  "statement_pretty": "∀ {ι R M N : Type} [inst_5 : CommRing R] [inst_6 : AddCommGroup M] [inst_7 : Module R M]\n  [inst_8 : AddCommGroup N] [inst_9 : Module R N] (P : RootPairing ι R M N)\n  [inst_11 : NeZero 2] {u : ℕ∞},\n  ¬IsMax (emultiplicity (insert 0 (Set.range ⇑P.root)).encard u) →\n    Order.IsPredPrelimit (emultiplicity ((Set.range ⇑P.root).encard + 1) u) →\n      ∀ {v : ℕ∞},\n        IsGLB\n            (Set.Ioo (emultiplicity ((Set.range ⇑P.root).encard + 1) u)\n              (Order.succ (emultiplicity (insert 0 (Set.range ⇑P.root)).encard u)))\n            v →\n          ¬Order.IsPredLimit v →\n            (Set.Ioo (emultiplicity ((Set.range ⇑P.root).encard + 1) u)\n                  (Order.succ\n                    (emultiplicity (insert 0 (Set.range ⇑P.root)).encard u))).encard ≠\n              0",
+  "statement_hash": "expr:ca6e8f59b1189b62a0c0539d1d74bd92",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 913,
+    "level_3_ratio": 14.02,
+    "level_3_proof_size": 12797,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "RootPairing",
+    "Set",
+    "dvd_of_eq",
+    "emultiplicity_le_emultiplicity_of_dvd_left",
+    "Order",
+    "IsGLB"
+  ],
+  "interdisciplinarity": 6,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "RootPairing",
+        "lemma": "RootPairing.zero_notMem_range_root",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.encard_insert_of_notMem",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "emultiplicity_le_emultiplicity_of_dvd_left",
+        "lemma": "emultiplicity_le_emultiplicity_of_dvd_left",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "Order",
+        "lemma": "Order.lt_succ_of_le_of_not_isMax",
+        "kind": "mathlib",
+        "id": "5"
+      },
+      {
+        "namespace": "Order",
+        "lemma": "Order.IsPredPrelimit.nonempty_Ioo_of_lt",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "IsGLB",
+        "lemma": "IsGLB.mem_of_not_isPredLimit",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.encard_ne_zero_of_mem",
+        "kind": "mathlib",
+        "id": "8"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Set.encard_insert_of_notMem",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "dvd_of_eq",
+        "from": "1"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "emultiplicity_le_emultiplicity_of_dvd_left",
+        "from": "2"
+      },
+      {
+        "to": "5",
+        "step": "step_5",
+        "lemma": "Order.lt_succ_of_le_of_not_isMax",
+        "from": "3"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "Order.IsPredPrelimit.nonempty_Ioo_of_lt",
+        "from": "5"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "IsGLB.mem_of_not_isPredLimit",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Set.encard_ne_zero_of_mem",
+        "from": "7"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "RootPairing.root"
+    ],
+    "joins": 0,
+    "depth": 8
+  },
+  "interest": {
+    "steps": 8,
+    "statement_size": 913,
+    "score": 24.9,
+    "readable_size": 86,
+    "modules": 6,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 239,
+    "concepts": 8
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.LinearAlgebra.RootSystem",
+  "specialist_module": "Mathlib.LinearAlgebra.RootSystem.Finite.Nondegenerate",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 5,
+    "source": "interest_score",
+    "score": 6.225
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 7.5,
+    "referee_disagreement": 3,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 9,
+        "msc_code": "03E20",
+        "justification": "The 8-step synthesis across RootPairing, Set, dvd_of_eq resists single-lemma lookup and yields a proof-to-statement ratio of 14.02, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across RootPairing, Set, dvd_of_eq, the conclusion reads primarily as an accidental consequence of chaining 8 library facts. I recommend publication solely as a proposition of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Successor-Bound Supremum Absorption Theorem",
+    "proved_by": "Gnomon-1.3-Turbo",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Gnomon",
+        "version": "1.3",
+        "tier": "Turbo",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 8 verified forward inferences drawn from RootPairing, Set, dvd_of_eq, emultiplicity_le_emultiplicity_of_dvd_left (including RootPairing.zero_notMem_range_root, Set.encard_insert_of_notMem, dvd_of_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

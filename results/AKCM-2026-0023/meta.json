@@ -1,0 +1,196 @@
+{
+  "id": "AKCM-2026-0023",
+  "issue": null,
+  "generated_at": "2026-11-27T11:57:58Z",
+  "generator": "A",
+  "seed": 1795857127,
+  "steps_requested": 12,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 2.5,
+  "theorem_name": "akcm_2026_0023",
+  "statement_lean": "theorem akcm_2026_0023\n    {p : Nat}\n    [inst_2 : Fact (Nat.Prime p)]\n    {q : Rat}\n    (hq : @Ne.{1} Rat q (@OfNat.ofNat.{0} Rat (nat_lit 0) (@Rat.instOfNat (nat_lit 0))))\n    (h_5 : @Dvd.dvd.{0} Rat\n  (@semigroupDvd.{0} Rat\n    (@SemigroupWithZero.toSemigroup.{0} Rat\n      (@NonUnitalSemiring.toSemigroupWithZero.{0} Rat\n        (@NonUnitalCommSemiring.toNonUnitalSemiring.{0} Rat\n          (@CommSemiring.toNonUnitalCommSemiring.{0} Rat\n            (@CommRing.toCommSemiring.{0} Rat Rat.commRing))))))\n  (@PadicSeq.norm p inst_2\n    (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n      Rat.instIsStrictOrderedRing\n      (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n      (@padicNorm.instIsAbsoluteValueRat p inst_2) q))\n  (@HSub.hSub.{0, 0, 0} Rat Rat Rat\n    (@instHSub.{0} Rat\n      (@SubNegMonoid.toSub.{0} Rat\n        (@AddGroup.toSubNegMonoid.{0} Rat\n          (@AddGroupWithOne.toAddGroup.{0} Rat\n            (@Ring.toAddGroupWithOne.{0} Rat\n              (@CommRing.toRing.{0} Rat Rat.commRing))))))\n    (@HPow.hPow.{0, 0, 0} Rat Int Rat (@instHPow.{0, 0} Rat Int Rat.instPowInt)\n      (@Nat.cast.{0} Rat Rat.instNatCast p)\n      (@Neg.neg.{0} Int Int.instNegInt\n        (@PadicSeq.valuation p inst_2\n          (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n            Rat.instIsStrictOrderedRing\n            (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n            (@padicNorm.instIsAbsoluteValueRat p inst_2) q))))\n    (@OfNat.ofNat.{0} Rat (nat_lit 1)\n      (@One.toOfNat1.{0} Rat\n        (@AddMonoidWithOne.toOne.{0} Rat\n          (@AddGroupWithOne.toAddMonoidWithOne.{0} Rat\n            (@Ring.toAddGroupWithOne.{0} Rat\n              (@CommRing.toRing.{0} Rat Rat.commRing))))))))\n    (h_6 : ∀ (x : Rat),\n  @Eq.{1} (Filter.{0} Rat)\n    (@Filter.comap.{0, 0} Rat Rat\n      (fun x ↦\n        @HMul.hMul.{0, 0, 0} Rat Rat Rat\n          (@instHMul.{0} Rat\n            (@MulOne.toMul.{0} Rat\n              (@MulOneClass.toMulOne.{0} Rat\n                (@Monoid.toMulOneClass.{0} Rat\n                  (@Semiring.toMonoid.{0} Rat\n                    (@CommSemiring.toSemiring.{0} Rat\n                      (@CommRing.toCommSemiring.{0} Rat Rat.commRing)))))))\n          x\n          (@PadicSeq.norm p inst_2\n            (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n              Rat.instIsStrictOrderedRing\n              (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n              (@padicNorm.instIsAbsoluteValueRat p inst_2) q)))\n      (@nhds.{0} Rat\n        (@UniformSpace.toTopologicalSpace.{0} Rat\n          (@PseudoMetricSpace.toUniformSpace.{0} Rat\n            (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n              (@SeminormedCommRing.toSeminormedRing.{0} Rat\n                (@NormedCommRing.toSeminormedCommRing.{0} Rat\n                  (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n        (@HMul.hMul.{0, 0, 0} Rat Rat Rat\n          (@instHMul.{0} Rat\n            (@MulOne.toMul.{0} Rat\n              (@MulOneClass.toMulOne.{0} Rat\n                (@Monoid.toMulOneClass.{0} Rat\n                  (@Semiring.toMonoid.{0} Rat\n                    (@CommSemiring.toSemiring.{0} Rat\n                      (@CommRing.toCommSemiring.{0} Rat Rat.commRing)))))))\n          x\n          (@PadicSeq.norm p inst_2\n            (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n              Rat.instIsStrictOrderedRing\n              (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing) (padicNorm p)\n              (@padicNorm.instIsAbsoluteValueRat p inst_2) q)))))\n    (@nhds.{0} Rat\n      (@UniformSpace.toTopologicalSpace.{0} Rat\n        (@PseudoMetricSpace.toUniformSpace.{0} Rat\n          (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n            (@SeminormedCommRing.toSeminormedRing.{0} Rat\n              (@NormedCommRing.toSeminormedCommRing.{0} Rat\n                (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n      x)) :\n    @Topology.IsEmbedding.{0, 0} Rat Rat\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  (@UniformSpace.toTopologicalSpace.{0} Rat\n    (@PseudoMetricSpace.toUniformSpace.{0} Rat\n      (@SeminormedRing.toPseudoMetricSpace.{0} Rat\n        (@SeminormedCommRing.toSeminormedRing.{0} Rat\n          (@NormedCommRing.toSeminormedCommRing.{0} Rat\n            (@NormedField.toNormedCommRing.{0} Rat Rat.instNormedField))))))\n  fun x ↦\n  @HMul.hMul.{0, 0, 0} Rat Rat Rat\n    (@instHMul.{0} Rat\n      (@MulOne.toMul.{0} Rat\n        (@MulOneClass.toMulOne.{0} Rat\n          (@Monoid.toMulOneClass.{0} Rat\n            (@Semiring.toMonoid.{0} Rat\n              (@CommSemiring.toSemiring.{0} Rat\n                (@CommRing.toCommSemiring.{0} Rat Rat.commRing)))))))\n    x\n    (@PadicSeq.norm p inst_2\n      (@CauSeq.const.{0, 0} Rat Rat Rat.instField Rat.linearOrder\n        Rat.instIsStrictOrderedRing (@DivisionRing.toRing.{0} Rat Rat.instDivisionRing)\n        (padicNorm p) (@padicNorm.instIsAbsoluteValueRat p inst_2) q))",
+  "statement_pretty": "∀ {p : ℕ} [inst_2 : Fact (Nat.Prime p)] {q : ℚ},\n  q ≠ 0 →\n    PadicSeq.norm (CauSeq.const (padicNorm p) q) ∣\n        ↑p ^ (-PadicSeq.valuation (CauSeq.const (padicNorm p) q)) - 1 →\n      (∀ (x : ℚ),\n          Filter.comap (fun x ↦ x * PadicSeq.norm (CauSeq.const (padicNorm p) q))\n              (nhds (x * PadicSeq.norm (CauSeq.const (padicNorm p) q))) =\n            nhds x) →\n        Topology.IsEmbedding fun x ↦ x * PadicSeq.norm (CauSeq.const (padicNorm p) q)",
+  "statement_hash": "expr:a0b73fa8797140e3db35af33977072b3",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 585,
+    "level_3_ratio": 1.84,
+    "level_3_proof_size": 1079,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "PadicSeq",
+    "dvd_of_eq",
+    "IsCoprime",
+    "IsUnit",
+    "Topology"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "PadicSeq",
+        "lemma": "PadicSeq.not_equiv_zero_const_of_ne_zero",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "PadicSeq",
+        "lemma": "PadicSeq.norm_eq_zpow_neg_valuation",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "3"
+      },
+      {
+        "namespace": "IsCoprime",
+        "lemma": "IsCoprime.sub_one_right_of_dvd",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "IsCoprime",
+        "lemma": "IsCoprime.isUnit_of_dvd",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "IsUnit",
+        "lemma": "IsUnit.mul_left_injective",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "Topology",
+        "lemma": "Topology.IsEmbedding.mk'",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "PadicSeq.norm_eq_zpow_neg_valuation",
+        "from": "0"
+      },
+      {
+        "to": "3",
+        "step": "step_3",
+        "lemma": "dvd_of_eq",
+        "from": "2"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "IsCoprime.sub_one_right_of_dvd",
+        "from": "3"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "IsCoprime.isUnit_of_dvd",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "IsUnit.mul_left_injective",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Topology.IsEmbedding.mk'",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "padicNorm.instIsAbsoluteValueRat",
+      "padicNorm",
+      "PadicSeq.norm"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 585,
+    "score": 25.04,
+    "readable_size": 56,
+    "modules": 5,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 135,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.NumberTheory.Padics",
+  "specialist_module": "Mathlib.NumberTheory.Padics.PadicNumbers",
+  "mutation_kind": "drift",
+  "selection": {
+    "pool_size": 15,
+    "rank": 4,
+    "source": "interest_score",
+    "score": 6.26
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.0,
+    "referee_disagreement": 4,
+    "msc_code": "11A41",
+    "msc_section": "11",
+    "msc_section_name": "Number theory",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "11A41",
+        "justification": "The 7-step synthesis across PadicSeq, dvd_of_eq, IsCoprime resists single-lemma lookup and yields a proof-to-statement ratio of 1.84, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 6,
+        "msc_code": "11A41",
+        "justification": "Although the statement clears the Level 1 lookup gate across PadicSeq, dvd_of_eq, IsCoprime, the conclusion reads primarily as an accidental consequence of chaining 7 library facts. I recommend publication solely as a proposition of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Primality Persistence Theorem",
+    "proved_by": "Chiaroscuro-1.4-Max",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Chiaroscuro",
+        "version": "1.4",
+        "tier": "Max",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 7 verified forward inferences drawn from PadicSeq, dvd_of_eq, IsCoprime, IsUnit (including PadicSeq.not_equiv_zero_const_of_ne_zero, PadicSeq.norm_eq_zpow_neg_valuation, dvd_of_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

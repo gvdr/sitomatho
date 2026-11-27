@@ -1,22 +1,28 @@
 {
   "families": {
+    "Chiaroscuro": {
+      "deprecated": false,
+      "major": 1,
+      "minor": 4,
+      "result_count": 2
+    },
     "Gnomon": {
       "deprecated": false,
       "major": 1,
       "minor": 3,
-      "result_count": 1
+      "result_count": 3
     },
     "Hoatzin": {
       "deprecated": false,
       "major": 2,
       "minor": 4,
-      "result_count": 1
+      "result_count": 2
     },
     "Kestrel": {
       "deprecated": false,
       "major": 3,
       "minor": 4,
-      "result_count": 1
+      "result_count": 2
     },
     "Parhelion": {
       "deprecated": false,
