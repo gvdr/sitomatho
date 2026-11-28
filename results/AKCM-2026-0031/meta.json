@@ -1,0 +1,188 @@
+{
+  "id": "AKCM-2026-0031",
+  "issue": null,
+  "generated_at": "2026-11-28T11:32:17Z",
+  "generator": "A",
+  "seed": 1796022019,
+  "steps_requested": 14,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0031",
+  "statement_lean": "theorem akcm_2026_0031\n    {R : Type}\n    [inst_2 : CommRing.{0} R]\n    [inst_3 : @IsDomain.{0} R\n  (@CommSemiring.toSemiring.{0} R (@CommRing.toCommSemiring.{0} R inst_2))]\n    {ζ : R}\n    {k : Nat}\n    (h : @IsPrimitiveRoot.{0} R (@CommRing.toCommMonoid.{0} R inst_2) ζ k)\n    {u : Nat} :\n    @RightDvd.{0} Nat (@Monoid.toSemigroup.{0} Nat Nat.instMonoid)\n  (@lcm.{0} Nat Nat.instCommMonoidWithZero\n    (@NormalizedGCDMonoid.toGCDMonoid.{0} Nat Nat.instCommMonoidWithZero\n      (@instNormalizedGCDMonoidOfStrongNormalizedGCDMonoid.{0} Nat\n        Nat.instCommMonoidWithZero instStrongNormalizedGCDMonoidNat))\n    k.totient k)\n  (@HMul.hMul.{0, 0, 0} Nat Nat Nat\n    (@instHMul.{0} Nat\n      (@Semigroup.toMul.{0} Nat (@Monoid.toSemigroup.{0} Nat Nat.instMonoid)))\n    u\n    (@lcm.{0} Nat Nat.instCommMonoidWithZero\n      (@NormalizedGCDMonoid.toGCDMonoid.{0} Nat Nat.instCommMonoidWithZero\n        (@instNormalizedGCDMonoidOfStrongNormalizedGCDMonoid.{0} Nat\n          Nat.instCommMonoidWithZero instStrongNormalizedGCDMonoidNat))\n      (@Finset.card.{0} R (@primitiveRoots.{0} k R inst_2 inst_3)) k))",
+  "statement_pretty": "∀ {R : Type} [inst_2 : CommRing R] [inst_3 : IsDomain R] {ζ : R} {k : ℕ},\n  IsPrimitiveRoot ζ k → ∀ {u : ℕ}, lcm k.totient k ∣ᵣ u * lcm (primitiveRoots k R).card k",
+  "statement_hash": "expr:0bda2b69573af6f59a982cec60f3f245",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 135,
+    "level_3_ratio": 21.8,
+    "level_3_proof_size": 2943,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "IsPrimitiveRoot",
+    "Associated",
+    "lcm_eq_of_associated_left",
+    "Eq",
+    "RightDvd"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "IsPrimitiveRoot",
+        "lemma": "IsPrimitiveRoot.card_primitiveRoots",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Associated",
+        "lemma": "Associated.of_eq",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Associated",
+        "lemma": "Associated.symm",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "lcm_eq_of_associated_left",
+        "lemma": "lcm_eq_of_associated_left",
+        "kind": "mathlib",
+        "id": "10"
+      },
+      {
+        "namespace": "Eq",
+        "lemma": "Eq.rightDvd",
+        "kind": "mathlib",
+        "id": "11"
+      },
+      {
+        "namespace": "RightDvd",
+        "lemma": "RightDvd.mul_left",
+        "kind": "mathlib",
+        "id": "12"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Associated.of_eq",
+        "from": "0"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Associated.symm",
+        "from": "1"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "lcm_eq_of_associated_left",
+        "from": "9"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "Eq.rightDvd",
+        "from": "10"
+      },
+      {
+        "to": "12",
+        "step": "step_12",
+        "lemma": "RightDvd.mul_left",
+        "from": "11"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "primitiveRoots"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 135,
+    "score": 15.97,
+    "readable_size": 17,
+    "modules": 4,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 95,
+    "concepts": 3
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.RingTheory.RootsOfUnity",
+  "specialist_module": "Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 10,
+    "source": "interest_score",
+    "score": 3.9925
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 10.0,
+    "referee_disagreement": 0,
+    "msc_code": "03B05",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03B05",
+        "justification": "The 6-step synthesis across IsPrimitiveRoot, Associated, lcm_eq_of_associated_left resists single-lemma lookup and yields a proof-to-statement ratio of 21.80, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "03B05",
+        "justification": "Although the statement clears the Level 1 lookup gate across IsPrimitiveRoot, Associated, lcm_eq_of_associated_left, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (10/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The IsPrimitiveRoot Mul Left Theorem",
+    "proved_by": "Tui-4.3-Reasoning & Chiaroscuro-1.4-Reasoning",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Tui",
+        "version": "4.3",
+        "tier": "Reasoning",
+        "legacy": false
+      },
+      {
+        "family": "Chiaroscuro",
+        "version": "1.4",
+        "tier": "Reasoning",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from IsPrimitiveRoot, Associated, lcm_eq_of_associated_left, Eq (including IsPrimitiveRoot.card_primitiveRoots, Associated.of_eq, Associated.symm). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

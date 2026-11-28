@@ -1,0 +1,184 @@
+{
+  "id": "AKCM-2026-0030",
+  "issue": null,
+  "generated_at": "2026-11-28T11:32:16Z",
+  "generator": "A",
+  "seed": 1795955163,
+  "steps_requested": 14,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.7,
+  "theorem_name": "akcm_2026_0030",
+  "statement_lean": "theorem akcm_2026_0030\n    {A : Type}\n    {G : Type}\n    {W : Type}\n    [inst_4 : Semiring.{0} A]\n    [inst_5 : Monoid.{0} G]\n    [inst_6 : AddCommMonoid.{0} W]\n    [inst_7 : @Module.{0, 0} A W inst_4 inst_6]\n    {ρ : @Representation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7}\n    (x_9 : @Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n    (x_10 : @Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n    {u : Set.{0} W}\n    (h_12 : @LT.lt.{0} (Set.{0} W)\n  (@Preorder.toLT.{0} (Set.{0} W)\n    (@PartialOrder.toPreorder.{0} (Set.{0} W)\n      (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n        (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n          (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n            (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} W)\n              (@Set.instCompleteAtomicBooleanAlgebra.{0} W)))))))\n  (@HAdd.hAdd.{0, 0, 0} (Set.{0} W) (Set.{0} W) (Set.{0} W)\n    (@instHAdd.{0} (Set.{0} W)\n      (@Set.add.{0} W\n        (@AddCommMagma.toAdd.{0} W\n          (@AddCommSemigroup.toAddCommMagma.{0} W\n            (@AddCommMonoid.toAddCommSemigroup.{0} W inst_6)))))\n    (@SetLike.coe.{0, 0}\n      (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n      (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n      x_9)\n    (@SetLike.coe.{0, 0}\n      (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n      (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n      x_10))\n  u) :\n    @RightDvd.{0} ENat\n  (@Monoid.toSemigroup.{0} ENat\n    (@Semiring.toMonoid.{0} ENat\n      (@CommSemiring.toSemiring.{0} ENat instCommSemiringENat)))\n  (@Set.encard.{0} (Set.{0} (Set.{0} W))\n    (@insert.{0, 0} (Set.{0} (Set.{0} W)) (Set.{0} (Set.{0} (Set.{0} W)))\n      (@Set.instInsert.{0} (Set.{0} (Set.{0} W)))\n      (@Set.Iio.{0} (Set.{0} W)\n        (@PartialOrder.toPreorder.{0} (Set.{0} W)\n          (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} W)\n            (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} W)\n              (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} W)\n                (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0} (Set.{0} W)\n                  (@Set.instCompleteAtomicBooleanAlgebra.{0} W))))))\n        (@SetLike.coe.{0, 0}\n          (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ) W\n          (@Subrepresentation.instSetLike.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n          (@max.{0} (@Subrepresentation.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n            (@Subrepresentation.instMax.{0, 0, 0} A G W inst_4 inst_5 inst_6 inst_7 ρ)\n            x_9 x_10)))\n      (@singleton.{0, 0} (Set.{0} (Set.{0} W)) (Set.{0} (Set.{0} (Set.{0} W)))\n        (@Set.instSingletonSet.{0} (Set.{0} (Set.{0} W)))\n        (@Top.top.{0} (Set.{0} (Set.{0} W))\n          (@OrderTop.toTop.{0} (Set.{0} (Set.{0} W))\n            (@Preorder.toLE.{0} (Set.{0} (Set.{0} W))\n              (@PartialOrder.toPreorder.{0} (Set.{0} (Set.{0} W))\n                (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} (Set.{0} W))\n                  (@ChainCompletePartialOrder.instOfCompleteLattice.{0}\n                    (Set.{0} (Set.{0} W))\n                    (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} (Set.{0} W))\n                      (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                        (Set.{0} (Set.{0} W))\n                        (@Set.instCompleteAtomicBooleanAlgebra.{0} (Set.{0} W))))))))\n            (@Set.instOrderTop.{0} (Set.{0} W)))))))\n  (@OfNat.ofNat.{0} ENat (nat_lit 2)\n    (@instOfNatAtLeastTwo.{0} ENat (nat_lit 2) ENat.instNatCast\n      (@Nat.instAtLeastTwoHAddOfNat\n        (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))\n        (@Nat.instNeZeroSucc\n          (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))))))",
+  "statement_pretty": "∀ {A G W : Type} [inst_4 : Semiring A] [inst_5 : Monoid G] [inst_6 : AddCommMonoid W]\n  [inst_7 : Module A W] {ρ : Representation A G W} (x_9 x_10 : Subrepresentation ρ)\n  {u : Set W}, ↑x_9 + ↑x_10 ⊂ u → {Set.Iio ↑(x_9 ⊔ x_10), ⊤}.encard ∣ᵣ 2",
+  "statement_hash": "expr:869dce306be784badaae2241b9ae44ea",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 563,
+    "level_3_ratio": 2.47,
+    "level_3_proof_size": 1393,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "Subrepresentation",
+    "ssubset_of_eq_of_ssubset",
+    "Set",
+    "ne_top_of_lt",
+    "Eq"
+  ],
+  "interdisciplinarity": 5,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "Subrepresentation",
+        "lemma": "Subrepresentation.coe_sup",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "ssubset_of_eq_of_ssubset",
+        "lemma": "ssubset_of_eq_of_ssubset",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.Iio_ssubset_Iio",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "ne_top_of_lt",
+        "lemma": "ne_top_of_lt",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.encard_pair",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "Eq",
+        "lemma": "Eq.rightDvd",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "ssubset_of_eq_of_ssubset",
+        "from": "0"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "Set.Iio_ssubset_Iio",
+        "from": "1"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "ne_top_of_lt",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Set.encard_pair",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "Eq.rightDvd",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "Subrepresentation",
+      "Subrepresentation.instSetLike",
+      "Subrepresentation.instMax"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 563,
+    "score": 19.07,
+    "readable_size": 26,
+    "modules": 6,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 309,
+    "concepts": 4
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.RepresentationTheory",
+  "specialist_module": "Mathlib.RepresentationTheory.Character",
+  "mutation_kind": "drift",
+  "selection": {
+    "pool_size": 15,
+    "rank": 9,
+    "source": "interest_score",
+    "score": 4.7675
+  },
+  "editorial": {
+    "kind": "Proposition",
+    "mean_importance": 6.5,
+    "referee_disagreement": 1,
+    "msc_code": "03E20",
+    "msc_section": "03",
+    "msc_section_name": "Mathematical logic and foundations",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Proposition",
+        "importance": 7,
+        "msc_code": "03E20",
+        "justification": "The 6-step synthesis across Subrepresentation, ssubset_of_eq_of_ssubset, Set resists single-lemma lookup and yields a proof-to-statement ratio of 2.47, meriting archival as a proposition. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 6,
+        "msc_code": "03E20",
+        "justification": "Although the statement clears the Level 1 lookup gate across Subrepresentation, ssubset_of_eq_of_ssubset, Set, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (6/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Subrepresentation Rightdvd Proposition",
+    "proved_by": "Rhea-3.2-405B-preview-1123",
+    "joint_eponym": false,
+    "families": [
+      {
+        "family": "Rhea",
+        "version": "3.2",
+        "tier": "405B-preview-1123",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from Subrepresentation, ssubset_of_eq_of_ssubset, Set, ne_top_of_lt (including Subrepresentation.coe_sup, ssubset_of_eq_of_ssubset, Set.Iio_ssubset_Iio). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

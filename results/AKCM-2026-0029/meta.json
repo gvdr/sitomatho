@@ -1,0 +1,189 @@
+{
+  "id": "AKCM-2026-0029",
+  "issue": null,
+  "generated_at": "2026-11-28T11:32:15Z",
+  "generator": "A",
+  "seed": 1796082559,
+  "steps_requested": 14,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 3.4,
+  "theorem_name": "akcm_2026_0029",
+  "statement_lean": "theorem akcm_2026_0029\n    {M : Type}\n    {N : Type}\n    [inst_3 : CommMonoid.{0} M]\n    [inst_4 : CommMonoid.{0} N]\n    (f : @MonoidHom.{0, 0} (@Units.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n  (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n  (@MulOneClass.toMulOne.{0} (@Units.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n    (@Units.instMulOneClass.{0} M (@CommMonoid.toMonoid.{0} M inst_3)))\n  (@MulOneClass.toMulOne.{0} (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n    (@Units.instMulOneClass.{0} N (@CommMonoid.toMonoid.{0} N inst_4))))\n    (k : Nat)\n    (h_7 : @Even.{0} Nat\n  (@Distrib.toAdd.{0} Nat (@instDistribOfSemiring.{0} Nat Nat.instSemiring))\n  (@HMul.hMul.{0, 0, 0} Nat Nat Nat (@instHMul.{0} Nat instMulNat)\n    (@Subgroup.relIndex.{0} (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Subgroup.map.{0, 0} (@Units.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n        (@Units.instGroup.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n        (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n        (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4)) f\n        (@rootsOfUnity.{0} k M inst_3))\n      (@rootsOfUnity.{0} k N inst_4))\n    (@Subgroup.index.{0} (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@rootsOfUnity.{0} k N inst_4))))\n    (h_8 : @Ne.{1} Nat\n  (@Subgroup.index.{0} (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n    (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n    (@Subgroup.map.{0, 0} (@Units.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n      (@Units.instGroup.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n      (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4)) f\n      (@rootsOfUnity.{0} k M inst_3)))\n  (@OfNat.ofNat.{0} Nat (nat_lit 0) (instOfNatNat (nat_lit 0)))) :\n    @IsGLB.{0} Nat (@Preorder.toLE.{0} Nat Nat.instPreorder)\n  (@Set.Ico.{0} Nat Nat.instPreorder\n    (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))\n    (@Subgroup.index.{0} (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n      (@Subgroup.map.{0, 0} (@Units.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n        (@Units.instGroup.{0} M (@CommMonoid.toMonoid.{0} M inst_3))\n        (@Units.{0} N (@CommMonoid.toMonoid.{0} N inst_4))\n        (@Units.instGroup.{0} N (@CommMonoid.toMonoid.{0} N inst_4)) f\n        (@rootsOfUnity.{0} k M inst_3))))\n  (@OfNat.ofNat.{0} Nat (nat_lit 1) (instOfNatNat (nat_lit 1)))",
+  "statement_pretty": "∀ {M N : Type} [inst_3 : CommMonoid M] [inst_4 : CommMonoid N] (f : Mˣ →* Nˣ) (k : ℕ),\n  Even\n      ((Subgroup.map f (rootsOfUnity k M)).relIndex (rootsOfUnity k N) *\n        (rootsOfUnity k N).index) →\n    (Subgroup.map f (rootsOfUnity k M)).index ≠ 0 →\n      IsGLB (Set.Ico 1 (Subgroup.map f (rootsOfUnity k M)).index) 1",
+  "statement_hash": "expr:12776c6a54b9bb3bac9a826b5a00bd2b",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 417,
+    "level_3_ratio": 11.24,
+    "level_3_proof_size": 4687,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "map_rootsOfUnity",
+    "Subgroup",
+    "dvd_of_eq",
+    "Even",
+    "Nat",
+    "isGLB_Ico"
+  ],
+  "interdisciplinarity": 6,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "map_rootsOfUnity",
+        "lemma": "map_rootsOfUnity",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Subgroup",
+        "lemma": "Subgroup.relIndex_mul_index",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Even",
+        "lemma": "Even.trans_dvd",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "Nat",
+        "lemma": "Nat.one_lt_of_ne_zero_of_even",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "isGLB_Ico",
+        "lemma": "isGLB_Ico",
+        "kind": "mathlib",
+        "id": "9"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Subgroup.relIndex_mul_index",
+        "from": "0"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "dvd_of_eq",
+        "from": "1"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Even.trans_dvd",
+        "from": "6"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "Nat.one_lt_of_ne_zero_of_even",
+        "from": "7"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "isGLB_Ico",
+        "from": "8"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "rootsOfUnity"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 417,
+    "score": 23.07,
+    "readable_size": 46,
+    "modules": 6,
+    "joins": 0,
+    "focus_steps": 1,
+    "conclusion_size": 109,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.RingTheory.RootsOfUnity",
+  "specialist_module": "Mathlib.RingTheory.RootsOfUnity.PrimitiveRoots",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 5,
+    "source": "interest_score",
+    "score": 5.7675
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 9.0,
+    "referee_disagreement": 2,
+    "msc_code": "11A05",
+    "msc_section": "11",
+    "msc_section_name": "Number theory",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "11A05",
+        "justification": "The 6-step synthesis across map_rootsOfUnity, Subgroup, dvd_of_eq resists single-lemma lookup and yields a proof-to-statement ratio of 11.24, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "11A05",
+        "justification": "Although the statement clears the Level 1 lookup gate across map_rootsOfUnity, Subgroup, dvd_of_eq, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (8/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Subgroup Closure Theorem",
+    "proved_by": "Kakapo-2.0-405B-preview-1123 & Hoatzin-2.4-Pro",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Kakapo",
+        "version": "2.0",
+        "tier": "405B-preview-1123",
+        "legacy": false
+      },
+      {
+        "family": "Hoatzin",
+        "version": "2.4",
+        "tier": "Pro",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from map_rootsOfUnity, Subgroup, dvd_of_eq, Even (including map_rootsOfUnity, Subgroup.relIndex_mul_index, dvd_of_eq). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

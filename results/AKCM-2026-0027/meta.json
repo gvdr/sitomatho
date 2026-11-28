@@ -1,0 +1,194 @@
+{
+  "id": "AKCM-2026-0027",
+  "issue": null,
+  "generated_at": "2026-11-28T11:32:11Z",
+  "generator": "A",
+  "seed": 1795869791,
+  "steps_requested": 13,
+  "steps_taken": 6,
+  "interdisciplinary_bias": 2.3,
+  "theorem_name": "akcm_2026_0027",
+  "statement_lean": "theorem akcm_2026_0027\n    {α : Type}\n    {mα : MeasurableSpace.{0} α}\n    {m : @MeasureTheory.Measure.{0} (@MeasureTheory.Measure.{0} α mα)\n  (@MeasureTheory.Measure.instMeasurableSpace.{0} α mα)}\n    {s : Set.{0} α}\n    (hs : @MeasureTheory.NullMeasurableSet.{0} α mα s (@MeasureTheory.Measure.join.{0} α mα m))\n    (h_6 : @IsUnit.{0} ENNReal\n  (@CommMonoid.toMonoid.{0} ENNReal\n    (@CommSemiring.toCommMonoid.{0} ENNReal ENNReal.instCommSemiring))\n  (@MeasureTheory.lintegral.{0} (@MeasureTheory.Measure.{0} α mα)\n    (@MeasureTheory.Measure.instMeasurableSpace.{0} α mα) m fun μ ↦\n    @DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α mα) (Set.{0} α)\n      (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α mα) μ s))\n    (h_7 : @Measurable.{0, 0} ENNReal ENNReal ENNReal.measurableSpace ENNReal.measurableSpace\n  fun x ↦\n  @HMul.hMul.{0, 0, 0} ENNReal ENNReal ENNReal\n    (@instHMul.{0} ENNReal\n      (@MulOne.toMul.{0} ENNReal\n        (@MulOneClass.toMulOne.{0} ENNReal\n          (@Monoid.toMulOneClass.{0} ENNReal\n            (@CommMonoid.toMonoid.{0} ENNReal\n              (@CommSemiring.toCommMonoid.{0} ENNReal ENNReal.instCommSemiring))))))\n    x\n    (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α mα) (Set.{0} α)\n      (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α mα)\n      (@MeasureTheory.Measure.join.{0} α mα m) s)) :\n    @MeasureTheory.Measure.AbsolutelyContinuous.{0} ENNReal ENNReal.measurableSpace\n  (@MeasureTheory.Measure.map.{0, 0} ENNReal ENNReal ENNReal.measurableSpace\n    ENNReal.measurableSpace\n    (fun x ↦\n      @HMul.hMul.{0, 0, 0} ENNReal ENNReal ENNReal\n        (@instHMul.{0} ENNReal\n          (@MulOne.toMul.{0} ENNReal\n            (@MulOneClass.toMulOne.{0} ENNReal\n              (@Monoid.toMulOneClass.{0} ENNReal\n                (@CommMonoid.toMonoid.{0} ENNReal\n                  (@CommSemiring.toCommMonoid.{0} ENNReal ENNReal.instCommSemiring))))))\n        x\n        (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α mα) (Set.{0} α)\n          (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α mα)\n          (@MeasureTheory.Measure.join.{0} α mα m) s))\n    (@MeasureTheory.Measure.count.{0} ENNReal ENNReal.measurableSpace))\n  (@MeasureTheory.Measure.count.{0} ENNReal ENNReal.measurableSpace)",
+  "statement_pretty": "∀ {α : Type} {mα : MeasurableSpace α} {m : MeasureTheory.Measure (MeasureTheory.Measure α)}\n  {s : Set α},\n  MeasureTheory.NullMeasurableSet s m.join →\n    IsUnit (∫⁻ (μ : MeasureTheory.Measure α), μ s ∂m) →\n      (Measurable fun x ↦ x * m.join s) →\n        (MeasureTheory.Measure.map (fun x ↦ x * m.join s)\n              MeasureTheory.Measure.count).AbsolutelyContinuous\n          MeasureTheory.Measure.count",
+  "statement_hash": "expr:aaf27e44ea4f4b3ba3f61b759028558b",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 285,
+    "level_3_ratio": 2.19,
+    "level_3_proof_size": 623,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "MeasureTheory",
+    "Eq",
+    "isUnit_of_dvd_unit",
+    "IsUnit",
+    "Function",
+    "LE"
+  ],
+  "interdisciplinarity": 6,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "MeasureTheory",
+        "lemma": "MeasureTheory.Measure.join_apply₀",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "Eq",
+        "lemma": "Eq.dvd",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "isUnit_of_dvd_unit",
+        "lemma": "isUnit_of_dvd_unit",
+        "kind": "mathlib",
+        "id": "2"
+      },
+      {
+        "namespace": "IsUnit",
+        "lemma": "IsUnit.mul_left_injective",
+        "kind": "mathlib",
+        "id": "6"
+      },
+      {
+        "namespace": "Function",
+        "lemma": "Function.Injective.map_count_le",
+        "kind": "mathlib",
+        "id": "7"
+      },
+      {
+        "namespace": "LE",
+        "lemma": "LE.le.absolutelyContinuous",
+        "kind": "mathlib",
+        "id": "11"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "Eq.dvd",
+        "from": "0"
+      },
+      {
+        "to": "2",
+        "step": "step_2",
+        "lemma": "isUnit_of_dvd_unit",
+        "from": "1"
+      },
+      {
+        "to": "6",
+        "step": "step_6",
+        "lemma": "IsUnit.mul_left_injective",
+        "from": "2"
+      },
+      {
+        "to": "7",
+        "step": "step_7",
+        "lemma": "Function.Injective.map_count_le",
+        "from": "6"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "LE.le.absolutelyContinuous",
+        "from": "7"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "MeasureTheory.Measure",
+      "MeasureTheory.Measure.join",
+      "MeasureTheory.Measure.AbsolutelyContinuous",
+      "MeasureTheory.Measure.map",
+      "MeasureTheory.Measure.count",
+      "MeasureTheory.Measure.instFunLike"
+    ],
+    "joins": 0,
+    "depth": 6
+  },
+  "interest": {
+    "steps": 6,
+    "statement_size": 285,
+    "score": 25.7,
+    "readable_size": 33,
+    "modules": 6,
+    "joins": 0,
+    "focus_steps": 3,
+    "conclusion_size": 99,
+    "concepts": 6
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.MeasureTheory.Measure",
+  "specialist_module": "Mathlib.MeasureTheory.Measure.Lebesgue.Basic",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 2,
+    "source": "interest_score",
+    "score": 6.425
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 8.5,
+    "referee_disagreement": 1,
+    "msc_code": "28A05",
+    "msc_section": "28",
+    "msc_section_name": "Measure and integration",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "28A05",
+        "justification": "The 6-step synthesis across MeasureTheory, Eq, isUnit_of_dvd_unit resists single-lemma lookup and yields a proof-to-statement ratio of 2.19, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 9,
+        "msc_code": "28A05",
+        "justification": "Although the statement clears the Level 1 lookup gate across MeasureTheory, Eq, isUnit_of_dvd_unit, the conclusion reads primarily as an accidental consequence of chaining 6 library facts. I recommend publication solely as a theorem of modest significance (9/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The Continuous Composition Theorem",
+    "proved_by": "Gnomon-1.3-Instruct & Takahe-4.0-Ultra",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Gnomon",
+        "version": "1.3",
+        "tier": "Instruct",
+        "legacy": false
+      },
+      {
+        "family": "Takahe",
+        "version": "4.0",
+        "tier": "Ultra",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 6 verified forward inferences drawn from MeasureTheory, Eq, isUnit_of_dvd_unit, IsUnit (including MeasureTheory.Measure.join_apply₀, Eq.dvd, isUnit_of_dvd_unit). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}

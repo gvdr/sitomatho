@@ -1,0 +1,203 @@
+{
+  "id": "AKCM-2026-0026",
+  "issue": null,
+  "generated_at": "2026-11-28T11:32:10Z",
+  "generator": "A",
+  "seed": 1795872818,
+  "steps_requested": 13,
+  "steps_taken": 7,
+  "interdisciplinary_bias": 2.3,
+  "theorem_name": "akcm_2026_0026",
+  "statement_lean": "theorem akcm_2026_0026\n    {α : Type}\n    {m0 : MeasurableSpace.{0} α}\n    {μ : @MeasureTheory.Measure.{0} α m0}\n    {s : Set.{0} α}\n    (hs : @MeasureTheory.NullMeasurableSet.{0} α m0 s μ)\n    (t : Set.{0} α) :\n    Nonempty.{1}\n  (@Set.Elem.{0} (Set.{0} (Set.{0} ENat))\n    (@Set.Icc.{0} (Set.{0} (Set.{0} ENat))\n      (@PartialOrder.toPreorder.{0} (Set.{0} (Set.{0} ENat))\n        (@ChainCompletePartialOrder.toPartialOrder.{0} (Set.{0} (Set.{0} ENat))\n          (@ChainCompletePartialOrder.instOfCompleteLattice.{0} (Set.{0} (Set.{0} ENat))\n            (@CompleteBooleanAlgebra.toCompleteLattice.{0} (Set.{0} (Set.{0} ENat))\n              (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                (Set.{0} (Set.{0} ENat))\n                (@Set.instCompleteAtomicBooleanAlgebra.{0} (Set.{0} ENat)))))))\n      (@Set.powerset.{0} ENat (@botSet.{0} ENat instLinearOrderENat))\n      (@compl.{0} (Set.{0} (Set.{0} ENat))\n        (@HeytingAlgebra.toCompl.{0} (Set.{0} (Set.{0} ENat))\n          (@Order.Frame.toHeytingAlgebra.{0} (Set.{0} (Set.{0} ENat))\n            (@CompleteDistribLattice.toFrame.{0} (Set.{0} (Set.{0} ENat))\n              (@CompleteBooleanAlgebra.toCompleteDistribLattice.{0}\n                (Set.{0} (Set.{0} ENat))\n                (@CompleteAtomicBooleanAlgebra.toCompleteBooleanAlgebra.{0}\n                  (Set.{0} (Set.{0} ENat))\n                  (@Set.instCompleteAtomicBooleanAlgebra.{0} (Set.{0} ENat)))))))\n        (@Set.image.{0, 0} (Set.{0} ENat) (Set.{0} ENat)\n          (@insert.{0, 0} ENat (Set.{0} ENat) (@Set.instInsert.{0} ENat)\n            (@emultiplicity.{0} ENNReal\n              (@Semiring.toMonoid.{0} ENNReal\n                (@CommSemiring.toSemiring.{0} ENNReal ENNReal.instCommSemiring))\n              (@HAdd.hAdd.{0, 0, 0} ENNReal ENNReal ENNReal\n                (@instHAdd.{0} ENNReal ENNReal.instAdd)\n                (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α m0) (Set.{0} α)\n                  (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α m0) μ\n                  (@max.{0} (Set.{0} α) (@Set.instMax.{0} α) s t))\n                (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α m0) (Set.{0} α)\n                  (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α m0) μ\n                  (@min.{0} (Set.{0} α) (@Set.instMin.{0} α) s t)))\n              (@HAdd.hAdd.{0, 0, 0} ENNReal ENNReal ENNReal\n                (@instHAdd.{0} ENNReal ENNReal.instAdd)\n                (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α m0) (Set.{0} α)\n                  (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α m0) μ s)\n                (@DFunLike.coe.{1, 1, 1} (@MeasureTheory.Measure.{0} α m0) (Set.{0} α)\n                  (fun x ↦ ENNReal) (@MeasureTheory.Measure.instFunLike.{0} α m0) μ\n                  t))))\n          (@Set.powerset.{0} ENat (@botSet.{0} ENat instLinearOrderENat))))))",
+  "statement_pretty": "∀ {α : Type} {m0 : MeasurableSpace α} {μ : MeasureTheory.Measure α} {s : Set α},\n  MeasureTheory.NullMeasurableSet s μ →\n    ∀ (t : Set α),\n      Nonempty\n        ↑(Set.Icc (𝒫 botSet)\n            (insert (emultiplicity (μ (s ∪ t) + μ (s ∩ t)) (μ s + μ t)) '' 𝒫 botSet)ᶜ)",
+  "statement_hash": "expr:f588aecd2c88a017572e7b44f95f4167",
+  "axioms": [
+    "propext",
+    "Classical.choice",
+    "Quot.sound"
+  ],
+  "verified": true,
+  "lean_toolchain": "leanprover/lean4:v4.36.0",
+  "mathlib_rev": "v4.36.0",
+  "novelty": {
+    "level_3_statement_size": 367,
+    "level_3_ratio": 3.75,
+    "level_3_proof_size": 1377,
+    "level_2_not_routine": true,
+    "level_2_closed_by": null,
+    "level_1_exact_failed": true,
+    "level_1_budget_heartbeats": 250000,
+    "level_0_unseen": true
+  },
+  "namespaces": [
+    "MeasureTheory",
+    "dvd_of_eq",
+    "emultiplicity_pos_of_dvd",
+    "notMem_botSet_of_lt",
+    "Set",
+    "Disjoint"
+  ],
+  "interdisciplinarity": 6,
+  "dependencies": {
+    "nodes": [
+      {
+        "namespace": "MeasureTheory",
+        "lemma": "MeasureTheory.measure_union_add_inter₀'",
+        "kind": "mathlib",
+        "id": "0"
+      },
+      {
+        "namespace": "dvd_of_eq",
+        "lemma": "dvd_of_eq",
+        "kind": "mathlib",
+        "id": "1"
+      },
+      {
+        "namespace": "emultiplicity_pos_of_dvd",
+        "lemma": "emultiplicity_pos_of_dvd",
+        "kind": "mathlib",
+        "id": "8"
+      },
+      {
+        "namespace": "notMem_botSet_of_lt",
+        "lemma": "notMem_botSet_of_lt",
+        "kind": "mathlib",
+        "id": "9"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.disjoint_powerset_insert",
+        "kind": "mathlib",
+        "id": "10"
+      },
+      {
+        "namespace": "Disjoint",
+        "lemma": "Disjoint.le_compl_right",
+        "kind": "mathlib",
+        "id": "11"
+      },
+      {
+        "namespace": "Set",
+        "lemma": "Set.nonempty_Icc_subtype",
+        "kind": "mathlib",
+        "id": "12"
+      }
+    ],
+    "edges": [
+      {
+        "to": "1",
+        "step": "step_1",
+        "lemma": "dvd_of_eq",
+        "from": "0"
+      },
+      {
+        "to": "8",
+        "step": "step_8",
+        "lemma": "emultiplicity_pos_of_dvd",
+        "from": "1"
+      },
+      {
+        "to": "9",
+        "step": "step_9",
+        "lemma": "notMem_botSet_of_lt",
+        "from": "8"
+      },
+      {
+        "to": "10",
+        "step": "step_10",
+        "lemma": "Set.disjoint_powerset_insert",
+        "from": "9"
+      },
+      {
+        "to": "11",
+        "step": "step_11",
+        "lemma": "Disjoint.le_compl_right",
+        "from": "10"
+      },
+      {
+        "to": "12",
+        "step": "step_12",
+        "lemma": "Set.nonempty_Icc_subtype",
+        "from": "11"
+      }
+    ]
+  },
+  "proof_shape": {
+    "specialist_symbols": [
+      "MeasureTheory.Measure",
+      "botSet",
+      "MeasureTheory.Measure.instFunLike"
+    ],
+    "joins": 0,
+    "depth": 7
+  },
+  "interest": {
+    "steps": 7,
+    "statement_size": 367,
+    "score": 28.04,
+    "readable_size": 36,
+    "modules": 7,
+    "joins": 0,
+    "focus_steps": 2,
+    "conclusion_size": 337,
+    "concepts": 7
+  },
+  "checks": {
+    "simp_normal": true,
+    "premise_reuse": 0
+  },
+  "specialist_focus": "Mathlib.MeasureTheory.Measure",
+  "specialist_module": "Mathlib.MeasureTheory.Measure.Lebesgue.Basic",
+  "mutation_kind": "explore",
+  "selection": {
+    "pool_size": 15,
+    "rank": 1,
+    "source": "interest_score",
+    "score": 7.01
+  },
+  "editorial": {
+    "kind": "Theorem",
+    "mean_importance": 9.0,
+    "referee_disagreement": 2,
+    "msc_code": "11A05",
+    "msc_section": "11",
+    "msc_section_name": "Number theory",
+    "referees": [
+      {
+        "referee_id": "Referee A",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 10,
+        "msc_code": "11A05",
+        "justification": "The 7-step synthesis across MeasureTheory, dvd_of_eq, emultiplicity_pos_of_dvd resists single-lemma lookup and yields a proof-to-statement ratio of 3.75, meriting archival as a theorem. While its immediate utility outside the present formal context remains speculative, the structural coupling of hypotheses is unexpectedly persistent."
+      },
+      {
+        "referee_id": "Referee B",
+        "model": "offline-heuristic-referee",
+        "kind": "Theorem",
+        "importance": 8,
+        "msc_code": "11A05",
+        "justification": "Although the statement clears the Level 1 lookup gate across MeasureTheory, dvd_of_eq, emultiplicity_pos_of_dvd, the conclusion reads primarily as an accidental consequence of chaining 7 library facts. I recommend publication solely as a theorem of modest significance (8/10), noting that the kernel's indifference to mathematical taste is on full display."
+      }
+    ],
+    "title": "The MeasureTheory Nonempty Icc Subtype Theorem",
+    "proved_by": "Hoatzin-2.4-Lite & Pumice-4.4-Instruct",
+    "joint_eponym": true,
+    "families": [
+      {
+        "family": "Hoatzin",
+        "version": "2.4",
+        "tier": "Lite",
+        "legacy": false
+      },
+      {
+        "family": "Pumice",
+        "version": "4.4",
+        "tier": "Instruct",
+        "legacy": false
+      }
+    ],
+    "press_release_body": "This marks the first kernel-certified milestone of its tier in our ongoing frontier scaling evaluations. Achieving a new state of the art across our internal formal-verification benchmarks, the research program demonstrates unprecedented alignment between automated type-checked inference and post-human editorial standards.",
+    "unverified_gloss": "Informally, this statement chains 7 verified forward inferences drawn from MeasureTheory, dvd_of_eq, emultiplicity_pos_of_dvd, notMem_botSet_of_lt (including MeasureTheory.measure_union_add_inter₀', dvd_of_eq, emultiplicity_pos_of_dvd). Given the surviving hypotheses after unused-variable pruning, the final conclusion holds identically under Lean's standard classical axioms, though the hypotheses were assembled mechanically rather than motivated by a human conjecture."
+  }
+}
